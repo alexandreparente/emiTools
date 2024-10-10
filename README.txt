@@ -20,7 +20,7 @@ O **emiTools** é um plugin desenvolvido para o QGIS, que oferece um conjunto de
 
 ## Instalação
 
-1. Baixe o arquivo ZIP do plugin na pasta zip_build ou clone o repositório.
+1. Baixe o arquivo ZIP do plugin no link https://github.com/alexandreparente/emiTools/releases/
 2. Use o gerenciador de complementos para inslalar o plugin a partir do ZIP:
 3. Ative o plugin navegando até o menu "Plugins" e marcando a opção **emiTools**.
 
