@@ -1,6 +1,6 @@
 # Plugin emiTools
 
-O **emiTools** é um plugin desenvolvido para o QGIS, que oferece um conjunto de ferramentas geoespaciais voltadas ao gerenciamento de camadas e exportação de feições, entre outras funcionalidades essenciais para a Equipe de Monitoramento Ambiental. O plugin otimiza o fluxo de trabalho, fornecendo ferramentas personalizadas para automatizar tarefas espaciais recorrentes.
+O **emiTools** é um plugin desenvolvido para o QGIS, que oferece um conjunto de ferramentas simples voltadas ao gerenciamento de camadas e exportação de feições, entre outras funcionalidades.
 
 ## Funcionalidades
 
