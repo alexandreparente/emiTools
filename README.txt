@@ -1,26 +1,38 @@
-Plugin Builder Results
+# Plugin emiTools
 
-Your plugin emiTools was created in:
-    /home/alexandre/Qgis/Plugin/emi_tools
+O **emiTools** é um plugin desenvolvido para o QGIS, que oferece um conjunto de ferramentas geoespaciais voltadas ao gerenciamento de camadas e exportação de feições, entre outras funcionalidades essenciais para a Equipe de Monitoramento Ambiental. O plugin otimiza o fluxo de trabalho, fornecendo ferramentas personalizadas para automatizar tarefas espaciais recorrentes.
 
-Your QGIS plugin directory is located at:
-    /home/alexandre/.local/share/QGIS/QGIS3/profiles/default/python/plugins
+## Funcionalidades
 
-What's Next:
+- **Exportação de Feições**:
+  - Exporta feições selecionadas para o formato Shapefile, para inserção no Sicafi.
+  - Exporta feições selecionadas para o formato KML, compatível com RPAs DJI.
 
-  * Copy the entire directory containing your new plugin to the QGIS plugin
-    directory
+- **Anotação em Imagens**:
+  - Insere texto e imagens SVG em imagens, adicionando automaticamente informações como data, hora e coordenadas geográficas.
 
-  * Run the tests (``make test``)
+- **Expressões Personalizadas**:
+  - Formatação de nomes próprios.
+  - Formatação e validação de CPF.
+  - Formatação e validação de CNPJ.
+  - Mascaramento de CPF com '*'.
+  - Mascaramento de nomes com '*'.
 
-  * Test the plugin by enabling it in the QGIS plugin manager
+## Instalação
 
-  * Customize it by editing the implementation file: ``emi_tools.py``
+1. Baixe o arquivo ZIP do plugin ou clone o repositório.
+2. Use o gerenciador de complementos para inslalar o plugin a partir do ZIP:
+3. Ative o plugin navegando até o menu "Plugins" e marcando a opção **emiTools**.
 
-  * You can use the Makefile to compile your Ui and resource files when
-    you make changes. This requires GNU make (gmake)
+## Uso
 
-For more information, see the PyQGIS Developer Cookbook at:
-http://www.qgis.org/pyqgis-cookbook/index.html
+Após a instalação, as ferramentas do **emiTools** estarão acessíveis na Caixa de Ferramentas de Processamento, sob o nome "emi Tools".
 
-(C) 2011-2018 GeoApt LLC - geoapt.com
+## Requisitos
+
+- QGIS 3.x
+- Python 3.x
+
+## Contribuições
+
+Contribuições são bem-vindas! Sinta-se à vontade para fazer um fork do repositório e enviar pull requests.
