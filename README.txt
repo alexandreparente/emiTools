@@ -35,4 +35,4 @@ Após a instalação, as ferramentas do **emiTools** estarão acessíveis na Cai
 
 ## Contribuições
 
-Contribuições são bem-vindas! Sinta-se à vontade para fazer um fork do repositório e enviar pull requests.
+Sinta-se à vontade para fazer um fork do repositório.
