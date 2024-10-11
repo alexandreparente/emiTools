@@ -34,7 +34,7 @@
         <translation>Exportar KML para RPA</translation>
     </message>
     <message>
-        <location filename="../emi_tools_imagem_stamp_rpa.py" line="411"/>
+        <location filename="../emi_tools_imagem_stamp_rpa.py" line="413"/>
         <source>Emi Functions</source>
         <translation>Funções Emi</translation>
     </message>
@@ -59,17 +59,17 @@
         <translation>Exportar todas as feições para um único arquivo</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="143"/>
+        <location filename="../emi_tools_export_terms.py" line="147"/>
         <source>More than one feature associated with the embargo term number was found: {list(duplicated_tads.keys())}. Feature count: {len(extracted_features)}.</source>
         <translation>Mais de uma feição associada ao número do termo de embargo foi encontrada: {list(duplicated_tads.keys())}. Contagem de feições: {len(extracted_features)}.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="232"/>
+        <location filename="../emi_tools_export_terms.py" line="236"/>
         <source>Compressed files: {zip_output_file}</source>
         <translation>Arquivos compactados: {zip_output_file}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="254"/>
+        <location filename="../emi_tools_export_terms.py" line="258"/>
         <source>Export Terms to Sicafi</source>
         <translation>Exportar Termos para o Sicafi</translation>
     </message>
@@ -129,12 +129,12 @@
         <translation>Falha ao carregar a imagem de entrada.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_imagem_stamp_rpa.py" line="261"/>
+        <location filename="../emi_tools_imagem_stamp_rpa.py" line="263"/>
         <source>Failed to load SVG file: {svg_file_path}</source>
         <translation>Falha ao carregar o arquivo SVG: {svg_file_path}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_imagem_stamp_rpa.py" line="408"/>
+        <location filename="../emi_tools_imagem_stamp_rpa.py" line="410"/>
         <source>Insert stamp on image</source>
         <translation>Inserir carimbo na imagem</translation>
     </message>
@@ -164,7 +164,7 @@
         <translation>Superior Direita</translation>
     </message>
     <message>
-        <location filename="../emi_tools_imagem_stamp_rpa.py" line="332"/>
+        <location filename="../emi_tools_imagem_stamp_rpa.py" line="334"/>
         <source>Failed to tag {tag}: {str(e)}</source>
         <translation>Falha ao inserir {tag}: {str(e)}</translation>
     </message>
@@ -172,6 +172,11 @@
         <location filename="../emi_tools_imagem_stamp_rpa.py" line="65"/>
         <source>Input Images</source>
         <translation>Imagens de Entrada</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_export_terms.py" line="104"/>
+        <source>The embargo term field and the embargo term series field must not be the same. Please select different fields.</source>
+        <translation>O campo do termo de embargo e o campo da série do termo de embargo não podem ser iguais. Por favor, selecione campos diferentes.</translation>
     </message>
 </context>
 <context>

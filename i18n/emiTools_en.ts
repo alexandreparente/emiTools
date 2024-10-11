@@ -34,7 +34,7 @@
         <translation>Export KML to RPA</translation>
     </message>
     <message>
-        <location filename="../emi_tools_imagem_stamp_rpa.py" line="411"/>
+        <location filename="../emi_tools_imagem_stamp_rpa.py" line="413"/>
         <source>Emi Functions</source>
         <translation>Emi Functions</translation>
     </message>
@@ -59,17 +59,17 @@
         <translation>Export all features to a single file</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="143"/>
+        <location filename="../emi_tools_export_terms.py" line="147"/>
         <source>More than one feature associated with the embargo term number was found: {list(duplicated_tads.keys())}. Feature count: {len(extracted_features)}.</source>
         <translation>More than one feature associated with the embargo term number was found: {list(duplicated_tads.keys())}. Feature count: {len(extracted_features)}.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="232"/>
+        <location filename="../emi_tools_export_terms.py" line="236"/>
         <source>Compressed files: {zip_output_file}</source>
         <translation>Compressed files: {zip_output_file}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="254"/>
+        <location filename="../emi_tools_export_terms.py" line="258"/>
         <source>Export Terms to Sicafi</source>
         <translation>Export Terms to Sicafi</translation>
     </message>
@@ -149,12 +149,12 @@
         <translation>Failed to load input image.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_imagem_stamp_rpa.py" line="261"/>
+        <location filename="../emi_tools_imagem_stamp_rpa.py" line="263"/>
         <source>Failed to load SVG file: {svg_file_path}</source>
         <translation>Failed to load SVG file: {svg_file_path}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_imagem_stamp_rpa.py" line="408"/>
+        <location filename="../emi_tools_imagem_stamp_rpa.py" line="410"/>
         <source>Insert stamp on image</source>
         <translation>Insert stamp on image</translation>
     </message>
@@ -164,7 +164,7 @@
         <translation>Select Font</translation>
     </message>
     <message>
-        <location filename="../emi_tools_imagem_stamp_rpa.py" line="332"/>
+        <location filename="../emi_tools_imagem_stamp_rpa.py" line="334"/>
         <source>Failed to tag {tag}: {str(e)}</source>
         <translation>Failed to tag {tag}: {str(e)}</translation>
     </message>
@@ -172,6 +172,11 @@
         <location filename="../emi_tools_imagem_stamp_rpa.py" line="65"/>
         <source>Input Images</source>
         <translation>Input Images</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_export_terms.py" line="104"/>
+        <source>The embargo term field and the embargo term series field must not be the same. Please select different fields.</source>
+        <translation>The embargo term field and the embargo term series field must not be the same. Please select different fields.</translation>
     </message>
 </context>
 <context>

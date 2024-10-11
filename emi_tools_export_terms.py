@@ -99,6 +99,10 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
         output_files = []
         today_str = "lote" + datetime.today().strftime('%Y%m%d')       
         
+        # Validate that num_tei_field and serie_tei_field are not the same
+        if num_tei_field == serie_tei_field:
+            raise QgsProcessingException(tr('The embargo term field and the embargo term series field must not be the same. Please select different fields.'))
+
         # Check for duplicate features with the same embargo number    
         self.check_duplicates(extracted_features, num_tei_field)
         
