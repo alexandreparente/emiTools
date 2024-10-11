@@ -179,7 +179,7 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
         # Checks if the image contains a valid geotag
         if not exif_tools.hasGeoTag(temp_file_path):
             feedback.pushInfo("No valid geotag found.")
-            return "", "", "", "", "", "", ""
+            return {}, None, None, None, None, None, None
 
         full_map_exif = exif_tools.readTags (temp_file_path)
 
@@ -192,18 +192,18 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
         if isinstance(exif_datetime, QDateTime):
             exif_datetime_str = exif_datetime.toString("yyyy-MM-dd HH:mm:ss")
         else:
-            exif_datetime_str = ""
+            exif_datetime_str = None
          
         # Gets the EXIF model
         exif_model_str = exif_tools.readTag(temp_file_path, 'Exif.Image.Model')
         if not exif_model_str:
-            exif_model_str = ""
+            exif_model_str = None
 
         # Gets the EXIF altitude
         if exif_tools.readTag(temp_file_path, 'Exif.GPSInfo.GPSAltitude'):
             exif_altitude_str = f"{exif_tools.readTag(temp_file_path, 'Exif.GPSInfo.GPSAltitude')} m"
         else:
-            exif_altitude_str = ""
+            exif_altitude_str = None
          
         
         # Formats the coordinates
@@ -217,7 +217,7 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
             exif_coordinates_str = f"{latitude_dms}, {longitude_dms}"
 
         else:
-            exif_coordinates_str = ""
+            exif_coordinates_str = None
 
         return full_map_exif, exif_latitude, exif_longitude, exif_model_str, exif_datetime_str, exif_coordinates_str, exif_altitude_str
 
@@ -244,6 +244,8 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
         # Add EXIF information
         full_text_lines.extend([exif_model_str, exif_datetime_str, exif_coordinates_str, exif_altitude_str])
 
+        # Exclude None values
+        full_text_lines = [line for line in full_text_lines if line is not None]
         # Create the final string with line breaks
         full_text = "\n".join(full_text_lines)
 
