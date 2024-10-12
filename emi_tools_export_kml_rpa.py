@@ -148,8 +148,8 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
                     #Add file name for loading later
                     output_files.append(output_file)
 
-                    #Del the temporary layer after use
-                    del temp_layer
+        #Del the temporary layer after use
+        del temp_layer
 
         #Compresses the files
         if compress_output:
