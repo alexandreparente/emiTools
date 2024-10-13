@@ -248,8 +248,8 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
             # Print the saved file info
             feedback.pushInfo(f"Saved file: {output_file}")
 
-
-        #Print the strings (files) generated        
+        #Apparently, this is causing a memory error
+        # #Print the strings (files) generated
         #for file in output_files:
         #    feedback.pushInfo(f"Saved file: {file}")
        
