@@ -225,8 +225,6 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
     
         for i, feature in enumerate(features):
         
-            # Clear/Create the temporary layer for each feature in the batch
-            output_layer = None
             output_layer = QgsVectorLayer("Polygon?crs=EPSG:4326", f"Extracted_{i + 1}", "memory")
             provider = output_layer.dataProvider()
             provider.addAttributes(layer.fields())    
@@ -247,6 +245,9 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
             
             # Print the saved file info
             feedback.pushInfo(f"Saved file: {output_file}")
+
+            # Clear/Create the temporary layer for each feature in the batch
+            output_layer = None
 
         #Apparently, this is causing a memory error
         # #Print the strings (files) generated
