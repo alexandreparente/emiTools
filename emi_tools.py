@@ -55,7 +55,7 @@ class emiToolsPlugin(object):
         # Initialize the plugin path directory
         self.plugin_dir = os.path.dirname(__file__)
         
-        # Obtémgets the locale configured in the system.
+        # Gets the locale configured in the system.
         settings = QSettings()
         locale = settings.value("locale/userLocale", QLocale.system().name())
     
@@ -86,4 +86,3 @@ class emiToolsPlugin(object):
         for expr in listFunctions:
             if QgsExpression.isFunctionName(expr.name()):
                 QgsExpression.unregisterFunction(expr.name())
-

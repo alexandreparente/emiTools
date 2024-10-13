@@ -127,9 +127,6 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
                 # Determines the geometry type of the feature
                 geometry_type = singlepart_geometry.wkbType()
 
-                # Creates a temporary layer depending on the geometry type
-                #temp_layer = None
-
                 geometry_type = singlepart_geometry.wkbType()
                 if QgsWkbTypes.geometryType(geometry_type) == QgsWkbTypes.LineGeometry:
                     temp_layer = QgsVectorLayer("LineString?crs=EPSG:4326", f"{field_value}", "memory")
@@ -209,7 +206,7 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
     def compress_files(self, output_file):
           
         base_name = os.path.splitext(output_file)[0]  # Remove a extensão .kml
-        zip_output_file = base_name + "_kml.zip"  # Adiciona .zip ao nome base
+        zip_output_file = base_name + "_kml.zip"  # Adds .zip to the base name
     
         # Create the .zip file and add the original file
         with zipfile.ZipFile(zip_output_file, 'w') as zipf:
