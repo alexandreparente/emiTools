@@ -4,32 +4,27 @@
 <context>
     <name>@default</name>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="58"/>
+        <location filename="../emi_tools_export_terms.py" line="67"/>
         <source>Layer name:</source>
         <translation>Nome da camada:</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_kml_rpa.py" line="64"/>
+        <location filename="../emi_tools_export_kml_rpa.py" line="34"/>
         <source>Field to use for export file names:</source>
         <translation>Campo a ser utilizado para os nomes dos arquivos de exportação:</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="68"/>
-        <source>Output folder:</source>
-        <translation>Pasta de saída:</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_export_terms.py" line="77"/>
+        <location filename="../emi_tools_export_terms.py" line="86"/>
         <source>Compress output file copy (.zip)</source>
         <translation>Compactar cópia do arquivo de saída (.zip)</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="80"/>
+        <location filename="../emi_tools_export_terms.py" line="89"/>
         <source>Open output files after executing the algorithm</source>
         <translation>Abrir arquivos de saída após a execução do algoritmo</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_kml_rpa.py" line="196"/>
+        <location filename="../emi_tools_export_kml_rpa.py" line="207"/>
         <source>Export KML to RPA</source>
         <translation>Exportar KML para RPA</translation>
     </message>
@@ -39,37 +34,32 @@
         <translation>Funções Emi</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="61"/>
+        <location filename="../emi_tools_export_terms.py" line="70"/>
         <source>Embargo term field:</source>
         <translation>Campo do termo de embargo:</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="64"/>
+        <location filename="../emi_tools_export_terms.py" line="73"/>
         <source>Embargo term series field:</source>
         <translation>Campo da série do termo de embargo:</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="71"/>
+        <location filename="../emi_tools_export_terms.py" line="80"/>
         <source>Output file format:</source>
         <translation>Formato do arquivo de saída:</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="74"/>
+        <location filename="../emi_tools_export_terms.py" line="83"/>
         <source>Export all features to a single file</source>
         <translation>Exportar todas as feições para um único arquivo</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="147"/>
-        <source>More than one feature associated with the embargo term number was found: {list(duplicated_tads.keys())}. Feature count: {len(extracted_features)}.</source>
-        <translation>Mais de uma feição associada ao número do termo de embargo foi encontrada: {list(duplicated_tads.keys())}. Contagem de feições: {len(extracted_features)}.</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_export_terms.py" line="236"/>
+        <location filename="../emi_tools_export_terms.py" line="317"/>
         <source>Compressed files: {zip_output_file}</source>
         <translation>Arquivos compactados: {zip_output_file}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="258"/>
+        <location filename="../emi_tools_export_terms.py" line="357"/>
         <source>Export Terms to Sicafi</source>
         <translation>Exportar Termos para o Sicafi</translation>
     </message>
@@ -174,9 +164,14 @@
         <translation>Imagens de Entrada</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="104"/>
-        <source>The embargo term field and the embargo term series field must not be the same. Please select different fields.</source>
-        <translation>O campo do termo de embargo e o campo da série do termo de embargo não podem ser iguais. Por favor, selecione campos diferentes.</translation>
+        <location filename="../emi_tools_export_terms.py" line="173"/>
+        <source>Duplicate embargo term numbers found: {list(duplicated_tads.keys())}</source>
+        <translation>Números de termos de embargo duplicados encontrados: {list(duplicated_tads.keys())}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_export_terms.py" line="212"/>
+        <source>Save file: {output_file}</source>
+        <translation>Salvar arquivo: {output_file}</translation>
     </message>
 </context>
 <context>

@@ -8,7 +8,6 @@ from qgis.core import (QgsProcessing,
                        QgsProcessingParameterField,
                        QgsProcessingParameterBoolean,
                        QgsProcessingMultiStepFeedback,
-                       QgsProcessingParameterFile,
                        QgsProcessingParameterFolderDestination,
                        QgsProject,
                        QgsVectorLayer,
@@ -39,9 +38,6 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
         default_output_folder = os.path.expanduser("~")      
         self.addParameter(QgsProcessingParameterFolderDestination(self.output_folder, tr('Output folder'), defaultValue=default_output_folder))
         
-#        self.addParameter(QgsProcessingParameterFile('output_folder', tr('Output folder:'), 
-#                    behavior=QgsProcessingParameterFile.Folder, defaultValue=default_output_folder))
-
         # Option to compress the output
         self.addParameter(QgsProcessingParameterBoolean('compress_output', tr('Compress output file copy (.zip)'), 
                     defaultValue=False))
@@ -62,19 +58,25 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
         # Get the field selected by the user
         export_field = self.parameterAsString(parameters, 'export_field', context)
         
-        # Get parameters        
-        output_folder = self.parameterAsFile(parameters, 'output_folder', context)
+        # Use parameterAsString instead of parameterAsFile
+        output_folder = self.parameterAsString(parameters, 'output_folder', context)
+
+        if not output_folder:  # Check if output_folder is empty
+            output_folder = tempfile.mkdtemp()  # Create a temporary folder
+
+        # Ensure the output folder exists
+        if not os.path.exists(output_folder):
+            os.makedirs(output_folder)
+        
         compress_output = self.parameterAsBoolean(parameters, 'compress_output', context)
         load_output = self.parameterAsBoolean(parameters, 'load_output', context)
 
         
         # List to hold the output file names for loading later
         output_files = []
-
-        # Processa as feições em lotes
-
+        # Processes the features in batches
         features = list(layer.getFeatures())        
-        # Define o tamanho do lote
+        # Define the batch size
         batch_size = 10 
     
         for batch_start in range(0, len(features), batch_size):
@@ -102,6 +104,8 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
                     # Determines the geometry type of the feature
                     geometry_type = singlepart_geometry.wkbType()
                     
+                    
+                    temp_layer = None
                     # Creates a temporary layer depending on the geometry type
                     if QgsWkbTypes.geometryType(geometry_type) == QgsWkbTypes.LineGeometry:
                         temp_layer = QgsVectorLayer("LineString?crs=EPSG:4326", f"{field_value}{part_suffix}", "memory")
@@ -139,8 +143,6 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
 
                     if error[0] != QgsVectorFileWriter.NoError:
                         raise QgsProcessingException(f"Error saving KML file: {error[0]}")
-
-                    feedback.pushInfo(f"File saved at {output_file}")
                     
                     #Removes the <Folder> tags and adds the <name> tag
                     self.edit_kml_tags(output_file, f"{field_value}{part_suffix}")
@@ -148,8 +150,11 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
                     #Add file name for loading later
                     output_files.append(output_file)
 
-        #Del the temporary layer after use
-        del temp_layer
+        for file in output_files:
+            feedback.pushInfo(f"Saved file: {file}")
+        
+        # Print the total number of strings (files) generated
+        feedback.pushInfo(f"Total number of saved files: {len(output_files)}")
 
         #Compresses the files
         if compress_output:
@@ -172,9 +177,14 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
 
 
     def compress_files(self, output_file):
-        zip_output_file = output_file + ".zip"
+          
+        base_name = os.path.splitext(output_file)[0]  # Remove a extensão .kml
+        zip_output_file = base_name + "_kml.zip"  # Adiciona .zip ao nome base
+    
+        # Create the .zip file and add the original file
         with zipfile.ZipFile(zip_output_file, 'w') as zipf:
             zipf.write(output_file, os.path.basename(output_file))
+           
 
     def edit_kml_tags(self, kml_file, field_value):
         with open(kml_file, 'r', encoding='utf-8') as file:
