@@ -269,22 +269,6 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
             layers_to_add.append(layer)
         QgsProject.instance().addMapLayers(layers_to_add)
 
-    def compress_files2(self, output_files, output_format, output_folder, feedback):
-        associated_extensions = {
-            0: ['shp', 'shx', 'dbf', 'prj', 'cpg'],
-            1: ['gpkg'],
-            2: ['kml']
-        }
-        for output_file in output_files:
-            base_name = os.path.splitext(os.path.basename(output_file))[0]
-            zip_output_file = os.path.join(output_folder, f"{base_name}.zip")
-            associated_files = [os.path.join(output_folder, f"{base_name}.{ext}") for ext in associated_extensions[output_format] if os.path.exists(os.path.join(output_folder, f"{base_name}.{ext}"))]
-            if associated_files:
-                with zipfile.ZipFile(zip_output_file, 'w') as zipf:
-                    for file in associated_files:
-                        zipf.write(file, os.path.basename(file))
-                feedback.pushInfo(tr(f"Compressed files: {zip_output_file}"))
-
 
     def compress_files(self, output_files, output_format, output_folder, feedback):
         #Define the associated extensions based on the output format

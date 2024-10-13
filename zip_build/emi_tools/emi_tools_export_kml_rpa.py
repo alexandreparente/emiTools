@@ -33,8 +33,7 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
         # Input field parameter to select a field for naming the exported files
         self.addParameter(QgsProcessingParameterField('export_field', tr('Field to use for export file names:'), '', 'layer', optional=True))
 
-        # Output folder parameter
-              
+        # Output folder parameter          
         default_output_folder = os.path.expanduser("~")      
         self.addParameter(QgsProcessingParameterFolderDestination(self.output_folder, tr('Output folder'), defaultValue=default_output_folder))
         
