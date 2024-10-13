@@ -23,6 +23,7 @@ def tr(string):
 
 class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
 
+    # Definition of input and output parameters
     output_folder = 'output_folder'
 
     def initAlgorithm(self, config=None):
@@ -88,8 +89,6 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
 
             geometries = [geometry] if not geometry.isMultipart() else geometry.asGeometryCollection()
 
-            temp_layer = None
-
             # Processes each part of the geometry
             for j, singlepart_geometry in enumerate(geometries):
                 # Adjusts the file name for multipart
@@ -98,18 +97,17 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
                 # Determines the geometry type of the feature
                 geometry_type = singlepart_geometry.wkbType()
 
-                temp_layer = None
                 # Creates a temporary layer depending on the geometry type
-                for j, singlepart_geometry in enumerate(geometries):
-                    if temp_layer is None:
-                        geometry_type = singlepart_geometry.wkbType()
-                        if QgsWkbTypes.geometryType(geometry_type) == QgsWkbTypes.LineGeometry:
-                            temp_layer = QgsVectorLayer("LineString?crs=EPSG:4326", f"{field_value}", "memory")
-                        elif QgsWkbTypes.geometryType(geometry_type) == QgsWkbTypes.PolygonGeometry:
-                            temp_layer = QgsVectorLayer("Polygon?crs=EPSG:4326", f"{field_value}", "memory")
-                        else:
-                            raise QgsProcessingException(
-                                f"Unsupported geometry type: {QgsWkbTypes.displayString(geometry_type)}")
+                temp_layer = None
+
+                geometry_type = singlepart_geometry.wkbType()
+                if QgsWkbTypes.geometryType(geometry_type) == QgsWkbTypes.LineGeometry:
+                    temp_layer = QgsVectorLayer("LineString?crs=EPSG:4326", f"{field_value}", "memory")
+                elif QgsWkbTypes.geometryType(geometry_type) == QgsWkbTypes.PolygonGeometry:
+                    temp_layer = QgsVectorLayer("Polygon?crs=EPSG:4326", f"{field_value}", "memory")
+                else:
+                    raise QgsProcessingException(
+                        f"Unsupported geometry type: {QgsWkbTypes.displayString(geometry_type)}")
 
                 # Adds the feature to the temporary layer
                 temp_layer_data_provider = temp_layer.dataProvider()
@@ -162,11 +160,10 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
         if load_output:
             self.load_output_files(output_files)
 
-        del temp_layer
+        temp_layer = None
 
         return {self.output_folder: output_folder}
-    
-        
+
     def load_output_files (self, output_files):  
        #Using the addMapLayers method to reduce the number of calls to QGIS when many layers need to be loaded
        layers_to_add = []
