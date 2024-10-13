@@ -212,52 +212,52 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
         feedback.pushInfo(tr(f"Save file: {output_file}"))  
           
         return output_files
-
-    
-    def export_individual_files(self, layer, output_folder, output_format,feedback):
+        
+    def export_individual_files(self, layer, output_folder, output_format, feedback):
         output_files = []
-        #Batch size of features for processing
-        batch_size = 10  
-        batch = []
-    
-        #Load all features at once
+
+        # Load all features at once
         features = list(layer.getFeatures())  
         total_features = len(features)
         
+        # Use a set to track processed TAD numbers
+        processed_tad_numbers = set()
+    
         for i, feature in enumerate(features):
-            batch.append(feature)
-    
-            #When the batch size is reached or all features have been processed, handle the batch
-            if len(batch) == batch_size or i == total_features - 1:
-                for j, batch_feature in enumerate(batch):
-                
-                    # Clear/Create the temporary layer for each feature in the batch
-                    output_layer = None
-                    output_layer = QgsVectorLayer("Polygon?crs=EPSG:4326", f"Extracted_{i - len(batch) + j + 1}", "memory")
-                    provider = output_layer.dataProvider()
-                    provider.addAttributes(layer.fields())
-                    output_layer.updateFields()
-                    provider.addFeature(batch_feature)
-                    
-                    # Retrieve the value of 'NUM_TEI' and generate the file name
-                    tad_number = batch_feature[layer.fields().indexOf('NUM_TEI')]
-                    output_file = os.path.join(output_folder, f"TEI_{tad_number}_sicafi.{self.get_extension(output_format)}")
-                    
-                    # Export the temporary layer as a file
-                    QgsVectorFileWriter.writeAsVectorFormat(output_layer, output_file, "UTF-8", output_layer.crs(), self.get_output_format_string(output_format))
-                    output_files.append(output_file)
-    
-                # Clear the batch after processing
-                batch = []
-                
-        #Print the strings (files) generated        
-        for file in output_files:
-            feedback.pushInfo(f"Saved file: {file}")
         
-        #Print the total number of strings (files) generated
+            # Clear/Create the temporary layer for each feature in the batch
+            output_layer = None
+            output_layer = QgsVectorLayer("Polygon?crs=EPSG:4326", f"Extracted_{i + 1}", "memory")
+            provider = output_layer.dataProvider()
+            provider.addAttributes(layer.fields())    
+            output_layer.updateFields()
+            
+            # Retrieve the value of 'NUM_TEI' to generate the file name
+            tad_number = feature[layer.fields().indexOf('NUM_TEI')]    
+            
+            # Add the feature to the temporary layer
+            provider.addFeature(feature)
+    
+            # Generate the output file path
+            output_file = os.path.join(output_folder, f"TEI_{tad_number}_sicafi.{self.get_extension(output_format)}")
+            
+            # Export the temporary layer as a file
+            QgsVectorFileWriter.writeAsVectorFormat(output_layer, output_file, "UTF-8", output_layer.crs(), self.get_output_format_string(output_format))
+            output_files.append(output_file)
+            
+            # Print the saved file info
+            feedback.pushInfo(f"Saved file: {output_file}")
+
+
+        #Print the strings (files) generated        
+        #for file in output_files:
+        #    feedback.pushInfo(f"Saved file: {file}")
+       
+        # Print the total number of saved files
         feedback.pushInfo(f"Total number of saved files: {len(output_files)}")
                
         return output_files
+
 
     def load_output_files(self, list_output_files):
         layers_to_add = []
