@@ -43,6 +43,7 @@ from qgis.core import (QgsProcessing, QgsVectorFileWriter,
                        QgsProcessingException, 
                        QgsProject, QgsVectorLayer,
                        QgsProcessingMultiStepFeedback,
+                       QgsProcessingFeatureSource,
                        QgsProcessingParameterVectorLayer,
                        QgsVectorDataProvider,
                        QgsField,
@@ -64,7 +65,7 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
 
     def initAlgorithm(self, config=None):
         # Input layer parameter   
-        self.addParameter(QgsProcessingParameterFeatureSource('layer', tr('Layer name:'), [QgsProcessing.TypeVectorPolygon]))
+        self.addParameter(QgsProcessingParameterFeatureSource('layer', tr('Layer name1:'), [QgsProcessing.TypeVectorPolygon]))
         
         # Parameter to select the field for the embargo term number
         self.addParameter(QgsProcessingParameterField('num_tei_field', tr('Embargo term field:'), parentLayerParameterName='layer', type=QgsProcessingParameterField.String, defaultValue='numero_tad'))
@@ -91,21 +92,20 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
     def processAlgorithm(self, parameters, context, feedback):
         feedback = QgsProcessingMultiStepFeedback(1, feedback)
 
-        # Get the input layer as a QgsVectorLayer
-        layer = self.parameterAsVectorLayer(parameters, 'layer', context)
+        # Get the input layer as a feature source
+        layer = self.parameterAsSource(parameters, 'layer', context)
         if layer is None:
             raise QgsProcessingException(self.invalidSourceError(parameters, 'layer'))
-      
+
         # Get parameters
         extracted_features = list(layer.getFeatures())
+
         num_tei_field = parameters['num_tei_field']
         serie_tei_field = parameters['serie_tei_field']
         export_all_to_single = self.parameterAsBoolean(parameters, 'export_all_to_single', context)
         output_format = self.parameterAsEnum(parameters, 'output_format', context)
         compress_output = self.parameterAsBoolean(parameters, 'compress_output', context)
-        
 
-        
         # Get output folder
         output_folder = self.parameterAsString(parameters, 'output_folder', context)
         if not output_folder:
@@ -117,11 +117,11 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
         self.check_duplicates(extracted_features, num_tei_field)
 
         # Create a temporary layer
-        temp_layer = self.temp_layer(layer)
-        
+        temp_layer = self.temp_layer(layer, extracted_features, context)
+
         # Remove unnecessary fields and rename others
         self.remover_fields(temp_layer, num_tei_field, serie_tei_field)
-        
+
         # Rename the fields
         self.rename_fields(temp_layer, num_tei_field, serie_tei_field)
       
@@ -143,28 +143,36 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
             self.load_output_files(output_files)
 
         return {self.output_folder: output_folder}
-        
-        
-    def temp_layer(self, layer):
-        #Get the geometry and CRS of the original layer
-        geometry_type = layer.wkbType()
-        crs = layer.crs().authid()
-        
-        #Create a temporary memory layer
-        temp_layer = QgsVectorLayer(f'{QgsWkbTypes.displayString(geometry_type)}?crs={crs}', 'Temporary Layer', 'memory')
-        
-        # Copy fields from the original layer
+
+    def temp_layer(self, layer, extracted_features, context):
+        # Checks if the layer is a QgsProcessingFeatureSource
+        if isinstance(layer, QgsProcessingFeatureSource):
+            # Gets the source name and the associated layer
+            source_name = layer.sourceName()
+            source_layer = QgsProject.instance().mapLayersByName(source_name)
+
+            if not source_layer:
+                raise QgsProcessingException(self.invalidSourceError({'layer': layer}, 'layer'))
+
+            source_layer = source_layer[0]
+
+        # Gets the geometry type and CRS of the original layer.
+        geometry_type = source_layer.wkbType()
+        crs = source_layer.crs().authid()
+
+        # Creates a temporary layer in memory
+        temp_layer = QgsVectorLayer(f'{QgsWkbTypes.displayString(geometry_type)}?crs={crs}', 'Temporary Layer',
+                                    'memory')
+
+        # Copies the fields from the original layer
         temp_layer_provider = temp_layer.dataProvider()
-        temp_layer_provider.addAttributes(layer.fields())
+        temp_layer_provider.addAttributes(source_layer.fields())
         temp_layer.updateFields()
-        
-        # Copy features from the original layer to the temporary layer
-        for feature in layer.getFeatures():
-            new_feature = QgsFeature(feature)
-            temp_layer_provider.addFeatures([new_feature])
-        
-        return temp_layer    
-      
+
+        # Adds the extracted features to the temporary layer
+        temp_layer_provider.addFeatures(extracted_features)
+
+        return temp_layer
 
     def check_duplicates(self, extracted_features, num_tei_field):
         tad_numbers = [f[num_tei_field] for f in extracted_features]
