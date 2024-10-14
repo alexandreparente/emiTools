@@ -65,7 +65,7 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
 
     def initAlgorithm(self, config=None):
         # Input layer parameter   
-        self.addParameter(QgsProcessingParameterFeatureSource('layer', tr('Layer name1:'), [QgsProcessing.TypeVectorPolygon]))
+        self.addParameter(QgsProcessingParameterFeatureSource('layer', tr('Layer name:'), [QgsProcessing.TypeVectorPolygon]))
         
         # Parameter to select the field for the embargo term number
         self.addParameter(QgsProcessingParameterField('num_tei_field', tr('Embargo term field:'), parentLayerParameterName='layer', type=QgsProcessingParameterField.String, defaultValue='numero_tad'))
