@@ -6,7 +6,7 @@
 name=emiTools
 qgisMinimumVersion=3.34
 description=This plugin compiles tools used by EMI-PB
-version=0.2
+version=0.3
 author=Alexandre Parente Lima
 email=alexandre.parente@gmail.com
 
