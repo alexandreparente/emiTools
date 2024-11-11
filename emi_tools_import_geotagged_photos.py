@@ -26,15 +26,13 @@ __author__ = 'Alexandre Parente Lima'
 __date__ = '2024-10-10'
 __copyright__ = '(C) 2024 by Alexandre Parente Lima'
 
-from qgis.core import (QgsProcessing,
+from qgis.core import (QgsApplication,
+                       QgsProcessing,
                        QgsProcessingAlgorithm,
                        QgsProcessingParameterMultipleLayers,
                        QgsProcessingParameterVectorDestination,
                        QgsProcessingParameterBoolean,
-                       QgsProcessingParameterDefinition,
-                       QgsProcessingParameterEnum,
                        QgsProcessingException,
-                       QgsProject,
                        QgsExifTools,
                        QgsCoordinateFormatter,
                        QgsFields,
@@ -43,31 +41,22 @@ from qgis.core import (QgsProcessing,
                        QgsVectorLayer,
                        QgsPointXY,
                        QgsVectorFileWriter,
-                       QgsMarkerSymbol,
                        QgsSingleSymbolRenderer,
                        QgsPoint,
                        QgsGeometry,
                        QgsSvgMarkerSymbolLayer,
                        QgsMarkerSymbol,
-                       QgsApplication,
                        QgsSymbolLayer,
                        QgsProperty,
-                       QgsSymbolLayerUtils,
-                       QgsSymbol,
                        QgsWkbTypes,
                        QgsLayerDefinition,
-                       QgsProject,
-                       QgsLayerTreeLayer,
-                       QgsLayerTreeGroup,
-                       QgsLayerTree)
+                       QgsProject)
 
 from qgis.PyQt.QtCore import (QCoreApplication,
                               QDateTime,
-                              QVariant,
-                              QSettings,
-                              QFile)
+                              QVariant)
 
-from qgis.PyQt.QtGui import QImage, QColor
+from qgis.PyQt.QtGui import QImage
 
 import os
 
