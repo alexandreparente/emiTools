@@ -44,11 +44,7 @@ from qgis.core import (QgsProcessing, QgsVectorFileWriter,
                        QgsProject, QgsVectorLayer,
                        QgsProcessingMultiStepFeedback,
                        QgsProcessingFeatureSource,
-                       QgsProcessingParameterVectorLayer,
-                       QgsVectorDataProvider,
-                       QgsField,
-                       QgsWkbTypes,
-                       QgsFeature)
+                       QgsWkbTypes)
                        
 import os
 import zipfile
@@ -74,9 +70,10 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
         self.addParameter(QgsProcessingParameterField('serie_tei_field', tr('Embargo term series field:'), parentLayerParameterName='layer', type=QgsProcessingParameterField.String, defaultValue='serie_tad'))
         
         # Setting the default output folder to the user's home directory        
-        default_output_folder = os.path.expanduser("~")      
-        self.addParameter(QgsProcessingParameterFolderDestination(self.output_folder, tr('Output folder'), defaultValue=default_output_folder))
-        
+        #default_output_folder = os.path.expanduser("~")
+        #self.addParameter(QgsProcessingParameterFolderDestination(self.output_folder, tr('Output folder'), defaultValue=default_output_folder))
+        self.addParameter(QgsProcessingParameterFolderDestination(self.output_folder, tr('Output folder')))
+
         # Parameter to choose the output format        
         self.addParameter(QgsProcessingParameterEnum('output_format', tr('Output file format:'), options=['ESRI Shapefile', 'GeoPackage', 'Keyhole Markup Language'], defaultValue=0))
         
@@ -347,13 +344,16 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
         return "emiToolsExportTerms"
 
     def displayName(self):
-        return tr("Export Terms to Sicafi")
+        return tr("Export terms to Sicafi")
 
     def group(self):
-        return tr("Emi Functions")
+        return tr("Emi Tools")
 
-    def createInstance(self):
-        return emiToolsExportTerms()
+    def groupId(self):
+        return ""
+
+    # def shortHelpString(self):
+    #    return tr("help.")
 
     def createInstance(self):
         return emiToolsExportTerms()

@@ -65,8 +65,9 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
         self.addParameter(QgsProcessingParameterField('export_field', tr('Field to use for export file names:'), '', 'layer', optional=True))
 
         # Output folder parameter          
-        default_output_folder = os.path.expanduser("~")      
-        self.addParameter(QgsProcessingParameterFolderDestination(self.output_folder, tr('Output folder'), defaultValue=default_output_folder))
+        #default_output_folder = os.path.expanduser("~")
+        #self.addParameter(QgsProcessingParameterFolderDestination(self.output_folder, tr('Output folder'), defaultValue=default_output_folder))
+        self.addParameter(QgsProcessingParameterFolderDestination(self.output_folder, tr('Output folder')))
         
         # Option to compress the output
         self.addParameter(QgsProcessingParameterBoolean('compress_output', tr('Compress output file copy (.zip)'), 
@@ -149,23 +150,7 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
                 new_feature.setAttributes(feature.attributes())
                 temp_layer_data_provider.addFeature(new_feature)
 
-
-                # Ensure to update fields and write to KML after all features are processed                # Defines options to save the layer (writeAsVectorFormatV3)
-                options = QgsVectorFileWriter.SaveVectorOptions()
-                options.driverName = 'KML'
-                options.fileEncoding = 'UTF-8'
-                options.fieldNameSource = QgsVectorFileWriter.Original
-
-                # Ensures that the correct coordinate transformation is used.
-                transform_context = QgsProject.instance().transformContext()
-
-                # Writes the feature to a KML file
-                output_file = os.path.join(output_folder, f"{field_value}{part_suffix}.kml")
-                error = QgsVectorFileWriter.writeAsVectorFormatV3(temp_layer, output_file, transform_context,
-                                                                      options)
-
-                if error[0] != QgsVectorFileWriter.NoError:
-                    raise QgsProcessingException(f"Error saving KML file: {error[0]}")
+                output_file = self.export_output_file(temp_layer,output_folder,field_value,part_suffix)
 
                 # Removes the <Folder> tags and adds the <name> tag
                 self.edit_kml_tags(output_file, f"{field_value}{part_suffix}")
@@ -211,7 +196,27 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
         # Create the .zip file and add the original file
         with zipfile.ZipFile(zip_output_file, 'w') as zipf:
             zipf.write(output_file, os.path.basename(output_file))
-           
+
+    def export_output_file(self, temp_layer, output_folder,field_value,part_suffix):
+
+        # Defines options to save the layer (writeAsVectorFormatV3)
+        options = QgsVectorFileWriter.SaveVectorOptions()
+        options.driverName = 'KML'
+        options.fileEncoding = 'UTF-8'
+        options.fieldNameSource = QgsVectorFileWriter.Original
+
+        # Ensures that the correct coordinate transformation is used.
+        transform_context = QgsProject.instance().transformContext()
+
+        # Writes the feature to a KML file
+        output_file = os.path.join(output_folder, f"{field_value}{part_suffix}.kml")
+        error = QgsVectorFileWriter.writeAsVectorFormatV3(temp_layer, output_file, transform_context,options)
+
+        if error[0] != QgsVectorFileWriter.NoError:
+            raise QgsProcessingException(f"Error saving KML file: {error[0]}")
+
+        return output_file
+
 
     def edit_kml_tags(self, kml_file, field_value):
         with open(kml_file, 'r', encoding='utf-8') as file:
@@ -234,10 +239,13 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
         return tr("Export KML to RPA")
 
     def group(self):
-        return tr("Emi Functions")
+        return tr("Emi Tools")
 
     def groupId(self):
         return ""
+
+    # def shortHelpString(self):
+    #    return tr("help.")
 
     def createInstance(self):
         return emiToolsExportKmlRpa()

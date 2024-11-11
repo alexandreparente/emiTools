@@ -32,6 +32,7 @@ from qgis.core import QgsProcessingProvider
 from .emi_tools_export_terms import emiToolsExportTerms
 from .emi_tools_export_kml_rpa import emiToolsExportKmlRpa
 from .emi_tools_imagem_stamp_rpa import emiToolsStampImagemRpa
+from .emi_tools_import_geotagged_photos import emiToolsImportGeotaggedPhotos
 
 class emiToolsProvider(QgsProcessingProvider):
 
@@ -55,7 +56,8 @@ class emiToolsProvider(QgsProcessingProvider):
         self.addAlgorithm(emiToolsExportTerms())
         self.addAlgorithm(emiToolsExportKmlRpa())        
         self.addAlgorithm(emiToolsStampImagemRpa())
-        
+        self.addAlgorithm(emiToolsImportGeotaggedPhotos())
+
         # add additional algorithms here
         # self.addAlgorithm(MyOtherAlgorithm())
 

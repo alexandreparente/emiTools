@@ -36,12 +36,14 @@ from qgis.core import QgsApplication
 from qgis.core import QgsExpression
 from qgis.utils import qgsfunction
 
+
 def tr(string):
     return QCoreApplication.translate('@default', string)
 
-@qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
-def validate_cpf(cpf_number, feature, parent):
-    """
+
+helpText=tr("Invalid number. Please provide an 11-digit numeric string2.")
+
+"""
     Returns True if the provided string is a valid Brazilian Individual Taxpayer Identification Number (CPF). Otherwise, returns False.
 
     <h4>Syntax</h4>
@@ -49,13 +51,18 @@ def validate_cpf(cpf_number, feature, parent):
 
     <h4>Arguments</h4>
     <p><i style="color:#bf0c0c;">string</i>: A string containing 11 numeric characters representing a CPF number.</p>
-  
+
     <h4>Example:</h4>
     <ul>
       <li> validate_cpf('000.000.000-00') -> True</li>
       <li> validate_cpf('000.000.000-01') -> False</li>
-    </ul>)
-    """
+    </ul>
+"""
+
+@qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[],helpText=helpText)
+def validate_cpf(cpf_number, feature, parent):
+
+
     # Remove non-numeric characters
     cpf_number = ''.join(filter(str.isdigit, cpf_number))
     
@@ -182,7 +189,7 @@ def format_cnpj(number, feature, parent):
     elif len(number) == 14:
         formatted = f"{number[:2]}.{number[2:5]}.{number[5:8]}/{number[8:12]}-{number[12:]}"
     else:
-        raise Exception("Invalid number. Pass a numeric string as the input parameter.")
+        raise Exception(tr("Invalid number. Pass a numeric string as the input parameter."))
     
     return formatted
 
@@ -454,3 +461,9 @@ def get_image_source(filename, feature, parent):
         return "Rede MAIS/MJSP, inclui material © (2023) Planet Labs Inc. Todos os direitos reservados."
     else:
         raise Exception("Invalid filename. Please provide a valid filename according to the compact naming convention for Sentinel2 or Landsat8 images (e.g., 'S2A_MSIL1C_20170105T013442_N0204_R031_T53NMJ_20170105T013443', 'LC08_L1TP_216065_20210206_20210305_01_T1')")
+
+
+
+
+
+

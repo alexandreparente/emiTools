@@ -26,8 +26,6 @@ __author__ = 'Alexandre Parente Lima'
 __date__ = '2024-10-10'
 __copyright__ = '(C) 2024 by Alexandre Parente Lima'
 
-# This will get replaced with a git SHA1 when you do a git archive
-
 __revision__ = '$Format:%H$'
 
 import os
@@ -40,6 +38,7 @@ from qgis.PyQt.QtCore import QTranslator, QCoreApplication, QSettings, QLocale
 from .emi_tools_provider import emiToolsProvider
 from .emi_tools_expressions import *
 
+
 listFunctions = (validate_cpf, validate_cnpj, format_cpf, format_cnpj, format_cpf_cnpj, mask_cpf, mask_name, format_proper_name, format_title_abnt, get_image_date, get_satellite_name, get_image_source)
 
 cmd_folder = os.path.split(inspect.getfile(inspect.currentframe()))[0]
@@ -51,24 +50,21 @@ class emiToolsPlugin(object):
 
     def __init__(self):
         self.provider = None
-        
+
         # Initialize the plugin path directory
         self.plugin_dir = os.path.dirname(__file__)
-        
+
         # Gets the locale configured in the system.
         settings = QSettings()
         locale = settings.value("locale/userLocale", QLocale.system().name())
-    
-        # initialize locale    
+
+        # Initialize locale
         locale_path = os.path.join(self.plugin_dir, 'i18n', 'emiTools_{}.qm'.format(locale))
-        
+
         if os.path.exists(locale_path):
             self.translator = QTranslator()
             self.translator.load(locale_path)
             QCoreApplication.installTranslator(self.translator)
-       #     print(f"Locale file found and loaded: {locale_path}")  # Message to confirm locale found
-       # else:
-       #     print(f"Locale file not found for: {locale}")            
 
     def initProcessing(self):
         """Init Processing provider for QGIS >= 3.8."""

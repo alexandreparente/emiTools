@@ -30,18 +30,44 @@ __copyright__ = '(C) 2024 by Alexandre Parente Lima'
 
 __revision__ = '$Format:%H$'
 
-from qgis.core import (QgsProcessing, QgsProcessingAlgorithm, QgsProcessingParameterMultipleLayers,
-                       QgsProcessingParameterFolderDestination, QgsProcessingParameterFile,
-                       QgsProcessingParameterString, QgsProcessingParameterColor, QgsProcessingParameterEnum,
-                       QgsProcessingParameterNumber, QgsProcessingException, QgsRasterLayer, QgsProject,QgsExifTools,
-                       QgsCoordinateFormatter, QgsFields, QgsField, QgsFeature, QgsVectorLayer, QgsPoint, QgsGeometry,QgsPointXY)
-from qgis.PyQt.QtCore import Qt, QFileInfo, QCoreApplication, QRect, QRectF, QDateTime, QVariant
-from qgis.PyQt.QtGui import QImage, QPainter, QFont, QColor, QFontMetrics, QFontDatabase
+from qgis.core import (QgsProcessing,
+                       QgsProcessingAlgorithm,
+                       QgsProcessingParameterMultipleLayers,
+                       QgsProcessingParameterFolderDestination,
+                       QgsProcessingParameterFile,
+                       QgsProcessingParameterString,
+                       QgsProcessingParameterColor,
+                       QgsProcessingParameterEnum,
+                       QgsProcessingParameterNumber,
+                       QgsProcessingException,
+                       QgsProject,
+                       QgsExifTools,
+                       QgsCoordinateFormatter,
+                       QgsFields,
+                       QgsField,
+                       QgsFeature,
+                       QgsVectorLayer,
+                       QgsPoint,
+                       QgsGeometry,
+                       QgsPointXY)
+
+from qgis.PyQt.QtCore import (Qt,
+                              QFileInfo,
+                              QCoreApplication,
+                              QRect,
+                              QRectF,
+                              QDateTime,
+                              QVariant)
+from qgis.PyQt.QtGui import (QImage,
+                             QPainter,
+                             QFont,
+                             QColor,
+                             QFontMetrics,
+                             QFontDatabase)
 from qgis.PyQt.QtSvg import QSvgRenderer
 from qgis.PyQt.QtWidgets import QApplication
 
 import os
-import tempfile
 
 def tr(string):
     return QCoreApplication.translate('@default', string)
@@ -161,7 +187,7 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
                                      exif_altitude_str))
 
         # Creates and loads the point layer with the coordinates
-        self.create_points_layer(coordinates_list)
+        #self.create_points_layer(coordinates_list)
 
         return {self.OUTPUT_FOLDER: output_folder}
 
@@ -410,7 +436,7 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
         return tr("Insert stamp on image")
 
     def group(self):
-        return tr("Emi Functions")
+        return tr("Emi Tools")
 
     def groupId(self):
         return ""
