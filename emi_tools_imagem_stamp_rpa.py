@@ -90,7 +90,11 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
         # Initializes the algorithm's parameters
         self.addParameter(QgsProcessingParameterMultipleLayers(self.INPUT_IMAGE, tr('Input Images'), layerType=QgsProcessing.TypeRaster))
         self.addParameter(QgsProcessingParameterFile(self.STAMP_IMAGE, tr('Stamp SVG Image'), extension='svg', optional=True))
-        self.addParameter(QgsProcessingParameterString(self.INPUT_TEXT, tr('Main text to be inserted into the image'), defaultValue="IBAMA"))
+        #self.addParameter(QgsProcessingParameterString(self.INPUT_TEXT, tr('Main text to be inserted into the image'), defaultValue="IBAMA"))
+        # Modificando para suportar múltiplas linhas (TextArea)
+        self.addParameter(QgsProcessingParameterString(self.INPUT_TEXT, tr('Main text to be inserted into the image'),
+                                                       defaultValue="IBAMA", multiLine=True))
+
         self.addParameter(QgsProcessingParameterString(self.OPERATION_NAME, tr('Secondary text to be inserted into the image'), optional=True))
         
         # Get the available fonts on the system using QFontDatabase
@@ -208,6 +212,7 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
             return {}, None, None, None, None, None, None
 
         full_map_exif = exif_tools.readTags (temp_file_path)
+        print(f' dados: {full_map_exif}')
 
         # Gets the geographic coordinates
         geo_tag_result = exif_tools.getGeoTag(temp_file_path)
