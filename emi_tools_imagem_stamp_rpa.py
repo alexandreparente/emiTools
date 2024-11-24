@@ -92,7 +92,7 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
         #self.addParameter(QgsProcessingParameterString(self.INPUT_TEXT, tr('Main text to be inserted into the image'), defaultValue="IBAMA"))
         # Modificando para suportar múltiplas linhas (TextArea)
         self.addParameter(QgsProcessingParameterString(self.INPUT_TEXT, tr('Text to be inserted into the image.'),
-                                                       defaultValue="IBAMA", multiLine=True))
+                                                       defaultValue="", multiLine=True))
 
         # Get the available fonts on the system using QFontDatabase
         font_db = QFontDatabase()
