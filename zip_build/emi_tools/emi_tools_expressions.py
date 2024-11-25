@@ -41,27 +41,26 @@ def tr(string):
     return QCoreApplication.translate('@default', string)
 
 
-helpText=tr("Invalid number. Please provide an 11-digit numeric string2.")
+#helpText=tr("Invalid number. Please provide an 11-digit numeric string2.")
+#@qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[],helpText=helpText)
 
-"""
-    Returns True if the provided string is a valid Brazilian Individual Taxpayer Identification Number (CPF). Otherwise, returns False.
-
-    <h4>Syntax</h4>
-    <p><b style="color:#0a6099;">validate_cpf</b> (<i style="color:#bf0c0c;">string</i>)</p>
-
-    <h4>Arguments</h4>
-    <p><i style="color:#bf0c0c;">string</i>: A string containing 11 numeric characters representing a CPF number.</p>
-
-    <h4>Example:</h4>
-    <ul>
-      <li> validate_cpf('000.000.000-00') -> True</li>
-      <li> validate_cpf('000.000.000-01') -> False</li>
-    </ul>
-"""
-
-@qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[],helpText=helpText)
+@qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
 def validate_cpf(cpf_number, feature, parent):
+    """
+        Returns True if the provided string is a valid Brazilian Individual Taxpayer Identification Number (CPF). Otherwise, returns False.
 
+        <h4>Syntax</h4>
+        <p><b style="color:#0a6099;">validate_cpf</b> (<i style="color:#bf0c0c;">string</i>)</p>
+
+        <h4>Arguments</h4>
+        <p><i style="color:#bf0c0c;">string</i>: A string containing 11 numeric characters representing a CPF number.</p>
+
+        <h4>Example:</h4>
+        <ul>
+          <li> validate_cpf('000.000.000-00') -> True</li>
+          <li> validate_cpf('000.000.000-01') -> False</li>
+        </ul>
+    """
 
     # Remove non-numeric characters
     cpf_number = ''.join(filter(str.isdigit, cpf_number))

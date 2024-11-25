@@ -78,7 +78,6 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
     OUTPUT_FOLDER = 'OUTPUT_FOLDER'  # Output folder
     STAMP_IMAGE = 'STAMP_IMAGE'  # SVG image to be stamped
     INPUT_TEXT = 'INPUT_TEXT'  # Main text to be inserted into the image
-    OPERATION_NAME = 'OPERATION_NAME'  # Operation name to be inserted into the image
     FONT_COLOR = 'FONT_COLOR'  # Font color
     FONT_SIZE = 'FONT_SIZE'  # Font size
     FONT_NAME = 'FONT_NAME'
@@ -90,9 +89,11 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
         # Initializes the algorithm's parameters
         self.addParameter(QgsProcessingParameterMultipleLayers(self.INPUT_IMAGE, tr('Input Images'), layerType=QgsProcessing.TypeRaster))
         self.addParameter(QgsProcessingParameterFile(self.STAMP_IMAGE, tr('Stamp SVG Image'), extension='svg', optional=True))
-        self.addParameter(QgsProcessingParameterString(self.INPUT_TEXT, tr('Main text to be inserted into the image'), defaultValue="IBAMA"))
-        self.addParameter(QgsProcessingParameterString(self.OPERATION_NAME, tr('Secondary text to be inserted into the image'), optional=True))
-        
+        #self.addParameter(QgsProcessingParameterString(self.INPUT_TEXT, tr('Main text to be inserted into the image'), defaultValue="IBAMA"))
+        # Modificando para suportar múltiplas linhas (TextArea)
+        self.addParameter(QgsProcessingParameterString(self.INPUT_TEXT, tr('Text to be inserted into the image.'),
+                                                       defaultValue="", multiLine=True))
+
         # Get the available fonts on the system using QFontDatabase
         font_db = QFontDatabase()
         fonts = font_db.families()
@@ -137,7 +138,6 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
 
         # Collects text and style parameters
         input_text = self.parameterAsString(parameters, self.INPUT_TEXT, context)
-        operation_name = self.parameterAsString(parameters, self.OPERATION_NAME, context)
         font_color = self.parameterAsColor(parameters, self.FONT_COLOR, context)
         font_size = self.parameterAsInt(parameters, self.FONT_SIZE, context)
         
@@ -165,8 +165,7 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
             
             full_map_exif, exif_latitude, exif_longitude, exif_model_str, exif_datetime_str, exif_coordinates_str, exif_altitude_str = self.get_exif_data(raster_file_path, feedback)
 
-            self.insert_stamp(input_qimage, output_folder, input_text, operation_name,
-                     exif_model_str, exif_datetime_str, exif_coordinates_str, exif_altitude_str, svg_file_path,
+            self.insert_stamp(input_qimage, output_folder, input_text, exif_model_str, exif_datetime_str, exif_coordinates_str, exif_altitude_str, svg_file_path,
                      font_color, font_size, position, font_name, full_map_exif, feedback)
                       
             output_image_path = self.save_image(input_qimage, raster_file_path ,output_folder, feedback)
@@ -208,6 +207,7 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
             return {}, None, None, None, None, None, None
 
         full_map_exif = exif_tools.readTags (temp_file_path)
+        print(f' dados: {full_map_exif}')
 
         # Gets the geographic coordinates
         geo_tag_result = exif_tools.getGeoTag(temp_file_path)
@@ -247,8 +247,7 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
 
         return full_map_exif, exif_latitude, exif_longitude, exif_model_str, exif_datetime_str, exif_coordinates_str, exif_altitude_str
 
-    def insert_stamp(self, input_qimage, output_folder, input_text, operation_name,
-                     exif_model_str, exif_datetime_str, exif_coordinates_str, exif_altitude_str, svg_file_path,
+    def insert_stamp(self, input_qimage, output_folder, input_text, exif_model_str, exif_datetime_str, exif_coordinates_str, exif_altitude_str, svg_file_path,
                      font_color, font_size, position, font_name, full_map_exif, feedback):
 
         painter = QPainter(input_qimage)
@@ -264,8 +263,6 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
 
         # Concatenate all texts into a single string, separating by line breaks
         full_text_lines = [input_text]
-        if operation_name:
-            full_text_lines.append(operation_name)
 
         # Add EXIF information
         full_text_lines.extend([exif_model_str, exif_datetime_str, exif_coordinates_str, exif_altitude_str])

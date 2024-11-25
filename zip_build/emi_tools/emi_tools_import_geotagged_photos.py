@@ -85,6 +85,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         export_style = self.parameterAsBool(parameters, self.EXPORT_STYLE, context)
 
         feature_exif_dict = {}
+        erro_feature_exif_dict = {}
 
         for input_image in input_images:
             raster_file_path = input_image.dataProvider().dataSourceUri()
@@ -100,8 +101,13 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             exif_dict['raster_file_path'] = raster_file_path
 
             # Adds the dictionary to feature_exif_dict
-            feature_exif_dict[input_image.name()] = exif_dict
+            if exif_dict.get('latitude') and exif_dict.get('longitude'):
+                feature_exif_dict[input_image.name()] = exif_dict
+            else:
+                erro_feature_exif_dict[input_image.name()] = exif_dict
 
+        #print(f'dicionario {feature_exif_dict}')
+        #print(f'dicionario {erro_feature_exif_dict}')
 
         #create the point layer
         point_layer = self.create_points_layer(feature_exif_dict, output_file)
@@ -123,6 +129,8 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         if export_style:
             self.export_definition_file(output_file, layer_loaded)
 
+        feedback.pushInfo(tr(
+            f"A total of {len(feature_exif_dict)} images with geotags and {len(erro_feature_exif_dict)} images without geotags were identified."))
         return {self.OUTPUT_FILE: export_layer}
 
     def get_exif_data(self, temp_file_path, feedback):
@@ -140,8 +148,8 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
 
         # Check if the file has valid geotag information
         if not exif_tools.hasGeoTag(temp_file_path):
-            feedback.pushInfo("No valid geotag found.")
-            return {None}
+            #feedback.pushInfo("No valid geotag found.")
+            return {}
 
         # Retrieve the geotag information
         geo_tag_result = exif_tools.getGeoTag(temp_file_path)
@@ -159,6 +167,10 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             longitude_dms = QgsCoordinateFormatter.formatX(
                 exif_longitude, QgsCoordinateFormatter.FormatDegreesMinutesSeconds, 2)
             exif_coordinates_str = f"{latitude_dms}, {longitude_dms}"
+        else:
+            latitude_dms = None
+            longitude_dms = None
+            exif_coordinates_str = None
 
         # Extract the original datetime of the image
         exif_datetime = exif_tools.readTag(temp_file_path, 'Exif.Photo.DateTimeOriginal')
