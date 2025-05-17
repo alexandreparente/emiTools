@@ -247,7 +247,8 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
 
         return full_map_exif, exif_latitude, exif_longitude, exif_model_str, exif_datetime_str, exif_coordinates_str, exif_altitude_str
 
-    def insert_stamp(self, input_qimage, output_folder, input_text, exif_model_str, exif_datetime_str, exif_coordinates_str, exif_altitude_str, svg_file_path,
+    def insert_stamp(self, input_qimage, output_folder, input_text, exif_model_str, exif_datetime_str,
+                     exif_coordinates_str, exif_altitude_str, svg_file_path,
                      font_color, font_size, position, font_name, full_map_exif, feedback):
 
         painter = QPainter(input_qimage)
@@ -260,7 +261,6 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
         font = QFont(font_name, font_size)
         painter.setFont(font)
 
-
         # Concatenate all texts into a single string, separating by line breaks
         full_text_lines = [input_text]
 
@@ -269,14 +269,19 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
 
         # Exclude None values
         full_text_lines = [line for line in full_text_lines if line is not None]
+
         # Create the final string with line breaks
-        full_text = "\n".join(full_text_lines)
+        full_text = "\n".join(full_text_lines).strip()
 
         # Calculate the total text height based on the number of lines
-        font_metrics = QFontMetrics(font)
-        total_text_height = font_metrics.lineSpacing() * len(full_text_lines)  # Total de linhas
+        metrics = QFontMetrics(font)
+        line_spacing = metrics.lineSpacing()
+        lines = full_text.split('\n')
+        num_lines = len(lines)
 
-        #offset of text and image
+        total_text_height = line_spacing * num_lines
+
+        # offset of text and image
         image_offset = 50
 
         if svg_file_path:
@@ -299,7 +304,7 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
                                   image_width - total_text_height - 2 * image_offset, total_text_height)
             else:
                 text_rect = QRect(image_offset, image_height - image_offset - total_text_height,
-                              image_width - 2 * image_offset, total_text_height)
+                                  image_width - 2 * image_offset, total_text_height)
 
         elif position == 'Bottom Right':
             alignment = Qt.AlignRight
@@ -311,8 +316,9 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
                                   image_width - total_text_height - 3 * image_offset,
                                   total_text_height)
             else:
-                text_rect = QRect(image_offset, image_height - image_offset - total_text_height, image_width - 2 * image_offset, total_text_height)
-                                  
+                text_rect = QRect(image_offset, image_height - image_offset - total_text_height,
+                                  image_width - 2 * image_offset, total_text_height)
+
         elif position == 'Top Left':
             alignment = Qt.AlignLeft
             if svg_file_path:
@@ -331,18 +337,16 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
                                   total_text_height)
             else:
                 text_rect = QRect(image_offset, image_offset, image_width - 2 * image_offset, total_text_height)
-                
+
         # Set the text color and draw it in the defined position
         painter.setPen(QColor(font_color))
         painter.drawText(text_rect, alignment, full_text)  # Remover o argumento incorreto Qt.TextWordWrap
-
 
         if svg_file_path:
             # Render the SVG image in the calculated position
             svg_renderer.render(painter, svg_rect)
 
         painter.end()
-        
 
     def insert_exif_data(self, temp_file_path, full_map_exif, feedback):
 
