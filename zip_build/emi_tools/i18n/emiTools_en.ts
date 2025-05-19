@@ -191,12 +191,12 @@
     <message>
         <location filename="../emi_tools_import_geotagged_photos.py" line="450"/>
         <source>Import geotagged photos from DJI drones</source>
-        <translation></translation>
+        <translation>Import geotagged photos from DJI drones</translation>
     </message>
     <message>
         <location filename="../emi_tools_import_geotagged_photos.py" line="82"/>
-        <source>Import XMP tags used by DJI</source>
-        <translation></translation>
+        <source>Do not import XMP tags used by DJI</source>
+        <translation>Do not import XMP tags used by DJI</translation>
     </message>
 </context>
 <context>

@@ -189,14 +189,14 @@
         <translation>Um total de {len(feature_exif_dict)} imagens com geotags e {len(erro_feature_exif_dict)} imagens sem geotags foram identificadas.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="82"/>
-        <source>Import XMP tags used by DJI</source>
-        <translation>Importar tags XMP usadas pela DJI</translation>
-    </message>
-    <message>
         <location filename="../emi_tools_import_geotagged_photos.py" line="450"/>
         <source>Import geotagged photos from DJI drones</source>
         <translation>Importar fotos geolocalizadas de drones DJI</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="82"/>
+        <source>Do not import XMP tags used by DJI</source>
+        <translation>Não importar tags XMP utilizadas pela DJI</translation>
     </message>
 </context>
 <context>

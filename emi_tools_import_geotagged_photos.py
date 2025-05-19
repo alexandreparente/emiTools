@@ -70,7 +70,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
     INPUT_IMAGE = 'INPUT_IMAGE'
     OUTPUT_FILE = 'OUTPUT_FILE'
     EXPORT_STYLE = 'EXPORT_STYLE'
-    EXTRACT_DJI_XMP = 'EXTRACT_DJI_XMP'
+    NO_EXTRACT_DJI_XMP = 'NO_EXTRACT_DJI_XMP'
 
     def initAlgorithm(self, config=None):
         self.addParameter(QgsProcessingParameterMultipleLayers(self.INPUT_IMAGE, tr('Input Images'),
@@ -79,7 +79,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         self.addParameter(QgsProcessingParameterVectorDestination(self.OUTPUT_FILE, tr('Output file')))
 
         # Adds a checkbox to export the DJI XMP metadata
-        self.addParameter(QgsProcessingParameterBoolean(self.EXTRACT_DJI_XMP, tr('Import XMP tags used by DJI'), defaultValue=True))
+        self.addParameter(QgsProcessingParameterBoolean(self.NO_EXTRACT_DJI_XMP, tr('Do not import XMP tags used by DJI'), defaultValue=False))
 
                 #Adds a checkbox to export the style
         self.addParameter(QgsProcessingParameterBoolean(self.EXPORT_STYLE, tr('Export the Layer Definition file (QLR)'),
@@ -89,7 +89,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         input_images = self.parameterAsLayerList(parameters, self.INPUT_IMAGE, context)
         output_file = self.parameterAsOutputLayer(parameters, self.OUTPUT_FILE, context)
         export_style = self.parameterAsBool(parameters, self.EXPORT_STYLE, context)
-        extract_dji_xmp = self.parameterAsBool(parameters, self.EXTRACT_DJI_XMP, context)
+        no_extract_dji_xmp = self.parameterAsBool(parameters, self.NO_EXTRACT_DJI_XMP, context)
 
         feature_exif_dict = {}
         erro_feature_exif_dict = {}
@@ -105,7 +105,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
                 'photo': raster_file_path,
                 'filename': input_image.name(),
                 'directory':os.path.dirname(raster_file_path),
-                **self.get_exif_data(raster_file_path, extract_dji_xmp, feedback)
+                **self.get_exif_data(raster_file_path, no_extract_dji_xmp, feedback)
             }
 
             # Adds the dictionary to feature_exif_dict
@@ -131,7 +131,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             f"A total of {len(feature_exif_dict)} images with geotags and {len(erro_feature_exif_dict)} images without geotags were identified."))
         return {self.OUTPUT_FILE: export_layer}
 
-    def get_exif_data(self, temp_file_path, extract_dji_xmp, feedback):
+    def get_exif_data(self, temp_file_path, no_extract_dji_xmp, feedback):
         """
         Extracts EXIF and XMP metadata from an image file.
 
@@ -189,7 +189,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         exif_direction = float(raw_exif_direction) if raw_exif_direction else None
 
         # Extract DJI-specific XMP tags for drone data
-        if extract_dji_xmp:
+        if not no_extract_dji_xmp:
             raw_CamReverse = exif_tools.readTag(temp_file_path, 'Xmp.drone-dji.CamReverse')
             xmp_CamReverse = float(raw_CamReverse) if raw_CamReverse else None
 
@@ -220,7 +220,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         # Key created to set the angle property for svg_marker symbology
         if exif_direction is not None:
             symbol_rotation = exif_direction
-        elif extract_dji_xmp and xmp_FlightYawDegree is not None:
+        elif not no_extract_dji_xmp and xmp_FlightYawDegree is not None:
             symbol_rotation = xmp_FlightYawDegree
         else:
             symbol_rotation = None
@@ -238,7 +238,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         }
 
         # Create a dictionary with XMP metadata
-        if extract_dji_xmp:
+        if not no_extract_dji_xmp:
             exif_dict.update({
                 'CamReverse': xmp_CamReverse,
                 'FlightPitchDegree': xmp_FlightPitchDegree,
