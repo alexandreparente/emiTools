@@ -198,6 +198,16 @@
         <source>Do not import XMP tags used by DJI</source>
         <translation>Do not import XMP tags used by DJI</translation>
     </message>
+    <message>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="345"/>
+        <source>Photos without direction</source>
+        <translation>Photos without direction</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="351"/>
+        <source>Photos with direction</source>
+        <translation>Photos with direction</translation>
+    </message>
 </context>
 <context>
     <name>emiToolsProvider</name>

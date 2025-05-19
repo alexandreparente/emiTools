@@ -342,13 +342,13 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
 
         # Rule for features where 'rotation' is null or empty
         rule1 = QgsRuleBasedRenderer.Rule(symbol_point)
-        rule1.setLabel('Photos without direction')
-        rule1.setFilterExpression('is_empty_or_null("rotation")')
+        rule1.setLabel(tr("Photos without direction"))
+        rule1.setFilterExpression('is_empty_or_null(\"rotation\")')
         root_rule.appendChild(rule1)
 
         # Rule for features with valid 'rotation' values (directional)
         rule2 = QgsRuleBasedRenderer.Rule(symbol_arrow)
-        rule2.setLabel('Photos without direction')
+        rule2.setLabel(tr("Photos with direction"))
         rule2.setIsElse(True)
         root_rule.appendChild(rule2)
 
