@@ -58,6 +58,7 @@ class emiToolsProvider(QgsProcessingProvider):
         self.addAlgorithm(emiToolsStampImagemRpa())
         self.addAlgorithm(emiToolsImportGeotaggedPhotos())
 
+
         # add additional algorithms here
         # self.addAlgorithm(MyOtherAlgorithm())
 

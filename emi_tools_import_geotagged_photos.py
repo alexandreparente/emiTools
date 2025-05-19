@@ -44,10 +44,12 @@ from qgis.core import (QgsApplication,
                        QgsSingleSymbolRenderer,
                        QgsPoint,
                        QgsGeometry,
+                       QgsRuleBasedRenderer,
                        QgsSvgMarkerSymbolLayer,
                        QgsMarkerSymbol,
                        QgsSymbolLayer,
                        QgsProperty,
+                       QgsEditorWidgetSetup,
                        QgsWkbTypes,
                        QgsLayerDefinition,
                        QgsProject)
@@ -68,6 +70,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
     INPUT_IMAGE = 'INPUT_IMAGE'
     OUTPUT_FILE = 'OUTPUT_FILE'
     EXPORT_STYLE = 'EXPORT_STYLE'
+    EXTRACT_DJI_XMP = 'EXTRACT_DJI_XMP'
 
     def initAlgorithm(self, config=None):
         self.addParameter(QgsProcessingParameterMultipleLayers(self.INPUT_IMAGE, tr('Input Images'),
@@ -75,14 +78,18 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
 
         self.addParameter(QgsProcessingParameterVectorDestination(self.OUTPUT_FILE, tr('Output file')))
 
-        #Adds a checkbox to export the style
+        # Adds a checkbox to export the DJI XMP metadata
+        self.addParameter(QgsProcessingParameterBoolean(self.EXTRACT_DJI_XMP, tr('Import XMP tags used by DJI'), defaultValue=True))
+
+                #Adds a checkbox to export the style
         self.addParameter(QgsProcessingParameterBoolean(self.EXPORT_STYLE, tr('Export the Layer Definition file (QLR)'),
-                                                        defaultValue=False))
+                                                        defaultValue=True))
 
     def processAlgorithm(self, parameters, context, feedback):
         input_images = self.parameterAsLayerList(parameters, self.INPUT_IMAGE, context)
         output_file = self.parameterAsOutputLayer(parameters, self.OUTPUT_FILE, context)
         export_style = self.parameterAsBool(parameters, self.EXPORT_STYLE, context)
+        extract_dji_xmp = self.parameterAsBool(parameters, self.EXTRACT_DJI_XMP, context)
 
         feature_exif_dict = {}
         erro_feature_exif_dict = {}
@@ -94,11 +101,12 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             if input_qimage.isNull():
                 raise QgsProcessingException(tr("Failed to load input image."))
 
-            exif_dict  = self.get_exif_data(raster_file_path, feedback)
-
-            #Adds additional data to the EXIF dictionary
-            exif_dict['input_image'] = input_image.name()
-            exif_dict['raster_file_path'] = raster_file_path
+            exif_dict = {
+                'photo': raster_file_path,
+                'filename': input_image.name(),
+                'directory':os.path.dirname(raster_file_path),
+                **self.get_exif_data(raster_file_path, extract_dji_xmp, feedback)
+            }
 
             # Adds the dictionary to feature_exif_dict
             if exif_dict.get('latitude') and exif_dict.get('longitude'):
@@ -106,24 +114,14 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             else:
                 erro_feature_exif_dict[input_image.name()] = exif_dict
 
-        #print(f'dicionario {feature_exif_dict}')
-        #print(f'dicionario {erro_feature_exif_dict}')
-
         #create the point layer
         point_layer = self.create_points_layer(feature_exif_dict, output_file)
-
-        #symbol definition
-        svg_path = os.path.join(QgsApplication.svgPaths()[0], 'arrows', 'Arrow_01.svg')
-        symbol = QgsMarkerSymbol.defaultSymbol(QgsWkbTypes.PointGeometry)
-        svg_marker = QgsSvgMarkerSymbolLayer(svg_path)
-        svg_marker.setDataDefinedProperty(QgsSymbolLayer.PropertyAngle, QgsProperty.fromField('GimbalYawDegree'))
-        symbol.changeSymbolLayer(0, svg_marker)
 
         #exports the layer to a file
         export_layer = self.export_output_file(point_layer, output_file)
 
         #loads the layer into QGIS
-        layer_loaded = self.load_output_file(export_layer, symbol)
+        layer_loaded = self.load_output_file(export_layer)
 
         #creates the Layer Definition File (QLR)
         if export_style:
@@ -133,7 +131,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             f"A total of {len(feature_exif_dict)} images with geotags and {len(erro_feature_exif_dict)} images without geotags were identified."))
         return {self.OUTPUT_FILE: export_layer}
 
-    def get_exif_data(self, temp_file_path, feedback):
+    def get_exif_data(self, temp_file_path, extract_dji_xmp, feedback):
         """
         Extracts EXIF and XMP metadata from an image file.
 
@@ -150,6 +148,9 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         if not exif_tools.hasGeoTag(temp_file_path):
             #feedback.pushInfo("No valid geotag found.")
             return {}
+
+        #all_tags = exif_tools.readTags(temp_file_path)
+        #print(f'{all_tags}')
 
         # Retrieve the geotag information
         geo_tag_result = exif_tools.getGeoTag(temp_file_path)
@@ -183,52 +184,72 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         raw_exif_altitude = exif_tools.readTag(temp_file_path, 'Exif.GPSInfo.GPSAltitude')
         exif_altitude = float(raw_exif_altitude) if raw_exif_altitude else None
 
+        # Extract GPS direction and converting to float
+        raw_exif_direction = exif_tools.readTag(temp_file_path, 'Exif.GPSInfo.GPSImgDirection')
+        exif_direction = float(raw_exif_direction) if raw_exif_direction else None
+
         # Extract DJI-specific XMP tags for drone data
-        raw_CamReverse = exif_tools.readTag(temp_file_path, 'Xmp.drone-dji.CamReverse')
-        xmp_CamReverse = float(raw_CamReverse) if raw_CamReverse else None
+        if extract_dji_xmp:
+            raw_CamReverse = exif_tools.readTag(temp_file_path, 'Xmp.drone-dji.CamReverse')
+            xmp_CamReverse = float(raw_CamReverse) if raw_CamReverse else None
 
-        raw_FlightPitchDegree = exif_tools.readTag(temp_file_path, 'Xmp.drone-dji.FlightPitchDegree')
-        xmp_FlightPitchDegree = float(raw_FlightPitchDegree) if raw_FlightPitchDegree else None
+            raw_FlightPitchDegree = exif_tools.readTag(temp_file_path, 'Xmp.drone-dji.FlightPitchDegree')
+            xmp_FlightPitchDegree = float(raw_FlightPitchDegree) if raw_FlightPitchDegree else None
 
-        raw_FlightRollDegree = exif_tools.readTag(temp_file_path, 'Xmp.drone-dji.FlightRollDegree')
-        xmp_FlightRollDegree = float(raw_FlightRollDegree) if raw_FlightRollDegree else None
+            raw_FlightRollDegree = exif_tools.readTag(temp_file_path, 'Xmp.drone-dji.FlightRollDegree')
+            xmp_FlightRollDegree = float(raw_FlightRollDegree) if raw_FlightRollDegree else None
 
-        raw_FlightYawDegree = exif_tools.readTag(temp_file_path, 'Xmp.drone-dji.FlightYawDegree')
-        xmp_FlightYawDegree = float(raw_FlightYawDegree) if raw_FlightYawDegree else None
+            raw_FlightYawDegree = exif_tools.readTag(temp_file_path, 'Xmp.drone-dji.FlightYawDegree')
+            xmp_FlightYawDegree = float(raw_FlightYawDegree) if raw_FlightYawDegree else None
 
-        raw_GimbalPitchDegree = exif_tools.readTag(temp_file_path, 'Xmp.drone-dji.GimbalPitchDegree')
-        xmp_GimbalPitchDegree = float(raw_GimbalPitchDegree) if raw_GimbalPitchDegree else None
+            raw_GimbalPitchDegree = exif_tools.readTag(temp_file_path, 'Xmp.drone-dji.GimbalPitchDegree')
+            xmp_GimbalPitchDegree = float(raw_GimbalPitchDegree) if raw_GimbalPitchDegree else None
 
-        raw_GimbalReverse = exif_tools.readTag(temp_file_path, 'Xmp.drone-dji.GimbalReverse')
-        xmp_GimbalReverse = float(raw_GimbalReverse) if raw_GimbalReverse else None
+            raw_GimbalReverse = exif_tools.readTag(temp_file_path, 'Xmp.drone-dji.GimbalReverse')
+            xmp_GimbalReverse = float(raw_GimbalReverse) if raw_GimbalReverse else None
 
-        raw_GimbalRollDegree = exif_tools.readTag(temp_file_path, 'Xmp.drone-dji.GimbalRollDegree')
-        xmp_GimbalRollDegree = float(raw_GimbalRollDegree) if raw_GimbalRollDegree else None
+            raw_GimbalRollDegree = exif_tools.readTag(temp_file_path, 'Xmp.drone-dji.GimbalRollDegree')
+            xmp_GimbalRollDegree = float(raw_GimbalRollDegree) if raw_GimbalRollDegree else None
 
-        raw_GimbalYawDegree = exif_tools.readTag(temp_file_path, 'Xmp.drone-dji.GimbalYawDegree')
-        xmp_GimbalYawDegree = float(raw_GimbalYawDegree) if raw_GimbalYawDegree else None
+            raw_GimbalYawDegree = exif_tools.readTag(temp_file_path, 'Xmp.drone-dji.GimbalYawDegree')
+            xmp_GimbalYawDegree = float(raw_GimbalYawDegree) if raw_GimbalYawDegree else None
 
-        raw_RelativeAltitude = exif_tools.readTag(temp_file_path, 'Xmp.drone-dji.RelativeAltitude')
-        xmp_RelativeAltitude = float(raw_RelativeAltitude) if raw_RelativeAltitude else None
+            raw_RelativeAltitude = exif_tools.readTag(temp_file_path, 'Xmp.drone-dji.RelativeAltitude')
+            xmp_RelativeAltitude = float(raw_RelativeAltitude) if raw_RelativeAltitude else None
+
+        # Key created to set the angle property for svg_marker symbology
+        if exif_direction is not None:
+            symbol_rotation = exif_direction
+        elif extract_dji_xmp and xmp_FlightYawDegree is not None:
+            symbol_rotation = xmp_FlightYawDegree
+        else:
+            symbol_rotation = None
 
         # Create a dictionary with all extracted EXIF and XMP metadata
         exif_dict = {
-            'latitude': exif_latitude,  # Required key for creating a points layer
-            'longitude': exif_longitude,  # Required key for creating a points layer
-            'model': exif_model_str,
-            'datetime': exif_datetime_str,
-            'coordinates': exif_coordinates_str,
             'altitude': exif_altitude,
-            'CamReverse': xmp_CamReverse,
-            'FlightPitchDegree': xmp_FlightPitchDegree,
-            'FlightRollDegree': xmp_FlightRollDegree,
-            'FlightYawDegree': xmp_FlightYawDegree,
-            'GimbalPitchDegree': xmp_GimbalPitchDegree,
-            'GimbalReverse': xmp_GimbalReverse,
-            'GimbalRollDegree': xmp_GimbalRollDegree,
-            'GimbalYawDegree': xmp_GimbalYawDegree,
-            'RelativeAltitude': xmp_RelativeAltitude
+            'direction': exif_direction,
+            'rotation': symbol_rotation,  # Key created to set the angle property for svg_marker symbology
+            'longitude': exif_longitude,  # Required key for creating a points layer
+            'latitude': exif_latitude,  # Required key for creating a points layer
+            'timestamp': exif_datetime_str,
+            'coordinates': exif_coordinates_str,
+            'model': exif_model_str
         }
+
+        # Create a dictionary with XMP metadata
+        if extract_dji_xmp:
+            exif_dict.update({
+                'CamReverse': xmp_CamReverse,
+                'FlightPitchDegree': xmp_FlightPitchDegree,
+                'FlightRollDegree': xmp_FlightRollDegree,
+                'FlightYawDegree': xmp_FlightYawDegree,
+                'GimbalPitchDegree': xmp_GimbalPitchDegree,
+                'GimbalReverse': xmp_GimbalReverse,
+                'GimbalRollDegree': xmp_GimbalRollDegree,
+                'GimbalYawDegree': xmp_GimbalYawDegree,
+                'RelativeAltitude': xmp_RelativeAltitude
+            })
 
         return exif_dict
 
@@ -236,13 +257,12 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         # Defining the fields of the point layer dynamically
         fields = QgsFields()
 
-        fields.append(QgsField("id", QVariant.Int))
         # Iterating over the dictionary to define the fields based on the keys and value types
         for key, exif_data in feature_exif_dict.items():
             for sub_key, value in exif_data.items():
                 if isinstance(value, int):
                     fields.append(QgsField(sub_key, QVariant.Int))
-                elif isinstance(value, (float)):
+                elif isinstance(value, float):
                     fields.append(QgsField(sub_key, QVariant.Double))
                 else:
                     fields.append(QgsField(sub_key, QVariant.String))
@@ -253,16 +273,15 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         provider.addAttributes(fields)
         point_layer.updateFields()
 
-        # Iterating over the coordinate dictionary and dynamically adding features to the layer
-        for idx, (image_name, exif_data) in enumerate(feature_exif_dict.items(), start=1):
-            # Creates a list for the attributes, starting with the index
-            attributes = [idx]
+        # Iterates over the keys and values of exif_data to dynamically add the attributes
+        for image_name, exif_data in feature_exif_dict.items():
+            attributes = []
 
             # Iterates over the keys and values of exif_data to dynamically add the attributes
             for sub_key, value in exif_data.items():
                 attributes.append(value)
 
-            # Extracting latitude and longitude, if available, to add the geometry
+            # Extracting latitude and longitude
             exif_latitude = exif_data.get('latitude')
             exif_longitude = exif_data.get('longitude')
 
@@ -290,11 +309,92 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         # Saves the file in the specified format
         error = QgsVectorFileWriter.writeAsVectorFormatV3(point_layer, output_file, transform_context, options)
         if error[0] != QgsVectorFileWriter.NoError:
-            raise QgsProcessingException(f"Erro ao salvar o arquivo: {error[1]}")
+            raise QgsProcessingException(f"Error saving the file: {error[1]}")
 
         return output_file
 
-    def load_output_file(self, output_file, symbol):
+    def load_output_file(self, output_file):
+        if not output_file:
+            raise QgsProcessingException("No output file was specified.")
+
+        # Define the paths to the SVG symbols used for rendering
+        svg_path_arrow = os.path.join(QgsApplication.svgPaths()[0], 'arrows', 'Arrow_01.svg')
+        svg_path_point = os.path.join(QgsApplication.svgPaths()[0], 'gpsicons', 'city_medium.svg')
+
+        # Load the vector layer
+        layer = QgsVectorLayer(output_file, os.path.basename(output_file), "ogr")
+        if not layer.isValid():
+            raise QgsProcessingException(f"Failed to load the output file: {output_file}")
+
+        # Create symbol for points WITH direction (rotation based on 'rotation' field)
+        symbol_arrow = QgsMarkerSymbol.defaultSymbol(QgsWkbTypes.PointGeometry)
+        svg_marker_arrow = QgsSvgMarkerSymbolLayer(svg_path_arrow)
+        svg_marker_arrow.setDataDefinedProperty(QgsSymbolLayer.PropertyAngle, QgsProperty.fromField('rotation'))
+        symbol_arrow.changeSymbolLayer(0, svg_marker_arrow)
+
+        # Symbol for points WITHOUT rotation
+        symbol_point = QgsMarkerSymbol.defaultSymbol(QgsWkbTypes.PointGeometry)
+        svg_marker_point = QgsSvgMarkerSymbolLayer(svg_path_point)
+        symbol_point.changeSymbolLayer(0, svg_marker_point)
+
+        # Create the root rule for rule-based rendering
+        root_rule = QgsRuleBasedRenderer.Rule(None)
+
+        # Rule for features where 'rotation' is null or empty
+        rule1 = QgsRuleBasedRenderer.Rule(symbol_point)
+        rule1.setLabel('Photos without direction')
+        rule1.setFilterExpression('is_empty_or_null("rotation")')
+        root_rule.appendChild(rule1)
+
+        # Rule for features with valid 'rotation' values (directional)
+        rule2 = QgsRuleBasedRenderer.Rule(symbol_arrow)
+        rule2.setLabel('Photos without direction')
+        rule2.setIsElse(True)
+        root_rule.appendChild(rule2)
+
+        # Apply the rule-based renderer to the layer
+        renderer = QgsRuleBasedRenderer(root_rule)
+        layer.setRenderer(renderer)
+
+       # Add the layer to the project
+        QgsProject.instance().addMapLayer(layer, False)
+        QgsProject.instance().layerTreeRoot().addLayer(layer)
+
+        # Set the HTML template for the Map Tip with a thumbnail preview
+        expression = """
+                         <tr>
+                            <th>[%"filename"%]</th>
+                         </tr> 
+                         <tr>
+                            <th><img src="file:///[%"photo"%]" width="350" height="250"></th>
+                         </tr>
+                       """
+        layer.setMapTipTemplate(expression)
+
+        # Configure the edit form widget for the 'photo' field
+        field_name = 'photo'
+
+        config = {'DocumentViewer': 1,
+                  'FileWidget': True,
+                  'FullUrl': True,
+                  'UseLink': True}
+        type = 'ExternalResource'
+        fields = layer.fields()
+        field_idx = fields.indexOf(field_name)
+        widget_setup = QgsEditorWidgetSetup(type,config)
+        layer.setEditorWidgetSetup(field_idx, widget_setup)
+
+        return layer
+
+    def load_output_file1(self, output_file):
+
+        # symbol definition
+        svg_path = os.path.join(QgsApplication.svgPaths()[0], 'arrows', 'Arrow_01.svg')
+        symbol = QgsMarkerSymbol.defaultSymbol(QgsWkbTypes.PointGeometry)
+        svg_marker = QgsSvgMarkerSymbolLayer(svg_path)
+        svg_marker.setDataDefinedProperty(QgsSymbolLayer.PropertyAngle, QgsProperty.fromField('rotation'))
+        symbol.changeSymbolLayer(0, svg_marker)
+
         # Gets the QGIS project instance and the root node of the LayerTree
         root = QgsProject.instance().layerTreeRoot()
 
@@ -302,7 +402,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             # Loads the vector layer from the output file
             layer = QgsVectorLayer(output_file, os.path.basename(output_file), "ogr")
             if not layer.isValid():
-                raise QgsProcessingException(f"Falha ao carregar o arquivo de saída: {output_file}")
+                raise QgsProcessingException(f"Failed to load the output file.: {output_file}")
 
             # Checks if the layer was loaded successfully
             if symbol:
@@ -347,7 +447,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         return 'emiToolsImportGeotaggedPhotos'
 
     def displayName(self):
-        return tr('Import geotagged photos')
+        return tr('Import geotagged photos from DJI drones')
 
     def group(self):
         return tr("Emi Tools")

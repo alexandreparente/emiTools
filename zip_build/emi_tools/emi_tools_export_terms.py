@@ -305,25 +305,7 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
             
                 # Notify that the file has been compressed
                 feedback.pushInfo(tr(f"Compressed files: {zip_output_file}"))
-
-              
     
-    def get_extension(self, output_format):
-        if output_format == 0:  # ESRI Shapefile
-            return "shp"
-        elif output_format == 1:  # GeoPackage
-            return "gpkg"
-        elif output_format == 2:  # KML
-            return "kml"
-
-    def get_output_format_string(self, output_format):
-        if output_format == 0:
-            return "ESRI Shapefile"
-        elif output_format == 1:
-            return "GPKG"
-        elif output_format == 2:
-            return "KML"                
-  
     def get_extension(self, output_format):
         if output_format == 0:
             return "shp"

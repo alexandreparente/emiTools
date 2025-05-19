@@ -54,7 +54,7 @@
         <translation>Compressed files: {zip_output_file}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_expressions.py" line="160"/>
+        <location filename="../emi_tools_expressions.py" line="159"/>
         <source>Invalid number. Please provide an 11-digit numeric string.</source>
         <translation>Invalid number. Please provide an 11-digit numeric string.</translation>
     </message>
@@ -114,17 +114,17 @@
         <translation>No valid raster layer provided.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="95"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="102"/>
         <source>Failed to load input image.</source>
         <translation>Failed to load input image.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_imagem_stamp_rpa.py" line="286"/>
+        <location filename="../emi_tools_imagem_stamp_rpa.py" line="291"/>
         <source>Failed to load SVG file: {svg_file_path}</source>
         <translation>Failed to load SVG file: {svg_file_path}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_imagem_stamp_rpa.py" line="433"/>
+        <location filename="../emi_tools_imagem_stamp_rpa.py" line="437"/>
         <source>Insert stamp on image</source>
         <translation>Insert stamp on image</translation>
     </message>
@@ -134,12 +134,12 @@
         <translation>Select Font</translation>
     </message>
     <message>
-        <location filename="../emi_tools_imagem_stamp_rpa.py" line="357"/>
+        <location filename="../emi_tools_imagem_stamp_rpa.py" line="361"/>
         <source>Failed to tag {tag}: {str(e)}</source>
         <translation>Failed to tag {tag}: {str(e)}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="73"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="76"/>
         <source>Input Images</source>
         <translation>Input Images</translation>
     </message>
@@ -154,22 +154,17 @@
         <translation>Save file: {output_file}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="353"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="453"/>
         <source>Emi Tools</source>
         <translation>Emi Tools</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="347"/>
+        <location filename="../emi_tools_export_terms.py" line="329"/>
         <source>Export terms to Sicafi</source>
         <translation>Export terms to Sicafi</translation>
     </message>
     <message>
-        <location filename="../emi_tools_expressions.py" line="44"/>
-        <source>Invalid number. Please provide an 11-digit numeric string2.</source>
-        <translation>Invalid number. Please provide an 11-digit numeric string2.</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_expressions.py" line="192"/>
+        <location filename="../emi_tools_expressions.py" line="191"/>
         <source>Invalid number. Pass a numeric string as the input parameter.</source>
         <translation>Invalid number. Pass a numeric string as the input parameter.</translation>
     </message>
@@ -179,30 +174,35 @@
         <translation>Text to be inserted into the image.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="76"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="79"/>
         <source>Output file</source>
         <translation>Output file</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="79"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="85"/>
         <source>Export the Layer Definition file (QLR)</source>
         <translation>Export the Layer Definition file (QLR)</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="132"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="130"/>
         <source>A total of {len(feature_exif_dict)} images with geotags and {len(erro_feature_exif_dict)} images without geotags were identified.</source>
         <translation>A total of {len(feature_exif_dict)} images with geotags and {len(erro_feature_exif_dict)} images without geotags were identified.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="350"/>
-        <source>Import geotagged photos</source>
-        <translation>Import geotagged photos</translation>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="450"/>
+        <source>Import geotagged photos from DJI drones</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="82"/>
+        <source>Import XMP tags used by DJI</source>
+        <translation></translation>
     </message>
 </context>
 <context>
     <name>emiToolsProvider</name>
     <message>
-        <location filename="../emi_tools_provider.py" line="79"/>
+        <location filename="../emi_tools_provider.py" line="80"/>
         <source>Emi Tools</source>
         <translation>Emi Tools</translation>
     </message>
