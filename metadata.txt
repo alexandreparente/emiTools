@@ -5,12 +5,12 @@
 [general]
 name=emiTools
 qgisMinimumVersion=3.34
-description=This plugin compiles tools used by EMI-PB
-version=0.4.2
+description=This plugin brings together a set of tools for text formatting, file handling, and image editing, with a focus on the preparation of technical reports. The features were developed to facilitate the processing and organization of data from drone surveys and other geospatial sources.
+version=0.4.3
 author=Alexandre Parente Lima
 email=alexandre.parente@gmail.com
 
-about=This plugin compiles functions for formatting text, files, and editing images used in the preparation of technical reports.
+about=This plugin brings together a set of tools for text formatting, file handling, and image editing, with a focus on the preparation of technical reports. The features were developed to facilitate the processing and organization of data from drone surveys and other geospatial sources. - Included functionalities: - Import of EXIF metadata and XMP tags used by DJI drones; - Export of KML files compatible with DJI Mavic 2 Enterprise Advanced (M2EA) drones; - Insertion of informative stamps on images (date, time, coordinates, etc.); - Conversion and compression of vector data for export and sharing purposes.
 
 tracker=https://github.com/alexandreparente/emiTools/issues
 repository=https://github.com/alexandreparente/emiTools
@@ -29,7 +29,7 @@ homepage=https://github.com/alexandreparente/emiTools
 category=Analysis
 icon=icon.png
 # experimental flag
-experimental=False
+experimental=True
 
 # deprecated flag (applies to the whole plugin, not just a single version)
 deprecated=False
