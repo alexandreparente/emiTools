@@ -6,7 +6,7 @@
 name=emiTools
 qgisMinimumVersion=3.34
 description=This plugin brings together a set of tools for text formatting, file handling, and image editing, with a focus on the preparation of technical reports. The features were developed to facilitate the processing and organization of data from drone surveys and other geospatial sources.
-version=0.4.3
+version=0.4.4
 author=Alexandre Parente Lima
 email=alexandre.parente@gmail.com
 
