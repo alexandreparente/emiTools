@@ -72,6 +72,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
     EXPORT_STYLE = 'EXPORT_STYLE'
     NO_EXTRACT_DJI_XMP = 'NO_EXTRACT_DJI_XMP'
 
+
     def initAlgorithm(self, config=None):
         self.addParameter(QgsProcessingParameterMultipleLayers(self.INPUT_IMAGE, tr('Input Images'),
                                                                layerType=QgsProcessing.TypeRaster))
@@ -81,7 +82,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         # Adds a checkbox to export the DJI XMP metadata
         self.addParameter(QgsProcessingParameterBoolean(self.NO_EXTRACT_DJI_XMP, tr('Do not import XMP tags used by DJI'), defaultValue=False))
 
-                #Adds a checkbox to export the style
+        #Adds a checkbox to export the style
         self.addParameter(QgsProcessingParameterBoolean(self.EXPORT_STYLE, tr('Export the Layer Definition file (QLR)'),
                                                         defaultValue=True))
 
@@ -129,7 +130,9 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
 
         feedback.pushInfo(tr(
             f"A total of {len(feature_exif_dict)} images with geotags and {len(erro_feature_exif_dict)} images without geotags were identified."))
+
         return {self.OUTPUT_FILE: export_layer}
+
 
     def get_exif_data(self, temp_file_path, no_extract_dji_xmp, feedback):
         """
@@ -175,8 +178,9 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
 
         # Extract the original datetime of the image
         exif_datetime = exif_tools.readTag(temp_file_path, 'Exif.Photo.DateTimeOriginal')
-        exif_datetime_str = exif_datetime.toString("yyyy-MM-dd HH:mm:ss") if isinstance(exif_datetime,
-                                                                                        QDateTime) else None
+        timestamp_qdatetime = exif_datetime if isinstance(exif_datetime, QDateTime) else None
+
+
         # Extract the camera model
         exif_model_str = exif_tools.readTag(temp_file_path, 'Exif.Image.Model') or None
 
@@ -232,7 +236,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             'rotation': symbol_rotation,  # Key created to set the angle property for svg_marker symbology
             'longitude': exif_longitude,  # Required key for creating a points layer
             'latitude': exif_latitude,  # Required key for creating a points layer
-            'timestamp': exif_datetime_str,
+            'timestamp': timestamp_qdatetime,
             'coordinates': exif_coordinates_str,
             'model': exif_model_str
         }
@@ -264,6 +268,8 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
                     fields.append(QgsField(sub_key, QVariant.Int))
                 elif isinstance(value, float):
                     fields.append(QgsField(sub_key, QVariant.Double))
+                elif isinstance(value, QDateTime):
+                    fields.append(QgsField(sub_key, QVariant.DateTime))
                 else:
                     fields.append(QgsField(sub_key, QVariant.String))
 
@@ -297,6 +303,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
 
         return point_layer
 
+
     def export_output_file(self, point_layer, output_file):
         # Extracts the driverName based on the file format in the output_file input
         driver_name = QgsVectorFileWriter.driverForExtension(os.path.splitext(output_file)[1][1:])
@@ -312,6 +319,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             raise QgsProcessingException(f"Error saving the file: {error[1]}")
 
         return output_file
+
 
     def load_output_file(self, output_file):
         if not output_file:
@@ -386,39 +394,6 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
 
         return layer
 
-    def load_output_file1(self, output_file):
-
-        # symbol definition
-        svg_path = os.path.join(QgsApplication.svgPaths()[0], 'arrows', 'Arrow_01.svg')
-        symbol = QgsMarkerSymbol.defaultSymbol(QgsWkbTypes.PointGeometry)
-        svg_marker = QgsSvgMarkerSymbolLayer(svg_path)
-        svg_marker.setDataDefinedProperty(QgsSymbolLayer.PropertyAngle, QgsProperty.fromField('rotation'))
-        symbol.changeSymbolLayer(0, svg_marker)
-
-        # Gets the QGIS project instance and the root node of the LayerTree
-        root = QgsProject.instance().layerTreeRoot()
-
-        if output_file:
-            # Loads the vector layer from the output file
-            layer = QgsVectorLayer(output_file, os.path.basename(output_file), "ogr")
-            if not layer.isValid():
-                raise QgsProcessingException(f"Failed to load the output file.: {output_file}")
-
-            # Checks if the layer was loaded successfully
-            if symbol:
-                renderer = QgsSingleSymbolRenderer(symbol)
-                layer.setRenderer(renderer)
-
-            #Adds the layer to the project without making it visible initially (False)
-            QgsProject.instance().addMapLayer(layer, False)
-            # Adds the layer to the root node, allowing it to be found in the LayerTree
-            root.addLayer(layer)
-
-            # Returns the loaded layer for potential further use
-            return layer
-        else:
-            # Raises an exception if no output file is specified
-            raise QgsProcessingException("No output file was specified.")
 
     def export_definition_file(self, output_file, layer_loaded):
         # Defines the same path as the exported file for the .qlr file
