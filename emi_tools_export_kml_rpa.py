@@ -233,10 +233,10 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
                     file.write(line)
 
     def name(self):
-        return tr("Export KML to RPA")
+        return tr("ExportKMLstoDrone")
 
     def displayName(self):
-        return tr("Export KML to RPA")
+        return tr("Export KML files to DJI drones")
 
     def group(self):
         return tr("Emi Tools")

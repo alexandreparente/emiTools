@@ -24,11 +24,6 @@
         <translation>Open output files after executing the algorithm</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_kml_rpa.py" line="239"/>
-        <source>Export KML to RPA</source>
-        <translation>Export KML to RPA</translation>
-    </message>
-    <message>
         <location filename="../emi_tools_export_terms.py" line="67"/>
         <source>Embargo term field:</source>
         <translation>Embargo term field:</translation>
@@ -114,7 +109,7 @@
         <translation>No valid raster layer provided.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="102"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="103"/>
         <source>Failed to load input image.</source>
         <translation>Failed to load input image.</translation>
     </message>
@@ -139,7 +134,7 @@
         <translation>Failed to tag {tag}: {str(e)}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="76"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="77"/>
         <source>Input Images</source>
         <translation>Input Images</translation>
     </message>
@@ -154,14 +149,9 @@
         <translation>Save file: {output_file}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="453"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="428"/>
         <source>Emi Tools</source>
         <translation>Emi Tools</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_export_terms.py" line="329"/>
-        <source>Export terms to Sicafi</source>
-        <translation>Export terms to Sicafi</translation>
     </message>
     <message>
         <location filename="../emi_tools_expressions.py" line="191"/>
@@ -174,39 +164,54 @@
         <translation>Text to be inserted into the image.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="79"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="80"/>
         <source>Output file</source>
         <translation>Output file</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="85"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="86"/>
         <source>Export the Layer Definition file (QLR)</source>
         <translation>Export the Layer Definition file (QLR)</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="130"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="131"/>
         <source>A total of {len(feature_exif_dict)} images with geotags and {len(erro_feature_exif_dict)} images without geotags were identified.</source>
         <translation>A total of {len(feature_exif_dict)} images with geotags and {len(erro_feature_exif_dict)} images without geotags were identified.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="450"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="425"/>
         <source>Import geotagged photos from DJI drones</source>
         <translation>Import geotagged photos from DJI drones</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="82"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="83"/>
         <source>Do not import XMP tags used by DJI</source>
         <translation>Do not import XMP tags used by DJI</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="345"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="353"/>
         <source>Photos without direction</source>
         <translation>Photos without direction</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="351"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="359"/>
         <source>Photos with direction</source>
         <translation>Photos with direction</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_export_kml_rpa.py" line="236"/>
+        <source>ExportKMLstoDrone</source>
+        <translation>ExportKMLstoDrone</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_export_kml_rpa.py" line="239"/>
+        <source>Export KML files to DJI drones</source>
+        <translation>Export KML files to DJI drones</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_export_terms.py" line="329"/>
+        <source>Export polygons to SICAFI</source>
+        <translation>Export polygons to SICAFI</translation>
     </message>
 </context>
 <context>
