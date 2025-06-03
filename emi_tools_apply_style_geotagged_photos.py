@@ -172,8 +172,12 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
     def configure_map_tips(self, exported_layer, photo_field):
         expression = f"""
             <table>
-                <tr><td><b>[%"filename"%]</b></td></tr>
-                <tr><td><img src='file:///[%"{photo_field}"%]' width='350' height='250'></td></tr>
+                <tr>
+                    <th>[%"filename"%]</th>
+                </tr> 
+                <tr>
+                <th><img src="file:///[%"{photo_field}"%]" width="350" height="250"></th>
+                </tr>
             </table>
         """
         exported_layer.setMapTipTemplate(expression)
