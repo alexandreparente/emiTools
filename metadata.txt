@@ -4,7 +4,7 @@
 
 [general]
 name=emiTools
-qgisMinimumVersion=3.34
+qgisMinimumVersion=3.40
 description=Auxiliary tools for organizing geospatial data, generating DJI-compatible KML files, stamping images with metadata, and converting vector files for export.
 
 
