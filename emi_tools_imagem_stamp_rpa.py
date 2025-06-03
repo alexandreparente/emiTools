@@ -87,12 +87,12 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
         
     def initAlgorithm(self, config=None):
         # Initializes the algorithm's parameters
-        self.addParameter(QgsProcessingParameterMultipleLayers(self.INPUT_IMAGE, tr('Input Images'), layerType=QgsProcessing.TypeRaster))
+
+        self.addParameter(QgsProcessingParameterFile(self.INPUT_IMAGE,tr('Input Folder with Images'),behavior=QgsProcessingParameterFile.Folder))
+
         self.addParameter(QgsProcessingParameterFile(self.STAMP_IMAGE, tr('Stamp SVG Image'), extension='svg', optional=True))
-        #self.addParameter(QgsProcessingParameterString(self.INPUT_TEXT, tr('Main text to be inserted into the image'), defaultValue="IBAMA"))
-        # Modificando para suportar múltiplas linhas (TextArea)
-        self.addParameter(QgsProcessingParameterString(self.INPUT_TEXT, tr('Text to be inserted into the image.'),
-                                                       defaultValue="", multiLine=True))
+
+        self.addParameter(QgsProcessingParameterString(self.INPUT_TEXT, tr('Text to be inserted into the image.'),defaultValue="", multiLine=True))
 
         # Get the available fonts on the system using QFontDatabase
         font_db = QFontDatabase()
@@ -132,7 +132,16 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
 
     def processAlgorithm(self, parameters, context, feedback):
         # Loads the input raster layers
-        input_images = self.parameterAsLayerList(parameters, self.INPUT_IMAGE, context)
+
+        input_folder = self.parameterAsString(parameters, self.INPUT_IMAGE, context)
+
+        # Lista os arquivos de imagem na pasta
+        image_extensions = ('.jpg', '.jpeg', '.tif', '.tiff', '.png')
+        input_images = []
+        for file_name in os.listdir(input_folder):
+            if file_name.lower().endswith(image_extensions):
+                input_images.append(os.path.join(input_folder, file_name))
+
         output_folder = self.parameterAsString(parameters, self.OUTPUT_FOLDER, context)
         svg_file_path = self.parameterAsFile(parameters, self.STAMP_IMAGE, context)
 
@@ -155,35 +164,47 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
         coordinates_list = []
 
         # Processes each selected image
-        for input_image in input_images:
-
-            raster_file_path = input_image.dataProvider().dataSourceUri()
+        for raster_file_path in input_images:
             input_qimage = QImage(raster_file_path)
 
             if input_qimage.isNull():
                 raise QgsProcessingException(tr("Failed to load input image."))
-            
-            full_map_exif, exif_latitude, exif_longitude, exif_model_str, exif_datetime_str, exif_coordinates_str, exif_altitude_str = self.get_exif_data(raster_file_path, feedback)
 
-            self.insert_stamp(input_qimage, output_folder, input_text, exif_model_str, exif_datetime_str, exif_coordinates_str, exif_altitude_str, svg_file_path,
-                     font_color, font_size, position, font_name, full_map_exif, feedback)
-                      
-            output_image_path = self.save_image(input_qimage, raster_file_path ,output_folder, feedback)
-          
+            full_map_exif, exif_latitude, exif_longitude, exif_model_str, exif_datetime_str, exif_coordinates_str, exif_altitude_str = self.get_exif_data(
+                raster_file_path, feedback)
+
+            self.insert_stamp(
+                input_qimage,
+                output_folder,
+                input_text,
+                exif_model_str,
+                exif_datetime_str,
+                exif_coordinates_str,
+                exif_altitude_str,
+                svg_file_path,
+                font_color,
+                font_size,
+                position,
+                font_name,
+                full_map_exif,
+                feedback
+            )
+
+            output_image_path = self.save_image(input_qimage, raster_file_path, output_folder, feedback)
             self.insert_exif_data(output_image_path, full_map_exif, feedback)
 
             feedback.pushInfo(tr(f"Image saved at {output_image_path}"))
 
-
-            # Adds the coordinates to the list
-            coordinates_list.append((exif_latitude,
-                                     exif_longitude,
-                                     input_image.name(),
-                                     output_image_path,
-                                     exif_model_str,
-                                     exif_datetime_str,
-                                     exif_coordinates_str,
-                                     exif_altitude_str))
+            coordinates_list.append((
+                exif_latitude,
+                exif_longitude,
+                os.path.basename(raster_file_path),
+                output_image_path,
+                exif_model_str,
+                exif_datetime_str,
+                exif_coordinates_str,
+                exif_altitude_str
+            ))
 
         # Creates and loads the point layer with the coordinates
         #self.create_points_layer(coordinates_list)
