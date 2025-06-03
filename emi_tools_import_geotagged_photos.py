@@ -29,7 +29,6 @@ __copyright__ = '(C) 2024 by Alexandre Parente Lima'
 from qgis.core import (QgsApplication,
                        QgsProcessing,
                        QgsProcessingAlgorithm,
-                       QgsProcessingParameterMultipleLayers,
                        QgsProcessingParameterVectorDestination,
                        QgsProcessingParameterBoolean,
                        QgsProcessingException,
@@ -41,17 +40,8 @@ from qgis.core import (QgsApplication,
                        QgsVectorLayer,
                        QgsPointXY,
                        QgsVectorFileWriter,
-                       QgsSingleSymbolRenderer,
                        QgsPoint,
                        QgsGeometry,
-                       QgsRuleBasedRenderer,
-                       QgsSvgMarkerSymbolLayer,
-                       QgsMarkerSymbol,
-                       QgsSymbolLayer,
-                       QgsProperty,
-                       QgsEditorWidgetSetup,
-                       QgsWkbTypes,
-                       QgsLayerDefinition,
                        QgsProject,
                        QgsProcessingParameterFile)
 
@@ -211,13 +201,32 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
 
 
     def create_points_layer(self, feature_exif_dict):
-        # Usa o primeiro item como referência para a estrutura de campos
+        # Uses the first item as a reference for the field structure
         first_exif = next(iter(feature_exif_dict.values()))
         keys = list(first_exif.keys())
 
-        # Define os campos com base nos tipos dos valores do primeiro EXIF
+        # Defines the fields based on the value types from the first EXIF entry
         fields = QgsFields()
+
+        #Ensure that 'direction' and 'rotation' are created as float fields.
         for sub_key in keys:
+            if sub_key in ['altitude',
+                           'direction',
+                           'rotation',
+                           'CamReverse',
+                           'FlightPitchDegree',
+                           'FlightRollDegree',
+                           'FlightYawDegree',
+                           'GimbalPitchDegree',
+                           'GimbalReverse',
+                           'GimbalRollDegree',
+                           'GimbalYawDegree',
+                           'RelativeAltitude',
+                           ]:
+                fields.append(QgsField(sub_key, QVariant.Double))
+                continue
+
+        #Dynamic assignment, in case the algorithm supports other tags in the future.
             value = first_exif.get(sub_key)
             if isinstance(value, int):
                 fields.append(QgsField(sub_key, QVariant.Int))
@@ -228,14 +237,13 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             else:
                 fields.append(QgsField(sub_key, QVariant.String))
 
-
-        # Cria a camada de pontos
+        #Creates the point layer
         point_layer = QgsVectorLayer("Point?crs=EPSG:4326", "Pontos Imagens", "memory")
         provider = point_layer.dataProvider()
         provider.addAttributes(fields)
         point_layer.updateFields()
 
-        # Adiciona feições com base nos valores na mesma ordem dos campos
+        # Adds features based on the values in the same order as the fields
         for exif_data in feature_exif_dict.values():
             exif_latitude = exif_data.get('latitude')
             exif_longitude = exif_data.get('longitude')
