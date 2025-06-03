@@ -116,7 +116,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
                             erro_feature_exif_dict[file] = exif_dict
 
                     except Exception as e:
-                        feedback.reportError(f"Error processing {file}: {str(e)}")
+                        feedback.reportError(tr(f"Error processing {file}: {str(e)}"))
                         erro_feature_exif_dict[file] = {'error': str(e)}
 
         #create the point layer
@@ -271,7 +271,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         # Saves the file in the specified format
         error = QgsVectorFileWriter.writeAsVectorFormatV3(point_layer, output_file, transform_context, options)
         if error[0] != QgsVectorFileWriter.NoError:
-            raise QgsProcessingException(f"Error saving the file: {error[1]}")
+            raise QgsProcessingException(tr(f"Error saving the file: {error[1]}"))
         return
 
     def name(self):

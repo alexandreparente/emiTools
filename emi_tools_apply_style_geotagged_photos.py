@@ -77,7 +77,7 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
             self.CONFIG_MAP_TIPS, tr('Configure map tips'), defaultValue=False))
 
         self.addParameter(QgsProcessingParameterBoolean(
-            self.CONFIG_PHOTO_FIELD, tr('Configure photo field'), defaultValue=False))
+            self.CONFIG_PHOTO_FIELD, tr('Configure the form attributes for the photo field'), defaultValue=False))
 
         self.addParameter(QgsProcessingParameterBoolean(
             self.EXPORT_STYLE, tr('Export the Layer Definition file (QLR)'), defaultValue=False))
@@ -95,7 +95,7 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
         output_file = self.parameterAsOutputLayer(parameters, self.OUTPUT_FILE, context)
 
         if not input_layer:
-            raise QgsProcessingException("Input layer is not valid.")
+            raise QgsProcessingException(tr("Input layer is not valid."))
 
         exported_layer = self.export_output_file(input_layer, output_file)
 
@@ -126,12 +126,12 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
         # Export file
         error = QgsVectorFileWriter.writeAsVectorFormatV3(input_layer, output_file, transform_context, options)
         if error[0] != QgsVectorFileWriter.NoError:
-            raise QgsProcessingException(f"Erro ao salvar o arquivo: {error[1]}")
+            raise QgsProcessingException(tr(f"Error saving the file: {error[1]}"))
 
         # Reloads the layer from the exported file.
         exported_layer = QgsVectorLayer(output_file, os.path.basename(output_file), 'ogr')
         if not exported_layer.isValid():
-            raise QgsProcessingException("Erro ao carregar a camada exportada.")
+            raise QgsProcessingException(tr("Error loading the exported layer."))
 
         # Adds to the project without displaying it automatically.
         QgsProject.instance().addMapLayer(exported_layer, False)
@@ -200,12 +200,12 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
 
         layer_tree_node = QgsProject.instance().layerTreeRoot().findLayer(exported_layer.id())
         if not layer_tree_node:
-            raise QgsProcessingException(f"Layer node not found in the layer tree (ID: {exported_layer.id()}).")
+            raise QgsProcessingException(tr(f"Layer node not found in the layer tree (ID: {exported_layer.id()})."))
 
         try:
             QgsLayerDefinition.exportLayerDefinition(qlr_file_path, [layer_tree_node])
         except Exception as e:
-            raise QgsProcessingException(f"Error exporting the QLR file: {str(e)}")
+            raise QgsProcessingException(tr(f"Error exporting the QLR file: {str(e)}"))
 
         return qlr_file_path
 

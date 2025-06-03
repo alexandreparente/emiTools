@@ -326,7 +326,7 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
         return "emiToolsExportTerms"
 
     def displayName(self):
-        return tr("Export terms to Sicafi")
+        return tr("Export polygons to SICAFI")
 
     def group(self):
         return tr("Emi Tools")

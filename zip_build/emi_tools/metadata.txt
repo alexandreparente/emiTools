@@ -8,7 +8,7 @@ qgisMinimumVersion=3.34
 description=Auxiliary tools for organizing geospatial data, generating DJI-compatible KML files, stamping images with metadata, and converting vector files for export.
 
 
-version=0.4.4
+version=0.5
 author=Alexandre Parente Lima
 email=alexandre.parente@gmail.com
 
