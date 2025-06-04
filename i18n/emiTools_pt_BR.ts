@@ -226,7 +226,7 @@
     <message>
         <location filename="../emi_tools_apply_style_geotagged_photos.py" line="76"/>
         <source>Configure map tips</source>
-        <translation>Configura dicas do mapa</translation>
+        <translation>Configurar dicas do mapa</translation>
     </message>
     <message>
         <location filename="../emi_tools_apply_style_geotagged_photos.py" line="112"/>
@@ -234,14 +234,14 @@
         <translation>Arquivo de definição da camada exportado para: {qlr\_path}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="184"/>
+        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="188"/>
         <source>Photo field &apos;{photo_field}&apos; not found in layer.</source>
         <translation>Campo de foto '{photo\_field}' não encontrado na camada.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="216"/>
+        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="220"/>
         <source>Apply style to geotagged photo layer</source>
-        <translation>Aplica estilo à camada de fotos geolocalizadas</translation>
+        <translation>Aplicar estilo à camada de fotos geolocalizadas</translation>
     </message>
     <message>
         <location filename="../emi_tools_import_geotagged_photos.py" line="66"/>
@@ -251,7 +251,7 @@
     <message>
         <location filename="../emi_tools_apply_style_geotagged_photos.py" line="79"/>
         <source>Configure the form attributes for the photo field</source>
-        <translation>Configure os atributos do formulário para o campo de foto</translation>
+        <translation>Configurar os atributos do formulário para o campo de foto</translation>
     </message>
     <message>
         <location filename="../emi_tools_apply_style_geotagged_photos.py" line="98"/>
@@ -269,12 +269,12 @@
         <translation>Erro ao carregar a camada exportada.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="203"/>
+        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="207"/>
         <source>Layer node not found in the layer tree (ID: {exported_layer.id()}).</source>
         <translation>Nó da camada não encontrado na árvore de camadas (ID: {exported\_layer.id()}).</translation>
     </message>
     <message>
-        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="208"/>
+        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="212"/>
         <source>Error exporting the QLR file: {str(e)}</source>
         <translation>Erro ao exportar o arquivo QLR: {str(e)}</translation>
     </message>

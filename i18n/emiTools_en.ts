@@ -234,12 +234,12 @@
         <translation>Layer definition file exported to: {qlr_path}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="184"/>
+        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="188"/>
         <source>Photo field &apos;{photo_field}&apos; not found in layer.</source>
         <translation>Photo field '{photo_field}' not found in layer.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="216"/>
+        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="220"/>
         <source>Apply style to geotagged photo layer</source>
         <translation>Apply style to geotagged photo layer</translation>
     </message>
@@ -269,12 +269,12 @@
         <translation>Error loading the exported layer.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="203"/>
+        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="207"/>
         <source>Layer node not found in the layer tree (ID: {exported_layer.id()}).</source>
         <translation>Layer node not found in the layer tree (ID: {exported_layer.id()}).</translation>
     </message>
     <message>
-        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="208"/>
+        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="212"/>
         <source>Error exporting the QLR file: {str(e)}</source>
         <translation>Error exporting the QLR file: {str(e)}</translation>
     </message>
