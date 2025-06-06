@@ -35,7 +35,7 @@ from .emi_tools_imagem_stamp_rpa import emiToolsStampImagemRpa
 from .emi_tools_import_geotagged_photos import emiToolsImportGeotaggedPhotos
 from .emi_tools_apply_style_geotagged_photos import emiToolsApplyStyleGeotaggedPhotos
 #from .emi_tools_join_geotagged_photos_features import AssociarFotosPoligonos
-#from .emi_tools_photographic_report import emiToolsPhotographicReport
+from .emi_tools_photographic_report import emiToolsPhotographicReport
 
 
 class emiToolsProvider(QgsProcessingProvider):
@@ -63,7 +63,7 @@ class emiToolsProvider(QgsProcessingProvider):
         self.addAlgorithm(emiToolsImportGeotaggedPhotos())
         self.addAlgorithm(emiToolsApplyStyleGeotaggedPhotos())
         # self.addAlgorithm(AssociarFotosPoligonos())
-        # self.addAlgorithm(emiToolsPhotographicReport())
+        self.addAlgorithm(emiToolsPhotographicReport())
 
     # add additional algorithms here
         # self.addAlgorithm(MyOtherAlgorithm())

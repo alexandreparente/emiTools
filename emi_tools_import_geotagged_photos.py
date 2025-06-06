@@ -140,7 +140,8 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         if not exif_tools.hasGeoTag(temp_file_path):
             return {}
 
-        tags = exif_tools.readTags(temp_file_path)
+        # Uses exif_tools.getGeoTag to abstract EXIF complexity,
+        # ensuring safe and standardized geographic coordinate extraction
         geo_tag_result = exif_tools.getGeoTag(temp_file_path)
         exif_geo_tag = geo_tag_result[0]
 
@@ -153,6 +154,9 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
                                                        QgsCoordinateFormatter.FormatDegreesMinutesSeconds,
                                                        2) if exif_longitude else None
         exif_coordinates_str = f"{latitude_dms}, {longitude_dms}" if latitude_dms and longitude_dms else None
+
+        # Uses readTags for DJI XMP/other tags
+        tags = exif_tools.readTags(temp_file_path)
 
         def get_float(tag_name):
             val = tags.get(tag_name)
