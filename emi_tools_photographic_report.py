@@ -7,24 +7,27 @@ from qgis.core import (
     QgsProcessingParameterFolderDestination,
     QgsProcessingParameterFile,
     QgsProject,
+    QgsFeature,
     QgsFeatureRequest,
     QgsVectorLayer,
     QgsLayout,
-    QgsPrintLayout,
+    QgsLayoutItem,
     QgsLayoutItemMap,
     QgsLayoutItemLabel,
     QgsLayoutExporter,
+    QgsLayoutObject,
+    QgsLayoutItemPage,
+    QgsLayoutAtlas,
     QgsLayoutItemPicture,
     QgsLayoutSize,
+    QgsPrintLayout,
     QgsRectangle,
     QgsExpression,
-    QgsFeature,
-    QgsReadWriteContext,
-    QgsLayoutItem,
-    QgsLayoutAtlas,
     QgsExpressionContext,
     QgsExpressionContextUtils,
-    QgsLayoutObject
+    QgsReadWriteContext,
+    QgsReadWriteContext,
+    QgsProcessingException
 )
 
 from PyQt5.QtCore import QByteArray, QTextStream, QIODevice
@@ -34,6 +37,8 @@ from uuid import uuid4
 import os
 import re
 import math
+
+
 
 
 class emiToolsPhotographicReport(QgsProcessingAlgorithm):
@@ -178,12 +183,9 @@ class emiToolsPhotographicReport(QgsProcessingAlgorithm):
 
             # Create temporary template with duplicated pages
             export_template = os.path.join(output_folder, f"new_layout_template{feat_cob.id()}.qpt")
-            new_layout_template = self.duplicar_segunda_pagina_qpt(
-                layout_template, numero_copias, export_template, feedback)
+            new_layout_template = self.duplicar_segunda_pagina_qpt(layout_template, numero_copias, export_template, feedback)
 
-
-
-            # --- Carrega o layout a partir do QPT ---
+            # Carrega o layout a partir do QPT
             layout = QgsPrintLayout(project)
             layout.initializeDefaults()
             layout.setName(f"Layout_{feat_cob[id_field]}")
@@ -203,7 +205,7 @@ class emiToolsPhotographicReport(QgsProcessingAlgorithm):
                 layout_map.zoomToExtent(cob_geom.boundingBox())
                 layout_map.setLayers([pontos_layer, areas_layer, raster_layer])
 
-            # --- Insere as fotos nos itens de imagem ---
+            # Insere as fotos nos itens de imagem
             image_items = [
                 item for item in layout.items()
                 if isinstance(item, QgsLayoutItemPicture) and item.id().startswith("image")
@@ -217,18 +219,16 @@ class emiToolsPhotographicReport(QgsProcessingAlgorithm):
                 if os.path.exists(photo_path):
                     image_items[i].setPicturePath(photo_path)
 
-            # --- Prepara o contexto de expressão para etiquetas e DDP ---
+            # Prepara o contexto de expressão para etiquetas e DDP
             expr_context = QgsExpressionContext()
             expr_context.appendScope(QgsExpressionContextUtils.projectScope(project))
             expr_context.appendScope(QgsExpressionContextUtils.layerScope(cobertura_layer))
             expr_context.setFeature(feat_cob)
 
-            # --- Atualiza expressões de labels e imagens com base no contexto ---
+            # Atualiza expressões de labels e imagens com base no contexto
             self.atualizar_expressões_layout(layout, expr_context, feedback)
 
-
-
-            # --- Agora exporta o layout para PDF ---
+            # Agora exporta o layout para PDF
             output_pdf = os.path.join(output_folder, f"atlas_area_{feat_cob[id_field]}.pdf")
             exporter = QgsLayoutExporter(layout)
             export_result = exporter.exportToPdf(output_pdf, QgsLayoutExporter.PdfExportSettings())
@@ -239,8 +239,8 @@ class emiToolsPhotographicReport(QgsProcessingAlgorithm):
             else:
                 feedback.reportError(f"Erro ao gerar PDF: {output_pdf}")
 
-            # Clean up temporary template
-            """###
+            # apaga aquivos temporarios
+            """
             try:
                 os.remove(new_layout_template)
             except Exception as e:
@@ -248,6 +248,7 @@ class emiToolsPhotographicReport(QgsProcessingAlgorithm):
             """
 
         return {"OUTPUT": output_folder}
+
 
     def duplicar_segunda_pagina_qpt(self, caminho_qpt_original, numero_copias, caminho_saida, feedback):
         """
@@ -419,7 +420,8 @@ class emiToolsPhotographicReport(QgsProcessingAlgorithm):
                             feedback.pushInfo(f"Imagem atualizada com: {resultado}")
                     except Exception as e:
                         if feedback:
-                            feedback.pushWarning(f"Erro ao avaliar expressão da imagem: '{expr_str}' → {e}")
+                            feedback.pushWarning(f"Error applying property {prop} to item {item.id()}: {e}")
+
 
     def name(self):
         return "emi_tools_photographic_report"
