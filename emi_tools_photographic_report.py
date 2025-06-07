@@ -27,7 +27,8 @@ from qgis.core import (
     QgsExpressionContextUtils,
     QgsReadWriteContext,
     QgsReadWriteContext,
-    QgsProcessingException
+    QgsProcessingException,
+    QgsProperty
 )
 
 from PyQt5.QtCore import QByteArray, QTextStream, QIODevice
@@ -176,7 +177,7 @@ class emiToolsPhotographicReport(QgsProcessingAlgorithm):
             numero_fotos = len(pontos_relacionados)
             feedback.pushInfo(f"Área {feat_cob[id_field]} possui {numero_fotos} foto(s).")
 
-            numero_copias = math.ceil(((numero_fotos - (numero_imagens_total-numero_imagens_pagina2))/numero_imagens_pagina2)-1)
+            numero_copias = max(0, math.ceil((numero_fotos - numero_imagens_total) / numero_imagens_pagina2))
 
             if not pontos_relacionados:
                 continue
@@ -218,6 +219,8 @@ class emiToolsPhotographicReport(QgsProcessingAlgorithm):
                 photo_path = ponto[path_field]
                 if os.path.exists(photo_path):
                     image_items[i].setPicturePath(photo_path)
+                else:
+                    feedback.pushWarning(f"Imagem não encontrada: {photo_path}")
 
             # Prepara o contexto de expressão para etiquetas e DDP
             expr_context = QgsExpressionContext()
@@ -389,7 +392,7 @@ class emiToolsPhotographicReport(QgsProcessingAlgorithm):
         """
         Atualiza expressões em labels (com [% %]) e imagens (com dataDefinedProperties).
         """
-        #Substitui expressões nos rótulos [% campo %]
+        # Substitui expressões nos rótulos [% campo %]
         for item in layout.items():
             if isinstance(item, QgsLayoutItemLabel):
                 texto = item.text()
@@ -403,25 +406,74 @@ class emiToolsPhotographicReport(QgsProcessingAlgorithm):
                         if feedback:
                             feedback.pushWarning(f"Erro ao avaliar texto do label: '{texto}' → {e}")
 
-        #Avalia expressões nos dataDefinedProperties das imagens
+        # Avalia expressões nos dataDefinedProperties das imagens
+
+    def atualizar_expressões_layout(self, layout, expr_context, feedback=None):
+        """
+        Atualiza expressões em labels (com [% %]) e imagens (com picturePath dinâmico).
+        """
+        PICTURE_PATH_CODE = 57  # Código interno da propriedade picturePath
+
+        # Atualiza rótulos de texto
+        for item in layout.items():
+            if isinstance(item, QgsLayoutItemLabel):
+                texto = item.text()
+                if '[%' in texto and '%]' in texto:
+                    try:
+                        novo_texto = QgsExpression.replaceExpressionText(texto, expr_context)
+                        item.setText(novo_texto)
+                        if feedback:
+                            feedback.pushInfo(f"[{item.id()}] Label atualizado: {novo_texto}")
+                    except Exception as e:
+                        if feedback:
+                            feedback.pushWarning(f"[{item.id()}] Erro ao avaliar texto do label: '{texto}' → {e}")
+
+        # Atualiza imagens com picturePath definido por expressão
         for item in layout.items():
             if isinstance(item, QgsLayoutItemPicture):
                 ddp = item.dataDefinedProperties()
-                if ddp.hasProperty(QgsLayoutObject.SourceUrl):
-                    propriedade = ddp.property(QgsLayoutObject.SourceUrl)
-                    expr_str = propriedade.expression()
+                props = ddp.propertyKeys()
+
+                if not props:
+                    if feedback:
+                        feedback.pushInfo(f"[{item.id()}] Nenhuma propriedade dinâmica.")
+                    continue
+
+                for key in props:
+                    prop = ddp.property(key)
+                    if feedback:
+                        feedback.pushInfo(f"[{item.id()}] {key}: {prop.asExpression()} (isActive: {prop.isActive()})")
+
+                if PICTURE_PATH_CODE in props:
+                    prop = ddp.property(PICTURE_PATH_CODE)
+                    expr_str = prop.asExpression()
+
                     try:
                         expr = QgsExpression(expr_str)
+                        expr.prepare(expr_context)
                         resultado = expr.evaluate(expr_context)
+
                         if expr.hasParserError() or expr.hasEvalError():
                             raise Exception(expr.parserErrorString() or expr.evalErrorString())
-                        item.setPicturePath(resultado)
-                        if feedback:
-                            feedback.pushInfo(f"Imagem atualizada com: {resultado}")
+
+                        if resultado and isinstance(resultado, str):
+                            item.setPicturePath(resultado)
+
+                            # Desativa o modo dinâmico para garantir que o caminho seja mantido no PDF
+                            ddp.setProperty(PICTURE_PATH_CODE, QgsProperty())  # remove expressão
+                            item.setDataDefinedProperties(ddp)
+
+                            item.refresh()
+
+                            if feedback:
+                                feedback.pushInfo(f"[{item.id()}] Imagem renderizada com: {resultado}")
+                        else:
+                            if feedback:
+                                feedback.pushWarning(f"[{item.id()}] Resultado inválido: {resultado}")
+
                     except Exception as e:
                         if feedback:
-                            feedback.pushWarning(f"Error applying property {prop} to item {item.id()}: {e}")
-
+                            feedback.pushWarning(f"[{item.id()}] Erro ao aplicar expressão '{expr_str}': {e}")
 
     def name(self):
         return "emi_tools_photographic_report"
