@@ -389,7 +389,7 @@ class emiToolsPhotographicReport(QgsProcessingAlgorithm):
         """
         Atualiza expressões em labels (com [% %]) e imagens (com dataDefinedProperties).
         """
-        # 1. Substitui expressões nos rótulos [% campo %]
+        #Substitui expressões nos rótulos [% campo %]
         for item in layout.items():
             if isinstance(item, QgsLayoutItemLabel):
                 texto = item.text()
@@ -403,7 +403,7 @@ class emiToolsPhotographicReport(QgsProcessingAlgorithm):
                         if feedback:
                             feedback.pushWarning(f"Erro ao avaliar texto do label: '{texto}' → {e}")
 
-        # 2. Avalia expressões nos dataDefinedProperties das imagens
+        #Avalia expressões nos dataDefinedProperties das imagens
         for item in layout.items():
             if isinstance(item, QgsLayoutItemPicture):
                 ddp = item.dataDefinedProperties()
