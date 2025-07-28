@@ -88,7 +88,7 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
     def initAlgorithm(self, config=None):
         # Initializes the algorithm's parameters
 
-        self.addParameter(QgsProcessingParameterFile(self.INPUT_IMAGE,tr('Input Folder with Images'),behavior=QgsProcessingParameterFile.Folder))
+        self.addParameter(QgsProcessingParameterFile(self.INPUT_IMAGE,tr('Input folder'),behavior=QgsProcessingParameterFile.Folder))
 
         self.addParameter(QgsProcessingParameterFile(self.STAMP_IMAGE, tr('Stamp SVG Image'), extension='svg', optional=True))
 
