@@ -68,13 +68,12 @@ from qgis.PyQt.QtSvg import QSvgRenderer
 from qgis.PyQt.QtWidgets import QApplication
 
 import os
+from .emi_tools_util import tr
 
-def tr(string):
-    return QCoreApplication.translate('@default', string)
 
-class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
+class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
     # Definition of input and output parameters
-    INPUT_IMAGE = 'INPUT_IMAGE'  # Input images
+    INPUT_PHOTO = 'INPUT_PHOTO'  # Input photo
     OUTPUT_FOLDER = 'OUTPUT_FOLDER'  # Output folder
     STAMP_IMAGE = 'STAMP_IMAGE'  # SVG image to be stamped
     INPUT_TEXT = 'INPUT_TEXT'  # Main text to be inserted into the image
@@ -88,11 +87,11 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
     def initAlgorithm(self, config=None):
         # Initializes the algorithm's parameters
 
-        self.addParameter(QgsProcessingParameterFile(self.INPUT_IMAGE,tr('Input folder'),behavior=QgsProcessingParameterFile.Folder))
+        self.addParameter(QgsProcessingParameterFile(self.INPUT_PHOTO,tr('Input folder'),behavior=QgsProcessingParameterFile.Folder))
 
-        self.addParameter(QgsProcessingParameterFile(self.STAMP_IMAGE, tr('Stamp SVG Image'), extension='svg', optional=True))
+        self.addParameter(QgsProcessingParameterFile(self.STAMP_IMAGE, tr('SVG Image'), extension='svg', optional=True))
 
-        self.addParameter(QgsProcessingParameterString(self.INPUT_TEXT, tr('Text to be inserted into the image.'),defaultValue="", multiLine=True))
+        self.addParameter(QgsProcessingParameterString(self.INPUT_TEXT, tr('Text'),defaultValue="", multiLine=True))
 
         # Get the available fonts on the system using QFontDatabase
         font_db = QFontDatabase()
@@ -106,7 +105,7 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
         default_font_index = fonts.index(default_font) if default_font in fonts else 0
         
         # Add the Enum parameter to select the font
-        self.addParameter(QgsProcessingParameterEnum(self.FONT_NAME,tr('Select Font'), options=fonts,defaultValue=default_font_index))                     
+        self.addParameter(QgsProcessingParameterEnum(self.FONT_NAME,tr('Font'), options=fonts,defaultValue=default_font_index))
         
         self.addParameter(QgsProcessingParameterColor(self.FONT_COLOR, tr('Font color'), defaultValue=QColor(255, 255, 0)))
         self.addParameter(QgsProcessingParameterNumber(self.FONT_SIZE, tr('Font size'), defaultValue=60, minValue=1, maxValue=500))
@@ -133,14 +132,14 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
     def processAlgorithm(self, parameters, context, feedback):
         # Loads the input raster layers
 
-        input_folder = self.parameterAsString(parameters, self.INPUT_IMAGE, context)
+        input_folder = self.parameterAsString(parameters, self.INPUT_PHOTO, context)
 
         # Lista os arquivos de imagem na pasta
         image_extensions = ('.jpg', '.jpeg', '.tif', '.tiff', '.png')
-        input_images = []
+        input_photos = []
         for file_name in os.listdir(input_folder):
             if file_name.lower().endswith(image_extensions):
-                input_images.append(os.path.join(input_folder, file_name))
+                input_photos.append(os.path.join(input_folder, file_name))
 
         output_folder = self.parameterAsString(parameters, self.OUTPUT_FOLDER, context)
         svg_file_path = self.parameterAsFile(parameters, self.STAMP_IMAGE, context)
@@ -164,7 +163,7 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
         coordinates_list = []
 
         # Processes each selected image
-        for raster_file_path in input_images:
+        for raster_file_path in input_photos:
             input_qimage = QImage(raster_file_path)
 
             if input_qimage.isNull():
@@ -213,10 +212,10 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
 
     def get_raster_layer(self, parameters, context, feedback):
         # Gets the input raster layer
-        input_image = self.parameterAsRasterLayer(parameters, self.INPUT_IMAGE, context)
-        if input_image is None or not input_image.isValid():
+        input_photo = self.parameterAsRasterLayer(parameters, self.INPUT_PHOTO, context)
+        if input_photo is None or not input_photo.isValid():
             raise QgsProcessingException(tr("No valid raster layer provided."))
-        return input_image  
+        return input_photo
 
     def get_exif_data(self, temp_file_path, feedback):
         # Instantiates QgsExifTools
@@ -452,10 +451,10 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
 
 
     def name(self):
-        return "emiToolsStampImagemRpa"
+        return "emiToolsStampPhotoRpa"
 
     def displayName(self):
-        return tr("Insert stamp on image")
+        return tr("Insert stamp on photo")
 
     def group(self):
         return tr("Emi Tools")
@@ -463,8 +462,11 @@ class emiToolsStampImagemRpa(QgsProcessingAlgorithm):
     def groupId(self):
         return ""
 
-    #def shortHelpString(self):
-    #    return tr("This algorithm Insert stamp on image.")
+    def shortHelpString(self):
+        return tr(
+            "This algorithm inscribes text and an optional SVG logo onto JPEG or PNG images using EXIF metadata such as coordinates, altitude, date, and camera model. "
+            "The stamp position, font style, and color are customizable. The processed images are saved in the output folder, preserving EXIF data."
+        )
 
     def createInstance(self):
-        return emiToolsStampImagemRpa()
+        return emiToolsStampPhotoRpa()

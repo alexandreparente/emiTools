@@ -3,16 +3,24 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=emiTools
+name=Emi Tools
 qgisMinimumVersion=3.40
 description=Auxiliary tools for organizing geospatial data, generating DJI-compatible KML files, stamping images with metadata, and converting vector files for export.
 
-
-version=0.5
+version=0.6
 author=Alexandre Parente Lima
 email=alexandre.parente@gmail.com
 
-about=This plugin brings together a set of tools for text formatting, file handling, and image editing, with a focus on the preparation of technical reports. The features were developed to facilitate the processing and organization of data from drone surveys and other geospatial sources. Included functionalities: - Import of EXIF metadata and XMP tags used by DJI drones; - Export of KML files compatible with DJI Mavic 2 Enterprise Advanced (M2EA); - Insertion of informative stamps on images (date, time, coordinates, etc.); - Conversion and compression of vector data for export and sharing; - Adds custom user functions to the Field Calculator for validating CPF and CNPJ numbers, formatting titles, proper names, numbers and more.
+about=
+    This plugin brings together a set of tools for text formatting, file handling, and image editing, with a focus on the preparation of technical reports.
+    The features were developed to facilitate the processing and organization of data from drone surveys and other geospatial sources.
+    Included functionalities:
+    - Import of EXIF metadata and XMP tags from DJI drone photos;
+    - Export photos in batch to a folder;
+    - Export of KML files compatible with DJI Pilot;
+    - Insertion of informative stamps on photo (date, time, coordinates, etc.);
+    - Conversion and compression of vector data for export and sharing;
+    - Adds custom user functions to the Field Calculator for validating CPF and CNPJ numbers, formatting titles, proper names, numbers and more.
 
 tracker=https://github.com/alexandreparente/emiTools/issues
 repository=https://github.com/alexandreparente/emiTools
@@ -46,3 +54,6 @@ Category of the plugin: Raster, Vector, Database or Web
 
 # If the plugin can run on QGIS Server.
 server=False
+
+changelog=
+    0.6 – Added algorithm for batch photo export

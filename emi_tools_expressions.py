@@ -41,9 +41,6 @@ def tr(string):
     return QCoreApplication.translate('@default', string)
 
 
-#helpText=tr("Invalid number. Please provide an 11-digit numeric string2.")
-#@qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[],helpText=helpText)
-
 @qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
 def validate_cpf(cpf_number, feature, parent):
     """
@@ -420,6 +417,8 @@ def get_satellite_name(filename, feature, parent):
         return "Sentinel 2A"
     elif filename[0:3]=="S2B":
         return "Sentinel 2B"
+    elif filename[0:3]=="S2c":
+        return "Sentinel 2C"        
     elif filename[0:3]=="T25":
         return "Sentinel 2"
     elif filename[0:2]=="PS":
@@ -453,6 +452,8 @@ def get_image_source(filename, feature, parent):
     elif filename[0:3]=="S2A":
         return "European Union\'s Earth Observation Programme (COPERNICUS)."
     elif filename[0:3]=="S2B":
+        return "European Union\'s Earth Observation Programme (COPERNICUS)."
+    elif filename[0:3]=="S2C":
         return "European Union\'s Earth Observation Programme (COPERNICUS)."
     elif filename[0:3]=="T25":
         return "European Union\'s Earth Observation Programme (COPERNICUS)."

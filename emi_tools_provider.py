@@ -31,11 +31,12 @@ __copyright__ = '(C) 2024 by Alexandre Parente Lima'
 from qgis.core import QgsProcessingProvider
 from .emi_tools_export_terms import emiToolsExportTerms
 from .emi_tools_export_kml_rpa import emiToolsExportKmlRpa
-from .emi_tools_imagem_stamp_rpa import emiToolsStampImagemRpa
+from .emi_tools_photo_stamp_rpa import emiToolsStampPhotoRpa
 from .emi_tools_import_geotagged_photos import emiToolsImportGeotaggedPhotos
 from .emi_tools_apply_style_geotagged_photos import emiToolsApplyStyleGeotaggedPhotos
 #from .emi_tools_join_geotagged_photos_features import AssociarFotosPoligonos
-from .emi_tools_photographic_report import emiToolsPhotographicReport
+#from .emi_tools_photographic_report import emiToolsPhotographicReport
+from .emi_tools_batch_photo_export import emiToolsBatchPhotoExport
 
 
 class emiToolsProvider(QgsProcessingProvider):
@@ -59,11 +60,12 @@ class emiToolsProvider(QgsProcessingProvider):
         """
         self.addAlgorithm(emiToolsExportTerms())
         self.addAlgorithm(emiToolsExportKmlRpa())        
-        self.addAlgorithm(emiToolsStampImagemRpa())
+        self.addAlgorithm(emiToolsStampPhotoRpa())
         self.addAlgorithm(emiToolsImportGeotaggedPhotos())
         self.addAlgorithm(emiToolsApplyStyleGeotaggedPhotos())
-        # self.addAlgorithm(AssociarFotosPoligonos())
-        self.addAlgorithm(emiToolsPhotographicReport())
+        #self.addAlgorithm(emiToolsPhotographicReport())
+        #self.addAlgorithm(AssociarFotosPoligonos())
+        self.addAlgorithm(emiToolsBatchPhotoExport())
 
     # add additional algorithms here
         # self.addAlgorithm(MyOtherAlgorithm())
@@ -74,7 +76,7 @@ class emiToolsProvider(QgsProcessingProvider):
         string should be a unique, short, character only string, eg "qgis" or
         "gdal". This string should not be localised.
         """
-        return 'emiTools'
+        return 'emi_tools'
 
     def name(self):
         """
@@ -83,7 +85,7 @@ class emiToolsProvider(QgsProcessingProvider):
 
         This string should be short (e.g. "Lastools") and localised.
         """
-        return self.tr('Emi Tools')
+        return 'Emi Tools'
 
     def icon(self):
         """

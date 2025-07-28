@@ -48,9 +48,7 @@ from qgis.core import (QgsApplication,
 
 from qgis.PyQt.QtCore import QCoreApplication, QVariant
 import os
-
-def tr(string):
-    return QCoreApplication.translate('@default', string)
+from .emi_tools_util import tr
 
 class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
     INPUT_FILE = 'INPUT_FILE'
@@ -224,6 +222,13 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
 
     def groupId(self):
         return ""
+
+    def shortHelpString(self):
+        return tr(
+            "This algorithm applies custom symbology to a point layer with geotagged photos, distinguishing photos with or without recorded direction. "
+            "Also allows configuring map tips with image previews, adjusting the photo field to display as an external resource, "
+            "and exporting a Layer Definition file (QLR)."
+        )
 
     def createInstance(self):
         return emiToolsApplyStyleGeotaggedPhotos()

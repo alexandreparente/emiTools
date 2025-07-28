@@ -51,10 +51,8 @@ from qgis.PyQt.QtCore import (QCoreApplication,
                               QVariant)
 
 import os
+from .emi_tools_util import tr
 
-
-def tr(string):
-    return QCoreApplication.translate('@default', string)
 
 class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
     INPUT_FOLDER = 'INPUT_FOLDER'
@@ -66,7 +64,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterFile(
                 self.INPUT_FOLDER,
-                tr('Input Folder with Images'),
+                tr('Input folder'),
                 behavior=QgsProcessingParameterFile.Folder
             )
         )
@@ -289,6 +287,12 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
 
     def groupId(self):
         return ""
+
+    def shortHelpString(self):
+        return tr(
+            "This algorithm generates a point layer based on georeferenced locations (geotags) extracted from JPEG images in a source folder."
+            "It supports both standard EXIF metadata and specific tags used by DJI drones."
+        )
 
     def createInstance(self):
         return emiToolsImportGeotaggedPhotos()

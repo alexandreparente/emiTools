@@ -30,8 +30,6 @@ __copyright__ = '(C) 2024 by Alexandre Parente Lima'
 
 __revision__ = '$Format:%H$'
 
-# -*- coding: utf-8 -*-
-
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.core import (QgsProcessing, QgsVectorFileWriter,
                        QgsProcessingAlgorithm, 
@@ -50,10 +48,7 @@ import os
 import zipfile
 import tempfile
 from datetime import datetime
-
-
-def tr(string):
-    return QCoreApplication.translate('@default', string)
+from .emi_tools_util import tr
 
 class emiToolsExportTerms(QgsProcessingAlgorithm):
 
@@ -61,13 +56,13 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
 
     def initAlgorithm(self, config=None):
         # Input layer parameter   
-        self.addParameter(QgsProcessingParameterFeatureSource('layer', tr('Layer name:'), [QgsProcessing.TypeVectorPolygon]))
+        self.addParameter(QgsProcessingParameterFeatureSource('layer', tr('Input layer'), [QgsProcessing.TypeVectorPolygon]))
         
         # Parameter to select the field for the embargo term number
-        self.addParameter(QgsProcessingParameterField('num_tei_field', tr('Embargo term field:'), parentLayerParameterName='layer', type=QgsProcessingParameterField.String, defaultValue='numero_tad'))
+        self.addParameter(QgsProcessingParameterField('num_tei_field', tr('Embargo term field'), parentLayerParameterName='layer', type=QgsProcessingParameterField.String, defaultValue='numero_tad'))
 
         # Parameter to select the field for the embargo term series        
-        self.addParameter(QgsProcessingParameterField('serie_tei_field', tr('Embargo term series field:'), parentLayerParameterName='layer', type=QgsProcessingParameterField.String, defaultValue='serie_tad'))
+        self.addParameter(QgsProcessingParameterField('serie_tei_field', tr('Embargo term series field'), parentLayerParameterName='layer', type=QgsProcessingParameterField.String, defaultValue='serie_tad'))
         
         # Setting the default output folder to the user's home directory        
         #default_output_folder = os.path.expanduser("~")
@@ -334,8 +329,11 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
     def groupId(self):
         return ""
 
-    # def shortHelpString(self):
-    #    return tr("help.")
+    def shortHelpString(self):
+        return tr(
+            "This algorithm exports features from a polygon layer to individual or single vector files, compatible with the upload of embargoed areas to the Cadastro, Arrecadação e Fiscalização System (Sicafi). "
+            "The algorithm removes unnecessary fields, renames mandatory fields to 'NUM_TEI' and 'SERIE_TEI', and offers the option to compress the output files into a ZIP archive."
+        )
 
     def createInstance(self):
         return emiToolsExportTerms()
