@@ -48,38 +48,89 @@ import os
 import zipfile
 import tempfile
 from datetime import datetime
+
 from .emi_tools_util import tr
 
 class emiToolsExportTerms(QgsProcessingAlgorithm):
 
-    output_folder = 'output_folder'
+    OUTPUT_FOLDER = 'OUTPUT_FOLDER'
 
     def initAlgorithm(self, config=None):
         # Input layer parameter   
-        self.addParameter(QgsProcessingParameterFeatureSource('layer', tr('Input layer'), [QgsProcessing.TypeVectorPolygon]))
+        self.addParameter(
+            QgsProcessingParameterFeatureSource(
+                'layer',
+                tr('Input layer'),
+                [QgsProcessing.TypeVectorPolygon]
+            )
+        )
         
         # Parameter to select the field for the embargo term number
-        self.addParameter(QgsProcessingParameterField('num_tei_field', tr('Embargo term field'), parentLayerParameterName='layer', type=QgsProcessingParameterField.String, defaultValue='numero_tad'))
+        self.addParameter(
+            QgsProcessingParameterField(
+                'num_tei_field',
+                tr('Embargo term field'),
+                parentLayerParameterName='layer',
+                type=QgsProcessingParameterField.String,
+                defaultValue='numero_tad'
+            )
+        )
 
         # Parameter to select the field for the embargo term series        
-        self.addParameter(QgsProcessingParameterField('serie_tei_field', tr('Embargo term series field'), parentLayerParameterName='layer', type=QgsProcessingParameterField.String, defaultValue='serie_tad'))
+        self.addParameter(
+            QgsProcessingParameterField(
+                'serie_tei_field',
+                tr('Embargo term series field'),
+                parentLayerParameterName='layer',
+                type=QgsProcessingParameterField.String,
+                defaultValue='serie_tad'
+            )
+        )
         
-        # Setting the default output folder to the user's home directory        
-        #default_output_folder = os.path.expanduser("~")
-        #self.addParameter(QgsProcessingParameterFolderDestination(self.output_folder, tr('Output folder'), defaultValue=default_output_folder))
-        self.addParameter(QgsProcessingParameterFolderDestination(self.output_folder, tr('Output folder')))
+        # Setting the default output folder to the user's home directory
+        self.addParameter(
+            QgsProcessingParameterFolderDestination(
+                self.OUTPUT_FOLDER,
+                tr('Output folder')
+            )
+        )
 
         # Parameter to choose the output format        
-        self.addParameter(QgsProcessingParameterEnum('output_format', tr('Output file format:'), options=['ESRI Shapefile', 'GeoPackage', 'Keyhole Markup Language'], defaultValue=0))
+        self.addParameter(
+            QgsProcessingParameterEnum(
+                'output_format',
+                tr('Output file format:'),
+                options=['ESRI Shapefile', 'GeoPackage', 'Keyhole Markup Language'],
+                defaultValue=0
+            )
+        )
         
         # Add parameter to export all features to a single file        
-        self.addParameter(QgsProcessingParameterBoolean('export_all_to_single', tr('Export all features to a single file'), defaultValue=False))
+        self.addParameter(
+            QgsProcessingParameterBoolean(
+                'export_all_to_single',
+                tr('Export all features to a single file'),
+                defaultValue=False
+            )
+        )
         
         # Parameter to compress the output file
-        self.addParameter(QgsProcessingParameterBoolean('compress_output', tr('Compress output file copy (.zip)'), defaultValue=False))
+        self.addParameter(
+            QgsProcessingParameterBoolean(
+                'compress_output',
+                tr('Compress output file copy (.zip)'),
+                defaultValue=False
+            )
+        )
         
         # Parameter to load the output file        
-        self.addParameter(QgsProcessingParameterBoolean('load_output', tr('Open output files after executing the algorithm'), defaultValue=True))
+        self.addParameter(
+            QgsProcessingParameterBoolean(
+                'load_output',
+                tr('Open output files after executing the algorithm'),
+                defaultValue=True
+            )
+        )
 
     def processAlgorithm(self, parameters, context, feedback):
         feedback = QgsProcessingMultiStepFeedback(1, feedback)
@@ -97,11 +148,14 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
         export_all_to_single = self.parameterAsBoolean(parameters, 'export_all_to_single', context)
         output_format = self.parameterAsEnum(parameters, 'output_format', context)
         compress_output = self.parameterAsBoolean(parameters, 'compress_output', context)
-
-        # Get output folder
-        output_folder = self.parameterAsString(parameters, 'output_folder', context)
+        
+	# Get output folder
+        output_folder = self.parameterAsString(parameters, self.OUTPUT_FOLDER, context)
+        
         if not output_folder:
-            output_folder = tempfile.mkdtemp()
+            output_folder = tempfile.mkdtemp()  # Create a secure temporary folder
+            
+        # Try to create the folder if it doesn't exist
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
 
@@ -134,7 +188,7 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
         if self.parameterAsBoolean(parameters, 'load_output', context):
             self.load_output_files(output_files)
 
-        return {self.output_folder: output_folder}
+        return {self.OUTPUT_FOLDER: output_folder}
 
     def temp_layer(self, layer, extracted_features, context):
         # Checks if the layer is a QgsProcessingFeatureSource

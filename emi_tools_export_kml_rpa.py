@@ -52,26 +52,54 @@ from .emi_tools_util import tr
 class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
 
     # Definition of input and output parameters
-    output_folder = 'output_folder'
+    OUTPUT_FOLDER = 'OUTPUT_FOLDER'
 
     def initAlgorithm(self, config=None):
         # Input layer parameter using QgsProcessingParameterFeatureSource
-        self.addParameter(QgsProcessingParameterFeatureSource('layer', tr('Input layer'),
-                    [QgsProcessing.TypeVectorPolygon, QgsProcessing.TypeVectorLine]))
+        self.addParameter(
+            QgsProcessingParameterFeatureSource(
+                'layer',
+                tr('Input layer'),
+                [QgsProcessing.TypeVectorPolygon, QgsProcessing.TypeVectorLine]
+            )
+        )
         
         # Input field parameter to select a field for naming the exported files
-        self.addParameter(QgsProcessingParameterField('export_field', tr('Export file name field'), '', 'layer', optional=True))
+        self.addParameter(
+            QgsProcessingParameterField(
+                'export_field',
+                tr('Export file name field'),
+                '',
+                'layer',
+                optional=True
+            )
+        )
 
         # Output folder parameter
-        self.addParameter(QgsProcessingParameterFolderDestination(self.output_folder, tr('Output folder')))
+        self.addParameter(
+            QgsProcessingParameterFolderDestination(
+                self.OUTPUT_FOLDER,
+                tr('Output folder')
+            )
+        )
         
         # Option to compress the output
-        self.addParameter(QgsProcessingParameterBoolean('compress_output', tr('Compress output file copy (.zip)'), 
-                    defaultValue=False))
+        self.addParameter(
+            QgsProcessingParameterBoolean(
+                'compress_output',
+                tr('Compress output file copy (.zip)'),
+                defaultValue=False
+            )
+        )
 
         # Option to load the output into the project
-        self.addParameter(QgsProcessingParameterBoolean('load_output', tr('Open output files after executing the algorithm'), 
-                    defaultValue=True))
+        self.addParameter(
+            QgsProcessingParameterBoolean(
+                'load_output',
+                tr('Open output files after executing the algorithm'),
+                defaultValue=True
+            )
+        )
 
     def processAlgorithm(self, parameters, context, feedback):
         feedback = QgsProcessingMultiStepFeedback(1, feedback)
@@ -84,15 +112,13 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
         # Get the field selected by the user
         export_field = self.parameterAsString(parameters, 'export_field', context)
 
-        # Use parameterAsString instead of parameterAsFile
-        output_folder = self.parameterAsString(parameters, 'output_folder', context)
-
-        if not output_folder:  # Check if output_folder is empty
-            #output_folder = tempfile.mkdtemp()  # Create a temporary folder
-            os.makedirs(output_folder)
-
-
-        # Ensure the output folder exists
+	# Get output folder
+        output_folder = self.parameterAsString(parameters, self.OUTPUT_FOLDER, context)
+        
+        if not output_folder:
+            output_folder = tempfile.mkdtemp()  # Create a secure temporary folder
+            
+        # Try to create the folder if it doesn't exist
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
 
@@ -176,7 +202,7 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
 
         temp_layer = None
 
-        return {self.output_folder: output_folder}
+        return {self.OUTPUT_FOLDER: output_folder}
 
     def load_output_files (self, output_files):  
        #Using the addMapLayers method to reduce the number of calls to QGIS when many layers need to be loaded

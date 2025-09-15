@@ -27,19 +27,25 @@ __date__ = '2024-10-10'
 __copyright__ = '(C) 2024 by Alexandre Parente Lima'
 
 # This will get replaced with a git SHA1 when you do a git archive
-
 __revision__ = '$Format:%H$'
 
+from qgis.core import QgsExpression
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtCore import QDate
-from qgis.core import QgsApplication
-from qgis.core import QgsExpression
 from qgis.utils import qgsfunction
 
+from datetime import datetime, date
+import re
+import string
 
-def tr(string):
-    return QCoreApplication.translate('@default', string)
+from .emi_tools_util import tr
 
+
+# -------------------------------------------------------------------
+# This module separates the logic from the functions registered in QGIS
+# via @qgsfunction. The logic is kept isolated to enable unit testing,
+# allow reuse in other contexts, and simplify code maintenance.
+# -------------------------------------------------------------------
 
 @qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
 def validate_cpf(cpf_number, feature, parent):
@@ -58,32 +64,7 @@ def validate_cpf(cpf_number, feature, parent):
           <li> validate_cpf('000.000.000-01') -> False</li>
         </ul>
     """
-
-    # Remove non-numeric characters
-    cpf_number = ''.join(filter(str.isdigit, cpf_number))
-    
-    # Checks if the CPF number has 11 digits
-    if len(cpf_number) != 11:
-        return False
-
-    # Validates CPF algorithm
-    cpf_digits = list(map(int, cpf_number))
-    cpf_sum = sum(a * b for a, b in zip(cpf_digits[:9], range(10, 1, -1)))
-    cpf_remainder = (cpf_sum * 10) % 11
-    if cpf_remainder == 10:
-        cpf_remainder = 0
-    if cpf_remainder != cpf_digits[9]:
-        return False
-
-    cpf_sum = sum(a * b for a, b in zip(cpf_digits[:10], range(11, 1, -1)))
-    cpf_remainder = (cpf_sum * 10) % 11
-    if cpf_remainder == 10:
-        cpf_remainder = 0
-    if cpf_remainder != cpf_digits[10]:
-        return False
-
-    return True
-
+    return validate_cpf_logic(cpf_number)
 
 
 @qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
@@ -96,45 +77,18 @@ def validate_cnpj(cnpj_number, feature, parent):
 
     <h4>Arguments</h4>
     <p><i style="color:#bf0c0c;">string</i>: A 14-character text string representing a CNPJ number.</p>
-  
+
     <h4>Example:</h4>
     <ul>
       <li> validate_cnpj('00.000.000/0000-00') -> True</li>
       <li> validate_cnpj('00.000.000/0000-01') -> False</li>
     </ul>
     """
-    # Remove non-numeric characters
-    cnpj_number = ''.join(filter(str.isdigit, cnpj_number))
-    
-    # Check if the CNPJ number has 14 digits
-    if len(cnpj_number) != 14:
-        return False
-    else:
-        sum = 0
-        weight = [5,4,3,2,9,8,7,6,5,4,3,2]
-        
-        # Calculating the first CNPJ check digit
-        for n in range(12):
-            value = int(cnpj_number[n]) * weight[n]
-            sum += value
-        verifying_digit = sum % 11
-        first_verifying_digit = 0 if verifying_digit < 2 else 11 - verifying_digit
-        
-        # Calculating the second CNPJ check digit
-        sum = 0
-        weight = [6,5,4,3,2,9,8,7,6,5,4,3,2]
-        for n in range(13):
-            sum += int(cnpj_number[n]) * weight[n]
-        verifying_digit = sum % 11
-        second_verifying_digit = 0 if verifying_digit < 2 else 11 - verifying_digit
-        
-        # Check if the provided CNPJ is valid
-        if cnpj_number[-2:] == f"{first_verifying_digit}{second_verifying_digit}":
-            return True
-        return False
+    return validate_cnpj_logic(cnpj_number)
+
 
 @qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
-def format_cpf(cpf_number, feature, parent):
+def format_cpf(cpf_string, feature, parent):
     """
     Returns a formatted string for CPF (Brazilian individual taxpayer ID).
     <br><br>Note: This function does not verify the validity of the provided number.
@@ -148,21 +102,11 @@ def format_cpf(cpf_number, feature, parent):
       <li> format_cpf('BR000,000,000-00') -> 000.000.000-00</li>
     </ul>
     """
+    return format_cpf_logic(cpf_string)
 
-    # Filter out non-digit characters and keep only numeric digits
-    cpf_number = ''.join(filter(str.isdigit, cpf_number))
 
-    if len(cpf_number) != 11:
-        raise ValueError(tr("Invalid number. Please provide an 11-digit numeric string."))
-
-    # Format the CPF
-    formatted = f"{cpf_number[:3]}.{cpf_number[3:6]}.{cpf_number[6:9]}-{cpf_number[9:]}"
-    
-    return formatted
-    
-    
 @qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
-def format_cnpj(number, feature, parent):
+def format_cnpj(cnpj_string, feature, parent):
     """
         Returns a formatted string for CNPJ (Brazilian corporate taxpayer ID).
         <br><br>Note: This function does not verify the validity of the provided number.
@@ -176,22 +120,11 @@ def format_cnpj(number, feature, parent):
           <li> format_cnpj('BR00,000,000/0000-00') -> 00.000.000/0000-00</li>
         </ul>
         """
-    
-    # format CPF or CNPJ
-    number = ''.join(filter(str.isdigit, number))
-
-    if len(number) == 11:
-        formatted = f"{number[:3]}.{number[3:6]}.{number[6:9]}-{number[9:]}"
-    elif len(number) == 14:
-        formatted = f"{number[:2]}.{number[2:5]}.{number[5:8]}/{number[8:12]}-{number[12:]}"
-    else:
-        raise Exception(tr("Invalid number. Pass a numeric string as the input parameter."))
-    
-    return formatted
+    return format_cnpj_logic(cnpj_string)
 
 
 @qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
-def format_cpf_cnpj(number, feature, parent):
+def format_cpf_cnpj(cpf_cnpj_string, feature, parent):
     """
         Returns a formatted string for CPF (Brazilian individual taxpayer ID) or CNPJ (Brazilian corporate taxpayer ID).
         <br><br>Note: This function does not verify the validity of the provided number.
@@ -207,18 +140,8 @@ def format_cpf_cnpj(number, feature, parent):
           <li> format_cpf_cnpj('BR00,000,000/0000-00') -> 00.000.000/0000-00</li>
         </ul>
         """
-    
-    # format CPF or CNPJ
-    number = ''.join(filter(str.isdigit, number))
+    return format_cpf_cnpj_logic(cpf_cnpj_string)
 
-    if len(number) == 11:
-        formatted = f"{number[:3]}.{number[3:6]}.{number[6:9]}-{number[9:]}"
-    elif len(number) == 14:
-        formatted = f"{number[:2]}.{number[2:5]}.{number[5:8]}/{number[8:12]}-{number[12:]}"
-    else:
-        raise Exception("Invalid number. Pass a numeric string as the input parameter..")
-    
-    return formatted
 
 @qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
 def mask_cpf(cpf_number, feature, parent):
@@ -231,26 +154,15 @@ def mask_cpf(cpf_number, feature, parent):
 
     <h4>Arguments</h4>
     <p><i style="color:#bf0c0c;">string</i>: A string containing 11 numeric characters representing a CPF number.</p>
-    
+
     <h4>Example</h4>
     <ul>
       <li>mask_cpf('000.000.000-00') → '***.000.000-**'.</li>
       <li>mask_cpf('000.000.000') → "Invalid CPF" if the provided number does not have exactly 11 digits.</li>
     </ul>
     """
-     
-    #Remove non-numeric characters
-    cpf_number = ''.join(filter(str.isdigit, cpf_number))
-    
-    #Check if CPF number has 11 digits
-    if len(cpf_number) != 11:
-        return "Invalid CPF"
-    
-    #Mask the first three and last two digits
-    tarjado = '***.' + cpf_number[3:6] + '.' + cpf_number[6:9] + '-**'
-    
-    #Display documentation when requested
-    return tarjado
+    return mask_cpf_logic(cpf_number)
+
 
 @qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
 def mask_name(full_name, feature, parent):
@@ -262,27 +174,14 @@ def mask_name(full_name, feature, parent):
 
     <h4>Arguments</h4>
     <p><i style="color:#bf0c0c;">string</i>: A string containing the full name to be masked.</p>
-    
+
     <h4>Returns</h4>
     <ul>
       <li>A string with the masked middle part of the name, e.g. 'Alexandre ******* Lima'.</li>
     </ul>
     """
+    return mask_name_logic(full_name)
 
-    # Split the full name into parts
-    name_parts = full_name.split()
-
-    # Check if the name has at least 3 parts to mask the middle
-    if len(name_parts) < 3:
-        return full_name  # Return the name as is if it cannot be masked
-
-    # Mask the middle part (all parts except the first and last)
-    masked_middle = ['*' * len(part) for part in name_parts[1:-1]]
-
-    # Construct the masked name
-    masked_name = name_parts[0] + ' ' + ' '.join(masked_middle) + ' ' + name_parts[-1]
-
-    return masked_name
 
 @qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
 def format_proper_name(text, feature, parent):
@@ -297,29 +196,17 @@ def format_proper_name(text, feature, parent):
 
     <h4>Returns</h4>
     <p><i>str</i>: The formatted proper name following the capitalization rules of Portuguese in Brazil.</p>
-    
+
     <h4>Example:</h4>
     <pre>
     format_proper_name('joaquim maria machado de assis') -> 'Joaquim Maria Machado de Assis'
     </pre>
     """
-    # Split text into words
-    words = text.split()
-
-    # List of words to keep in lowercase (articles, prepositions, and conjunctions)
-    lowercase_words = {'da', 'de', 'do', 'das', 'dos', 'e', 'em', 'no', 'na', 'nos', 'nas', 'a', 'o', 'as', 'os', 'por', 'com'}
-
-    # Capitalize the first word
-    formatted_text = words[0].capitalize()
-
-    # Format remaining words
-    for word in words[1:]:
-        if word.lower() not in lowercase_words:
-            formatted_text += ' ' + word.capitalize()
-        else:
-            formatted_text += ' ' + word.lower()
-
-    return formatted_text
+    return format_capitalization_logic(
+        text,
+        lowercase_words=PT_BR_LOWERCASE_WORDS,
+        force_after_strong_punct=False
+    )
 
 @qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
 def format_title_abnt(text, feature, parent):
@@ -331,66 +218,20 @@ def format_title_abnt(text, feature, parent):
 
     <h4>Arguments</h4>
     <p><i style="color:#bf0c0c;">string</i>: The input text to be formatted.</p>
-  
+
     <h4>Returns</h4>
     <p><i>str</i>: The formatted text following ABNT title formatting.</p>
-    
+
     <h4>Example:</h4>
     <pre>
     format_title_abnt('Qgis: Um Sistema de Informação Geográfica livre e aberto.') -> 'QGIS: Um Sistema de Informação Geográfica Livre e Aberto.'
     </pre>
     """
-    # Split text into words
-    words = text.split()
-    
-    # List of words to keep in lowercase (articles, prepositions, and conjunctions)
-    lowercase_words = {'a', 'à', 'ao', 'às', 'o', 'os', 'as', 'de', 'do', 'dos', 'das', 'e', 'em', 'no', 'na', 'nos', 'nas', 'com', 'por', 'para'}
-    
-    # Format first word as uppercase
-    formatted_text = words[0].capitalize()
-    
-    # Format remaining words according to ABNT guidelines
-    for word in words[1:]:
-        if word.lower() not in lowercase_words:
-            formatted_text += ' ' + word.capitalize()
-        else:
-            formatted_text += ' ' + word.lower()
-    
-    return formatted_text
+    return format_capitalization_logic(
+        text,
+        force_after_strong_punct=True
+    )
 
-
-@qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
-def get_image_date(name, feature, parent):
-    """
-    Returns the date of the satellite image based on the provided file name, following the compact naming convention of the filename.
-    
-    <h4>Syntax</h4>
-    <p><b style="color:#0a6099;">get_date_image</b> (<i style="color:#bf0c0c;">string</i>)</p>
-
-    <h4>Argument</h4>
-    <p><i style="color:#bf0c0c;">String</i>: The file name of the Landsat or Sentinel image.</p>
-  
-    <h4>Example</h4>
-    <p>get_image_date('LC08_L1TP_216065_20210206_20210305_01_T1') -> QDate('2021-02-06')</p>
-    """
-    if name[0:4]=="LC08":  
-        return QDate.fromString( name[17:25], "yyyyMMdd" )
-    elif name[0:4]=="LE07":
-        return QDate.fromString( name[17:25], "yyyyMMdd" )
-    elif name[0:4]=="LT05":
-        return QDate.fromString( name[17:25], "yyyyMMdd" )    
-    elif name[0:3]=="S2A":
-        return QDate.fromString( name[11:19], "yyyyMMdd" )
-    elif name[0:3]=="S2B":
-        return QDate.fromString( name[11:19], "yyyyMMdd" )
-    elif name[0:3]=="T25":
-        return QDate.fromString( name[7:15], "yyyyMMdd" )
-    elif name[0:2]=="PS":
-        return QDate.fromString( name[3:11], "yyyyMMdd" )
-    else:
-        raise Exception("Invalid string, please enter a valid Sentinel or Landsat name (e.g., 'S2A_MSIL1C_20170105T013442_N0204_R031_T53NMJ_20170105T013443', 'LC08_L1TP_216065_20210206_20210305_01_T1')")
-        
-   
 @qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
 def get_satellite_name(filename, feature, parent):
     """
@@ -401,31 +242,18 @@ def get_satellite_name(filename, feature, parent):
 
     <h4>Argument</h4>
     <p><i style="color:#bf0c0c;">string</i>: The file name of the satellite image.</p>
-  
+
     <h4>Example</h4>
     <p>get_satellite_name('LC08_L1TP_216065_20210206_20210305_01_T1') -> 'LandSat 8'</p>
     <p>get_satellite_name('S2A_MSIL1C_20170105T013442_N0204_R031_T53NMJ_20170105T013443') -> 'Sentinel 2A'</p>
     <p>get_satellite_name('S2B_MSIL1C_20170105T013442_N0204_R031_T53NMJ_20170105T013443') -> 'Sentinel 2B'</p>
     """
-    if filename[0:4]=="LC08":
-        return "LandSat 8"
-    elif filename[0:4]=="LE07":
-        return "LandSat 7"
-    elif filename[0:4]=="LT05":
-        return "LandSat 5"
-    elif filename[0:3]=="S2A":
-        return "Sentinel 2A"
-    elif filename[0:3]=="S2B":
-        return "Sentinel 2B"
-    elif filename[0:3]=="S2c":
-        return "Sentinel 2C"        
-    elif filename[0:3]=="T25":
-        return "Sentinel 2"
-    elif filename[0:2]=="PS":
-        return "PlanetScope"
-    else:
-        raise Exception("Invalid filename. Please provide a valid filename according to the compact naming convention for Sentinel2 or Landsat8 images (e.g., 'S2A_MSIL1C_20170105T013442_N0204_R031_T53NMJ_20170105T013443', 'LC08_L1TP_216065_20210206_20210305_01_T1')")
-        
+    info = get_satellite_info(filename)
+    if info:
+        return info['name']
+    raise Exception("Satellite name could not be determined from the filename.")
+
+
 @qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
 def get_image_source(filename, feature, parent):
     """
@@ -436,34 +264,361 @@ def get_image_source(filename, feature, parent):
 
     <h4>Argument</h4>
     <p><i style="color:#bf0c0c;">string</i>: The file name of the satellite image.</p>
-  
+
     <h4>Example</h4>
     <p>get_source_imagen('LC08_L1TP_216065_20210206_20210305_01_T1') -> 'United States Geological Survey (USGS).'</p>
-    <p>get_source_imagen('S2A_MSIL1C_20170105T013442_N0204_R031_T53NMJ_20170105T013443') -> 'European Union\'s Earth Observation Programme (COPERNICUS).'</p>
-        """
-    if filename[0:4]=="LC09":
-        return "United States Geological Survey (USGS)."
-    elif filename[0:4]=="LE08":
-        return "United States Geological Survey (USGS)."
-    elif filename[0:4]=="LE07":
-        return "United States Geological Survey (USGS)."
-    elif filename[0:4]=="LT05":
-        return "United States Geological Survey (USGS)."
-    elif filename[0:3]=="S2A":
-        return "European Union\'s Earth Observation Programme (COPERNICUS)."
-    elif filename[0:3]=="S2B":
-        return "European Union\'s Earth Observation Programme (COPERNICUS)."
-    elif filename[0:3]=="S2C":
-        return "European Union\'s Earth Observation Programme (COPERNICUS)."
-    elif filename[0:3]=="T25":
-        return "European Union\'s Earth Observation Programme (COPERNICUS)."
-    elif filename[0:2]=="PS":
-        return "Rede MAIS/MJSP, inclui material © (2023) Planet Labs Inc. Todos os direitos reservados."
-    else:
-        raise Exception("Invalid filename. Please provide a valid filename according to the compact naming convention for Sentinel2 or Landsat8 images (e.g., 'S2A_MSIL1C_20170105T013442_N0204_R031_T53NMJ_20170105T013443', 'LC08_L1TP_216065_20210206_20210305_01_T1')")
+    <p>get_source_imagen('S2A_MSIL1C_20170105T013442_N0204_R031_T53NMJ_20170105T013443') -> 'European Union's Earth Observation Programme (COPERNICUS).'</p>
+    """
+    info = get_satellite_info(filename)
+    if info:
+        return info['source']
+    raise Exception("Image source could not be determined from the filename.")
 
 
+@qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
+def get_image_date(filename, feature, parent):
+    """
+    Returns the date of the satellite image based on the provided file name, following the compact naming convention of the filename.
+
+    <h4>Syntax</h4>
+    <p><b style="color:#0a6099;">get_date_image</b> (<i style="color:#bf0c0c;">string</i>)</p>
+
+    <h4>Argument</h4>
+    <p><i style="color:#bf0c0c;">String</i>: The file name of the Landsat or Sentinel image.</p>
+
+    <h4>Example</h4>
+    <p>get_image_date('LC08_L1TP_216065_20210206_20210305_01_T1') -> QDate('2021-02-06')</p>
+    <p>get_image_date('S2A_MSIL1C_20170105T013442_N0204_R031_T53NMJ_20170105T013443') -> QDate('2017-01-05')</p>
+    """
+    d = get_image_date_logic(filename)
+    return QDate(d.year, d.month, d.day)
 
 
+# -------------------------------------------------------------------
+#                      L O G I C   ( T E S T A B L E )
+# -------------------------------------------------------------------
+
+def validate_cpf_logic(cpf_number) -> bool:
+    s = ''.join(filter(str.isdigit, str(cpf_number)))
+    if len(s) != 11:
+        return False
+    # rejeita CPFs com todos dígitos iguais
+    if s == s[0] * 11:
+        return False
+    nums = list(map(int, s))
+    total = sum(a * b for a, b in zip(nums[:9], range(10, 1, -1)))
+    dv = (total * 10) % 11
+    if dv == 10:
+        dv = 0
+    if dv != nums[9]:
+        return False
+    total = sum(a * b for a, b in zip(nums[:10], range(11, 1, -1)))
+    dv = (total * 10) % 11
+    if dv == 10:
+        dv = 0
+    return dv == nums[10]
 
 
+def validate_cnpj_logic(cnpj_number) -> bool:
+    s = ''.join(filter(str.isdigit, str(cnpj_number)))
+    if len(s) != 14:
+        return False
+    if s == s[0] * 14:
+        return False
+    nums = list(map(int, s))
+    w1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    w2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    dv1 = 11 - (sum(n * w for n, w in zip(nums[:12], w1)) % 11)
+    dv1 = 0 if dv1 > 9 else dv1
+    dv2 = 11 - (sum(n * w for n, w in zip(nums[:13], w2)) % 11)
+    dv2 = 0 if dv2 > 9 else dv2
+    return nums[12] == dv1 and nums[13] == dv2
+
+
+def format_cpf_logic(cpf_string) -> str:
+    cleaned_string = ''.join(filter(str.isdigit, str(cpf_string)))
+    if len(cleaned_string) != 11:
+        raise ValueError(tr("Invalid number. Please provide an 11-digit numeric string."))
+    return f"{cleaned_string[:3]}.{cleaned_string[3:6]}.{cleaned_string[6:9]}-{cleaned_string[9:]}"
+
+
+def format_cnpj_logic(cnpj_string) -> str:
+    cleaned_string = ''.join(filter(str.isdigit, str(cnpj_string)))
+    if len(cleaned_string) != 14:
+        raise ValueError(tr("Invalid number. Pass a numeric string as the input parameter."))
+    return f"{cleaned_string[:2]}.{cleaned_string[2:5]}.{cleaned_string[5:8]}/{cleaned_string[8:12]}-{cleaned_string[12:]}"
+
+
+def format_cpf_cnpj_logic(cpf_cnpj_string) -> str:
+    cleaned_string = ''.join(filter(str.isdigit, str(cpf_cnpj_string)))
+    if len(cleaned_string) == 11:
+        return format_cpf_logic(cleaned_string)
+    if len(cleaned_string) == 14:
+        return format_cnpj_logic(cleaned_string)
+    raise ValueError(tr("Invalid number. Pass a numeric string as the input parameter.."))
+
+
+def mask_cpf_logic(cpf_number) -> str:
+    s = ''.join(filter(str.isdigit, str(cpf_number)))
+    if len(s) != 11:
+        return "Invalid CPF"
+    return f"***.{s[3:6]}.{s[6:9]}-**"
+
+
+def mask_name_logic(full_name) -> str:
+    parts = str(full_name).split()
+    if len(parts) < 3:
+        return str(full_name)
+    middle = ['*' * len(p) for p in parts[1:-1]]
+    return parts[0] + ' ' + ' '.join(middle) + ' ' + parts[-1]
+
+
+# -------------------------------------------------------------------
+# List of words that must remain in lowercase in names/titles
+# according to Portuguese language conventions and ABNT standards.
+# -------------------------------------------------------------------
+
+PT_BR_LOWERCASE_WORDS = {
+    # --- Artigos definidos e indefinidos ---
+    'a', 'o', 'as', 'os',
+    'um', 'uma', 'uns', 'umas',
+
+    # --- Preposições simples ---
+    'de', 'em', 'por', 'para', 'com', 'sem', 'sob', 'sobre',
+    'até', 'após', 'ante', 'contra', 'desde', 'entre', 'trás',
+
+    # --- Conjunções coordenativas ---
+    'e', 'ou', 'mas', 'nem',
+
+    # --- Conjunções subordinativas comuns ---
+    'se', 'que', 'porque', 'como', 'quando', 'conforme',
+    'embora', 'caso', 'enquanto', 'logo', 'pois', 'porquanto', 'salvo',
+
+    # --- Contrações com artigos ---
+    'da', 'do', 'das', 'dos',
+    'na', 'no', 'nas', 'nos',
+    'à', 'às', 'ao', 'aos',
+    'pela', 'pelo', 'pelas', 'pelos',
+
+    # --- Contrações com pronomes ---
+    'dela', 'dele', 'delas', 'deles',
+    'nela', 'nele', 'nelas', 'neles',
+
+    # --- Contrações demonstrativas ---
+    'deste', 'desta', 'destes', 'destas',
+    'neste', 'nesta', 'nestes', 'nestas',
+    'daquele', 'daquela', 'daqueles', 'daquelas',
+    'naquele', 'naquela', 'naqueles', 'naquelas',
+
+    # --- Outras contrações usuais ---
+    'doutro', 'doutros', 'doutra', 'doutras',
+    'noutro', 'noutros', 'noutra', 'noutras',
+
+    # --- Palavras de locuções ---
+    'depois', 'antes', 'além', 'aquém'
+}
+
+
+_PUNCT = set('"' + "'«»“”‘’" + string.punctuation)  # pontuação que pode estar colada
+_STRONG_PUNCT = {'.', ':', '!', '?', ';'}           # pontuação que reinicia capitalização em títulos
+
+def _split_affixes(token: str):
+    """Separates leading and trailing punctuation from the core of the word."""
+    if not token:
+        return "", "", ""
+    i, j = 0, len(token) - 1
+    while i <= j and token[i] in _PUNCT:
+        i += 1
+    while j >= i and token[j] in _PUNCT:
+        j -= 1
+    return token[:i], token[i:j+1], token[j+1:]
+
+def _capitalize_core(core: str) -> str:
+    """Capitalizes a regular word.
+    NDoes not alter acronyms (≥2 letters and all uppercase)."""
+    if not core:
+        return core
+    if any(c.isalpha() for c in core) and core.isupper() and len(core) > 1:
+        return core  # sigla → não toca
+    return core[0].upper() + core[1:].lower()
+
+def _process_hyphenated(core: str, force_capitalize: bool, lowercase_words: set) -> str:
+    """Processes hyphenated words part by part."""
+    parts = core.split('-')
+    out = []
+    for part in parts:
+        if not part:
+            out.append(part)
+            continue
+        lw = part.lower()
+        if force_capitalize or lw not in lowercase_words:
+            out.append(_capitalize_core(part))
+        else:
+            out.append(lw)
+    return '-'.join(out)
+
+def format_capitalization_logic(
+    text: str,
+    force_after_strong_punct: bool = False
+) -> str:
+    """
+    Capitalizes names/titles according to PT-BR/ABNT rules:
+      - the first word is always capitalized;
+      - articles/prepositions/conjunctions remain lowercase (list);
+      - after strong punctuation (.:;!?) the next word is capitalized;
+      - preserves acronyms as they were typed;
+      - handles hyphenated words.
+    """
+    if not text:
+        return ""
+
+    lower = PT_BR_LOWERCASE_WORDS
+
+    tokens = str(text).split()
+    result = []
+    next_force = True
+
+    for tok in tokens:
+        lead, core, trail = _split_affixes(tok)
+
+        if core:
+            lw = core.lower()
+            force_cap = next_force
+            if '-' in core:
+                new_core = _process_hyphenated(core, force_cap, lower)
+            else:
+                if force_cap or lw not in lower:
+                    new_core = _capitalize_core(core)
+                else:
+                    new_core = lw
+        else:
+            new_core = core
+
+        result.append(f"{lead}{new_core}{trail}")
+
+        # ABNT: restarts capitalization after strong punctuation (in titles)
+        if force_after_strong_punct and any(ch in _STRONG_PUNCT for ch in tok):
+            next_force = True
+        else:
+            next_force = False
+
+    return ' '.join(result)
+
+
+# -------------------------------------------------------------------
+#   This dictionary for all satellites.
+# -------------------------------------------------------------------
+
+SATELLITE_PROPERTIES = {
+    # Regex Pattern: { 'name': ..., 'date_format': ..., 'source': ... }
+
+    # --- Landsat Family ---
+    r'^LC09': {'name': 'LandSat 9', 'date_format': 'YYYYMMDD', 'source': 'United States Geological Survey (USGS).'},
+    r'^LC08': {'name': 'LandSat 8', 'date_format': 'YYYYMMDD', 'source': 'United States Geological Survey (USGS).'},
+    r'^LE07': {'name': 'LandSat 7', 'date_format': 'YYYYMMDD', 'source': 'United States Geological Survey (USGS).'},
+    r'^LT05': {'name': 'LandSat 5', 'date_format': 'YYYYMMDD', 'source': 'United States Geological Survey (USGS).'},
+    r'^LT04': {'name': 'LandSat 4', 'date_format': 'YYYYMMDD', 'source': 'United States Geological Survey (USGS).'},
+    r'^LM0[1-3]': {'name': 'LandSat MSS (1–3)', 'date_format': 'YYYYMMDD', 'source': 'United States Geological Survey (USGS).'},
+
+    # --- Sentinel Family (Copernicus) ---
+    r'^S1[AB]': {'name': 'Sentinel 1', 'date_format': 'YYYYMMDD',
+                 'source': "European Union's Earth Observation Programme (COPERNICUS)."},
+    r'^S2[A-C]': {'name': 'Sentinel 2', 'date_format': 'YYYYMMDD',
+                  'source': "European Union's Earth Observation Programme (COPERNICUS)."},
+    r'^S3[AB]': {'name': 'Sentinel 3', 'date_format': 'YYYYMMDD',
+                 'source': "European Union's Earth Observation Programme (COPERNICUS)."},
+    r'^S5P': {'name': 'Sentinel 5P', 'date_format': 'YYYYMMDD',
+              'source': "European Union's Earth Observation Programme (COPERNICUS)."},
+
+    # Pattern for individual bands
+    r'^T\d{2}[A-Z]{3}': {'name': 'Sentinel 2', 'date_format': 'YYYYMMDD',
+                         'source': "European Union's Earth Observation Programme (COPERNICUS)."},
+
+    # --- NASA Satellites (EOS) ---
+    r'^MOD|MYD': {'name': 'MODIS', 'date_format': 'JULIAN_y_ddd',
+                  'source': 'National Aeronautics and Space Administration (NASA).'},
+    r'^A\d{7}\b': {'name': 'MODIS', 'date_format': 'JULIAN_y_ddd', 'source': 'National Aeronautics and Space Administration (NASA).'},
+    r'^(VNP|VJ\d{2})': {'name': 'VIIRS', 'date_format': 'JULIAN_y_ddd', 'source': 'National Aeronautics and Space Administration (NASA).'},
+    r'^AST_': {'name': 'ASTER', 'date_format': 'MMDDYYYY', 'source': 'NASA/METI.'},
+
+    # --- Indian Remote Sensing Satellites (IRS) ---
+    r'^L[34]_RS[12]|^AW_RS[12]': {'name': 'Resourcesat', 'date_format': 'YYYYMMDD',
+                                  'source': 'Indian Space Research Organisation (ISRO).'},
+    r'^C[123]_': {'name': 'Cartosat', 'date_format': 'YYYYMMDD',
+                  'source': 'Indian Space Research Organisation (ISRO).'},
+
+    # --- Sino-Brazilian Satellite ---
+    r'^CBERS': {'name': 'CBERS', 'date_format': 'YYYYMMDD',
+                'source': 'Instituto Nacional de Pesquisas Espaciais (INPE) / China Academy of Space Technology (CAST).'},
+    r'^CBERS[_-]?4A': {'name': 'CBERS-4A', 'date_format': 'YYYYMMDD',
+                       'source': 'Instituto Nacional de Pesquisas Espaciais (INPE) / China Academy of Space Technology (CAST).'},
+
+    # --- High-Resolution Commercial Satellites ---
+    r'WV0[1-4]|GE01': {'name': 'Maxar/DigitalGlobe', 'date_format': 'DDMONYY', 'source': 'Maxar Technologies.'},
+    r'^IK01': {'name': 'IKONOS', 'date_format': 'YYYYMMDD', 'source': 'Maxar Technologies.'},
+    r'^QB02': {'name': 'QuickBird', 'date_format': 'YYYYMMDD', 'source': 'Maxar Technologies.'},
+
+    # --- Planet (variações) ---
+    r'PSScene': {'name': 'PlanetScope', 'date_format': 'YYYYMMDD',
+                 'source': 'Includes material © (2025) Planet Labs Inc. All rights reserved.'},
+    r'^SkySat': {'name': 'SkySat', 'date_format': 'YYYYMMDD',
+                 'source': 'Includes material © (2025) Planet Labs Inc. All rights reserved.'},
+    r'_psb_|_pss_': {'name': 'PlanetScope', 'date_format': 'YYYYMMDD',
+                     'source': 'Includes material © (2025) Planet Labs Inc. All rights reserved.'}
+}
+
+
+def get_satellite_info(filename):
+    """
+    Identifies the satellite from the filename and returns a dictionary of its properties.
+    """
+    for pattern, properties in SATELLITE_PROPERTIES.items():
+        if re.search(pattern, filename, re.IGNORECASE):
+            return properties  # Return the properties dictionary
+    return None
+
+
+def get_image_date_logic(filename) -> date:
+    """
+    Extracts the acquisition date from the filename, returning a datetime.date.
+    """
+    info = get_satellite_info(filename)
+    if not info:
+        raise ValueError("Could not identify satellite to determine date format.")
+    date_format = info['date_format']
+
+    if date_format == 'YYYYMMDD':
+        possible_dates_str = re.findall(r'\d{8}', filename)
+        vals = []
+        for s in possible_dates_str:
+            try:
+                vals.append(datetime.strptime(s, "%Y%m%d").date())
+            except ValueError:
+                pass
+        if vals:
+            return min(vals)
+
+    elif date_format == 'JULIAN_y_ddd':
+        match = re.search(r'A?(\d{4})(\d{3})', filename, re.IGNORECASE)
+        if match:
+            year, day_of_year = match.groups()
+            return datetime.strptime(f'{year}{day_of_year}', '%Y%j').date()
+
+    elif date_format == 'MMDDYYYY':
+        possible_dates_str = re.findall(r'\d{8}', filename)
+        vals = []
+        for s in possible_dates_str:
+            for fmt in ("%Y%m%d", "%m%d%Y"):
+                try:
+                    vals.append(datetime.strptime(s, fmt).date())
+                except ValueError:
+                    pass
+        if vals:
+            return min(vals)
+
+    elif date_format == 'DDMONYY':
+        match = re.search(r'(\d{2}[A-Za-z]{3}\d{2})', filename)
+        if match:
+            return datetime.strptime(match.group(1).upper(), '%d%b%y').date()
+
+    raise ValueError(f"Could not parse date from filename with expected format '{date_format}'.")

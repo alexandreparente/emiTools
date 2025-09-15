@@ -141,7 +141,17 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
             if file_name.lower().endswith(image_extensions):
                 input_photos.append(os.path.join(input_folder, file_name))
 
+         # Get output folder
         output_folder = self.parameterAsString(parameters, self.OUTPUT_FOLDER, context)
+        
+        if not output_folder:
+            output_folder = tempfile.mkdtemp()  # Create a secure temporary folder
+            
+        # Try to create the folder if it doesn't exist
+        if not os.path.exists(output_folder):
+            os.makedirs(output_folder)
+        
+        
         svg_file_path = self.parameterAsFile(parameters, self.STAMP_IMAGE, context)
 
         # Collects text and style parameters

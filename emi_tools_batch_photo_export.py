@@ -54,7 +54,7 @@ class emiToolsBatchPhotoExport(QgsProcessingAlgorithm):
     def initAlgorithm(self, config=None):
         self.addParameter(QgsProcessingParameterFeatureSource(
             self.INPUT_LAYER,
-            tr('Imput layer'),
+            tr('Input layer'),
             [QgsProcessing.TypeVector]
         ))
 
@@ -73,8 +73,14 @@ class emiToolsBatchPhotoExport(QgsProcessingAlgorithm):
     def processAlgorithm(self, parameters, context, feedback):
         layer = self.parameterAsSource(parameters, self.INPUT_LAYER, context)
         field_name = self.parameterAsString(parameters, self.INPUT_FIELD, context)
+        
+	# Get output folder
         output_folder = self.parameterAsString(parameters, self.OUTPUT_FOLDER, context)
-
+        
+        if not output_folder:
+            output_folder = tempfile.mkdtemp()  # Create a secure temporary folder
+            
+        # Try to create the folder if it doesn't exist
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
 
