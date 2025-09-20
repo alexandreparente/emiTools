@@ -26,261 +26,337 @@ __author__ = 'Alexandre Parente Lima'
 __date__ = '2024-10-10'
 __copyright__ = '(C) 2024 by Alexandre Parente Lima'
 
-# This will get replaced with a git SHA1 when you do a git archive
-
 __revision__ = '$Format:%H$'
 
+from qgis.PyQt.QtCore import (QCoreApplication, Qt, QRect, QRectF, QDateTime, QVariant, QFileInfo)
+from qgis.PyQt.QtGui import (QImage, QPainter, QFont, QColor, QFontMetrics, QFontDatabase)
+from qgis.PyQt.QtSvg import QSvgRenderer
+from qgis.PyQt.QtWidgets import QApplication
 from qgis.core import (QgsProcessing,
+                       QgsVectorFileWriter,
                        QgsProcessingAlgorithm,
-                       QgsProcessingParameterMultipleLayers,
+                       QgsProcessingParameterFeatureSource,
+                       QgsProcessingParameterField,
+                       QgsProcessingParameterBoolean,
                        QgsProcessingParameterFolderDestination,
                        QgsProcessingParameterFile,
                        QgsProcessingParameterString,
                        QgsProcessingParameterColor,
                        QgsProcessingParameterEnum,
                        QgsProcessingParameterNumber,
-                       QgsProcessingException,
                        QgsProject,
+                       QgsVectorLayer,
+                       QgsFeature,
+                       QgsProcessingException,
+                       QgsWkbTypes,
                        QgsExifTools,
                        QgsCoordinateFormatter,
                        QgsFields,
                        QgsField,
-                       QgsFeature,
-                       QgsVectorLayer,
                        QgsPoint,
                        QgsGeometry,
                        QgsPointXY)
 
-from qgis.PyQt.QtCore import (Qt,
-                              QFileInfo,
-                              QCoreApplication,
-                              QRect,
-                              QRectF,
-                              QDateTime,
-                              QVariant)
-from qgis.PyQt.QtGui import (QImage,
-                             QPainter,
-                             QFont,
-                             QColor,
-                             QFontMetrics,
-                             QFontDatabase)
-from qgis.PyQt.QtSvg import QSvgRenderer
-from qgis.PyQt.QtWidgets import QApplication
-
 import os
+import tempfile
 from .emi_tools_util import tr
 
 
 class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
-    # Definition of input and output parameters
-    INPUT_PHOTO = 'INPUT_PHOTO'  # Input photo
-    OUTPUT_FOLDER = 'OUTPUT_FOLDER'  # Output folder
-    STAMP_IMAGE = 'STAMP_IMAGE'  # SVG image to be stamped
-    INPUT_TEXT = 'INPUT_TEXT'  # Main text to be inserted into the image
-    FONT_COLOR = 'FONT_COLOR'  # Font color
-    FONT_SIZE = 'FONT_SIZE'  # Font size
+    INPUT_PHOTO = 'INPUT_PHOTO'
+    OUTPUT_FOLDER = 'OUTPUT_FOLDER'
+    STAMP_IMAGE = 'STAMP_IMAGE'
+    INPUT_TEXT = 'INPUT_TEXT'
+    METADATA_TO_STAMP = 'METADATA_TO_STAMP'
+    FONT_COLOR = 'FONT_COLOR'
+    FONT_SIZE = 'FONT_SIZE'
     FONT_NAME = 'FONT_NAME'
     POSITION = 'POSITION'
+
     POSITION_OPTIONS = ['Bottom Left', 'Bottom Right', 'Top Left', 'Top Right']
-    
-        
+
+    METADATA_MAP = {
+        'photo': 'Photo Path', 'filename': 'Filename', 'directory': 'Directory',
+        'altitude': 'Altitude', 'direction': 'Direction', 'rotation': 'Rotation',
+        'longitude': 'Longitude', 'latitude': 'Latitude', 'timestamp': 'DateTime',
+        'coordinates': 'Coordinates', 'model': 'Model', 'CamReverse': 'CamReverse',
+        'FlightPitchDegree': 'Flight Pitch Degree', 'FlightRollDegree': 'Flight Roll Degree',
+        'FlightYawDegree': 'Flight Yaw Degree', 'GimbalPitchDegree': 'Gimbal Pitch Degree',
+        'GimbalReverse': 'GimbalReverse', 'GimbalRollDegree': 'Gimbal Roll Degree',
+        'GimbalYawDegree': 'Gimbal Yaw Degree', 'RelativeAltitude': 'Relative Altitude'
+    }
+
+    def get_translated_position_options(self):
+        """Retorna uma lista de opções de posição traduzidas para a interface."""
+        return [
+            tr('Bottom Left'),
+            tr('Bottom Right'),
+            tr('Top Left'),
+            tr('Top Right')
+        ]
+
+    def get_translated_metadata_map(self):
+        """
+        Retorna um dicionário mapeando chaves internas para nomes traduzidos.
+        Este é o local central para todas as traduções de metadados.
+        """
+        return {
+            'photo': tr('Photo Path'),
+            'filename': tr('Filename'),
+            'directory': tr('Directory'),
+            'altitude': tr('Altitude'),
+            'direction': tr('Direction'),
+            'rotation': tr('Rotation'),
+            'longitude': tr('Longitude'),
+            'latitude': tr('Latitude'),
+            'timestamp': tr('DateTime'),
+            'coordinates': tr('Coordinates'),
+            'model': tr('Model'),
+            'CamReverse': tr('CamReverse'),
+            'FlightPitchDegree': tr('Flight Pitch Degree'),
+            'FlightRollDegree': tr('Flight Roll Degree'),
+            'FlightYawDegree': tr('Flight Yaw Degree'),
+            'GimbalPitchDegree': tr('Gimbal Pitch Degree'),
+            'GimbalReverse': tr('GimbalReverse'),
+            'GimbalRollDegree': tr('Gimbal Roll Degree'),
+            'GimbalYawDegree': tr('Gimbal Yaw Degree'),
+            'RelativeAltitude': tr('Relative Altitude')
+        }
+
     def initAlgorithm(self, config=None):
         # Initializes the algorithm's parameters
 
-        self.addParameter(QgsProcessingParameterFile(self.INPUT_PHOTO,tr('Input folder'),behavior=QgsProcessingParameterFile.Folder))
+        self.addParameter(
+            QgsProcessingParameterFile(
+                self.INPUT_PHOTO,
+                tr('Input folder'),
+                behavior=QgsProcessingParameterFile.Folder
+            )
+        )
 
-        self.addParameter(QgsProcessingParameterFile(self.STAMP_IMAGE, tr('SVG Image'), extension='svg', optional=True))
+        self.addParameter(
+            QgsProcessingParameterFile(
+                self.STAMP_IMAGE,
+                tr('SVG Image'),
+                extension='svg',
+                optional=True
+            )
+        )
 
-        self.addParameter(QgsProcessingParameterString(self.INPUT_TEXT, tr('Text'),defaultValue="", multiLine=True))
+        self.addParameter(
+            QgsProcessingParameterString(
+                self.INPUT_TEXT,
+                tr('Text'),
+                defaultValue="",
+                multiLine=True
+            )
+        )
 
-        # Get the available fonts on the system using QFontDatabase
+        translated_map = self.get_translated_metadata_map()
+        metadata_options_display = list(translated_map.values())
+
+        untranslated_defaults = ['Model', 'DateTime', 'Coordinates', 'Altitude']
+        default_indices = [list(self.METADATA_MAP.values()).index(opt) for opt in untranslated_defaults if
+                           opt in self.METADATA_MAP.values()]
+
+        self.addParameter(
+            QgsProcessingParameterEnum(
+                self.METADATA_TO_STAMP,
+                tr('Metadata to stamp'),
+                options=metadata_options_display,
+                allowMultiple=True,
+                defaultValue=default_indices
+            )
+        )
+
         font_db = QFontDatabase()
         fonts = font_db.families()
-        
+
         # Get the default font from QGIS
         app = QApplication.instance()
-        default_font = app.font().family() 
+        default_font = app.font().family()
 
         # Check if the default font is available on the system
         default_font_index = fonts.index(default_font) if default_font in fonts else 0
-        
+
         # Add the Enum parameter to select the font
-        self.addParameter(QgsProcessingParameterEnum(self.FONT_NAME,tr('Font'), options=fonts,defaultValue=default_font_index))
-        
-        self.addParameter(QgsProcessingParameterColor(self.FONT_COLOR, tr('Font color'), defaultValue=QColor(255, 255, 0)))
-        self.addParameter(QgsProcessingParameterNumber(self.FONT_SIZE, tr('Font size'), defaultValue=60, minValue=1, maxValue=500))
-        
+        self.addParameter(
+            QgsProcessingParameterEnum(
+                self.FONT_NAME,
+                tr('Font'),
+                options=fonts,
+                defaultValue=default_font_index
+            )
+        )
+
+        self.addParameter(
+            QgsProcessingParameterColor(
+                self.FONT_COLOR,
+                tr('Font color'),
+                defaultValue=QColor(255, 255, 0)
+            )
+        )
+
+        self.addParameter(
+            QgsProcessingParameterNumber(
+                self.FONT_SIZE,
+                tr('Font size'),
+                defaultValue=60,
+                minValue=1,
+                maxValue=500
+            )
+        )
+
         # Return the translated options for display to the user
         def positionOptions():
-           return [
-               tr('Bottom Left'), 
-               tr('Bottom Right'), 
-               tr('Top Left'), 
-               tr('Top Right')
-           ]
-                
-        # Calling the function to get the translated options   
-        self.addParameter(QgsProcessingParameterEnum(
-            self.POSITION,
-            tr('Position of text and image'),
-            options=positionOptions(),  
-            defaultValue=0  
-        ))       
+            return [
+                tr('Bottom Left'),
+                tr('Bottom Right'),
+                tr('Top Left'),
+                tr('Top Right')
+            ]
 
-        self.addParameter(QgsProcessingParameterFolderDestination(self.OUTPUT_FOLDER, tr('Output folder')))
+        # Calling the function to get the translated options
+        self.addParameter(
+            QgsProcessingParameterEnum(
+                self.POSITION,
+                tr('Position of text and image'),
+                options=self.get_translated_position_options(),
+                defaultValue=0
+            )
+        )
+
+        self.addParameter(
+            QgsProcessingParameterFolderDestination(
+                self.OUTPUT_FOLDER,
+                tr('Output folder')
+            )
+        )
 
     def processAlgorithm(self, parameters, context, feedback):
         # Loads the input raster layers
 
         input_folder = self.parameterAsString(parameters, self.INPUT_PHOTO, context)
 
-        # Lista os arquivos de imagem na pasta
+        # List the image files in the folder
         image_extensions = ('.jpg', '.jpeg', '.tif', '.tiff', '.png')
-        input_photos = []
-        for file_name in os.listdir(input_folder):
-            if file_name.lower().endswith(image_extensions):
-                input_photos.append(os.path.join(input_folder, file_name))
+        input_photos = [os.path.join(input_folder, f) for f in os.listdir(input_folder) if
+                        f.lower().endswith(image_extensions)]
 
-         # Get output folder
+        # Get output folder
         output_folder = self.parameterAsString(parameters, self.OUTPUT_FOLDER, context)
-        
-        if not output_folder:
-            output_folder = tempfile.mkdtemp()  # Create a secure temporary folder
-            
-        # Try to create the folder if it doesn't exist
-        if not os.path.exists(output_folder):
-            os.makedirs(output_folder)
-        
-        
+        if not output_folder: output_folder = tempfile.mkdtemp()
+        if not os.path.exists(output_folder): os.makedirs(output_folder)
+
         svg_file_path = self.parameterAsFile(parameters, self.STAMP_IMAGE, context)
 
         # Collects text and style parameters
         input_text = self.parameterAsString(parameters, self.INPUT_TEXT, context)
         font_color = self.parameterAsColor(parameters, self.FONT_COLOR, context)
         font_size = self.parameterAsInt(parameters, self.FONT_SIZE, context)
-        
+
         # get font
         font_index = self.parameterAsEnum(parameters, self.FONT_NAME, context)
         font_db = QFontDatabase()
         fonts = font_db.families()
-        font_name = fonts[font_index]        
-        
-        # Use the index to access the string (untranslated) 
+        font_name = fonts[font_index]
+
+        # Use the index to access the string (untranslated)
         position_index = self.parameterAsInt(parameters, self.POSITION, context)
         position = self.POSITION_OPTIONS[position_index]
 
-        # Initializes the list before use
-        coordinates_list = []
+        translated_map = self.get_translated_metadata_map()
+        internal_keys = list(translated_map.keys())
+        selected_indices = self.parameterAsEnums(parameters, self.METADATA_TO_STAMP, context)
+        internal_keys_to_stamp = [internal_keys[i] for i in selected_indices]
 
         # Processes each selected image
         for raster_file_path in input_photos:
             input_qimage = QImage(raster_file_path)
 
             if input_qimage.isNull():
-                raise QgsProcessingException(tr("Failed to load input image."))
+                feedback.pushWarning(tr("Failed to load input image: {}").format(raster_file_path))
+                continue
 
-            full_map_exif, exif_latitude, exif_longitude, exif_model_str, exif_datetime_str, exif_coordinates_str, exif_altitude_str = self.get_exif_data(
-                raster_file_path, feedback)
+            exif_data = self.get_exif_data(raster_file_path, feedback)
 
-            self.insert_stamp(
-                input_qimage,
-                output_folder,
-                input_text,
-                exif_model_str,
-                exif_datetime_str,
-                exif_coordinates_str,
-                exif_altitude_str,
-                svg_file_path,
-                font_color,
-                font_size,
-                position,
-                font_name,
-                full_map_exif,
-                feedback
-            )
+            # Transform the input_text into a list of lines while preserving empty paragraphs
+            if input_text:
+                lines_to_stamp = input_text.splitlines()
+            else:
+                lines_to_stamp = []
 
+            # Add the selected metadata as separate lines (keeping empty lines if any)
+            for key in internal_keys_to_stamp:
+                value = exif_data.get(key)
+                if value is not None:
+                    friendly_name = translated_map.get(key, key)
+                    if isinstance(value, float):
+                        formatted_value = f"{value:.2f}"
+                    else:
+                        formatted_value = value
+                    lines_to_stamp.append(f"{friendly_name}: {formatted_value}")
+
+            self.insert_stamp(input_qimage, svg_file_path, font_color, font_size, position, font_name, lines_to_stamp,
+                              feedback)
             output_image_path = self.save_image(input_qimage, raster_file_path, output_folder, feedback)
-            self.insert_exif_data(output_image_path, full_map_exif, feedback)
 
+            self.insert_exif_data(output_image_path, exif_data.get('full_map', {}), feedback)
             feedback.pushInfo(tr(f"Image saved at {output_image_path}"))
-
-            coordinates_list.append((
-                exif_latitude,
-                exif_longitude,
-                os.path.basename(raster_file_path),
-                output_image_path,
-                exif_model_str,
-                exif_datetime_str,
-                exif_coordinates_str,
-                exif_altitude_str
-            ))
-
-        # Creates and loads the point layer with the coordinates
-        #self.create_points_layer(coordinates_list)
 
         return {self.OUTPUT_FOLDER: output_folder}
 
-    def get_raster_layer(self, parameters, context, feedback):
-        # Gets the input raster layer
-        input_photo = self.parameterAsRasterLayer(parameters, self.INPUT_PHOTO, context)
-        if input_photo is None or not input_photo.isValid():
-            raise QgsProcessingException(tr("No valid raster layer provided."))
-        return input_photo
-
     def get_exif_data(self, temp_file_path, feedback):
-        # Instantiates QgsExifTools
         exif_tools = QgsExifTools()
+        data = {
+            'photo': temp_file_path,
+            'filename': os.path.basename(temp_file_path),
+            'directory': os.path.dirname(temp_file_path)
+        }
+        tags = exif_tools.readTags(temp_file_path)
+        data['full_map'] = tags
 
-        # Checks if the image contains a valid geotag
-        if not exif_tools.hasGeoTag(temp_file_path):
-            feedback.pushInfo("No valid geotag found.")
-            return {}, None, None, None, None, None, None
+        def get_float(tag_name):
+            val = tags.get(tag_name)
+            try:
+                return float(val) if val is not None else None
+            except (ValueError, TypeError):
+                return None
 
-        full_map_exif = exif_tools.readTags (temp_file_path)
-        print(f' dados: {full_map_exif}')
+        if exif_tools.hasGeoTag(temp_file_path):
+            geo_tag_result = exif_tools.getGeoTag(temp_file_path)
+            if geo_tag_result and isinstance(geo_tag_result[0], QgsPoint):
+                exif_point = geo_tag_result[0]
+                data['latitude'] = exif_point.y()
+                data['longitude'] = exif_point.x()
+                lat_dms = QgsCoordinateFormatter.formatY(data['latitude'],
+                                                         QgsCoordinateFormatter.FormatDegreesMinutesSeconds, 2)
+                lon_dms = QgsCoordinateFormatter.formatX(data['longitude'],
+                                                         QgsCoordinateFormatter.FormatDegreesMinutesSeconds, 2)
+                data['coordinates'] = f"{lat_dms}, {lon_dms}"
 
-        # Gets the geographic coordinates
-        geo_tag_result = exif_tools.getGeoTag(temp_file_path)
-        exif_coordinates = geo_tag_result[0]  # Coordenadas geográficas
+        data['altitude'] = get_float('Exif.GPSInfo.GPSAltitude')
+        data['direction'] = get_float('Exif.GPSInfo.GPSImgDirection')
+        dt = tags.get('Exif.Photo.DateTimeOriginal')
+        if isinstance(dt, QDateTime):
+            data['timestamp'] = dt.toString("yyyy-MM-dd HH:mm:ss")
+        data['model'] = tags.get('Exif.Image.Model')
 
-        # Gets the EXIF date
-        exif_datetime = exif_tools.readTag(temp_file_path, 'Exif.Photo.DateTimeOriginal')
-        if isinstance(exif_datetime, QDateTime):
-            exif_datetime_str = exif_datetime.toString("yyyy-MM-dd HH:mm:ss")
-        else:
-            exif_datetime_str = None
-         
-        # Gets the EXIF model
-        exif_model_str = exif_tools.readTag(temp_file_path, 'Exif.Image.Model')
-        if not exif_model_str:
-            exif_model_str = None
+        dji_fields = {
+            'CamReverse': 'Xmp.drone-dji.CamReverse', 'FlightPitchDegree': 'Xmp.drone-dji.FlightPitchDegree',
+            'FlightRollDegree': 'Xmp.drone-dji.FlightRollDegree', 'FlightYawDegree': 'Xmp.drone-dji.FlightYawDegree',
+            'GimbalPitchDegree': 'Xmp.drone-dji.GimbalPitchDegree', 'GimbalReverse': 'Xmp.drone-dji.GimbalReverse',
+            'GimbalRollDegree': 'Xmp.drone-dji.GimbalRollDegree', 'GimbalYawDegree': 'Xmp.drone-dji.GimbalYawDegree',
+            'RelativeAltitude': 'Xmp.drone-dji.RelativeAltitude'
+        }
+        for key, tag in dji_fields.items():
+            data[key] = get_float(tag)
 
-        # Gets the EXIF altitude
-        if exif_tools.readTag(temp_file_path, 'Exif.GPSInfo.GPSAltitude'):
-            exif_altitude_str = f"{exif_tools.readTag(temp_file_path, 'Exif.GPSInfo.GPSAltitude')} m"
-        else:
-            exif_altitude_str = None
-         
-        
-        # Formats the coordinates
-        if exif_coordinates and isinstance(exif_coordinates, QgsPoint):
-            exif_latitude = exif_coordinates.y()
-            exif_longitude = exif_coordinates.x()
+        data['rotation'] = data.get('direction') or data.get('FlightYawDegree')
+        return data
 
-            latitude_dms = QgsCoordinateFormatter.formatY(exif_latitude, QgsCoordinateFormatter.FormatDegreesMinutesSeconds,2)
-            longitude_dms = QgsCoordinateFormatter.formatX(exif_longitude, QgsCoordinateFormatter.FormatDegreesMinutesSeconds, 2)
-
-            exif_coordinates_str = f"{latitude_dms}, {longitude_dms}"
-
-        else:
-            exif_coordinates_str = None
-
-        return full_map_exif, exif_latitude, exif_longitude, exif_model_str, exif_datetime_str, exif_coordinates_str, exif_altitude_str
-
-    def insert_stamp(self, input_qimage, output_folder, input_text, exif_model_str, exif_datetime_str,
-                     exif_coordinates_str, exif_altitude_str, svg_file_path,
-                     font_color, font_size, position, font_name, full_map_exif, feedback):
-
+    def insert_stamp(self, input_qimage, svg_file_path, font_color, font_size, position, font_name, lines_to_stamp,
+                     feedback):
         painter = QPainter(input_qimage)
 
         # Input image dimensions
@@ -291,96 +367,77 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
         font = QFont(font_name, font_size)
         painter.setFont(font)
 
-        # Concatenate all texts into a single string, separating by line breaks
-        full_text_lines = [input_text]
+        # Ensure that no None entries remain
+        full_text_lines = [line if line is not None else '' for line in lines_to_stamp]
 
-        # Add EXIF information
-        full_text_lines.extend([exif_model_str, exif_datetime_str, exif_coordinates_str, exif_altitude_str])
+        # Create the final text preserving line breaks and empty paragraphs
+        full_text = "\n".join(full_text_lines)
 
-        # Exclude None values
-        full_text_lines = [line for line in full_text_lines if line is not None]
+        if (not full_text.strip()) and not svg_file_path:
+            painter.end()
+            return
 
-        # Create the final string with line breaks
-        full_text = "\n".join(full_text_lines).strip()
-
-        # Calculate the total text height based on the number of lines
         metrics = QFontMetrics(font)
         line_spacing = metrics.lineSpacing()
-        lines = full_text.split('\n')
-        num_lines = len(lines)
 
+        # Count all lines, including empty ones
+        num_lines = max(1, len(full_text.split('\n')))
         total_text_height = line_spacing * num_lines
 
-        # offset of text and image
         image_offset = 50
 
+        svg_width, svg_height = 0, 0
+        svg_renderer = None
         if svg_file_path:
-            # Load the SVG file
             svg_renderer = QSvgRenderer(svg_file_path)
-            if not svg_renderer.isValid():
-                raise QgsProcessingException(tr(f"Failed to load SVG file: {svg_file_path}"))
+            if svg_renderer.isValid():
+                svg_size = svg_renderer.defaultSize()
+                if svg_size.height() > 0:
+                    svg_aspect_ratio = svg_size.width() / svg_size.height()
+                    svg_height = total_text_height if total_text_height > 0 else 100
+                    svg_width = svg_height * svg_aspect_ratio
+            else:
+                feedback.pushWarning(tr(f"Failed to load SVG file: {svg_file_path}"))
+                svg_renderer = None
 
-            # Calculate SVG dimensions
-            svg_size = svg_renderer.defaultSize()
-            svg_aspect_ratio = svg_size.height() / svg_size.width()
-            svg_rwidth = total_text_height * svg_aspect_ratio
+        text_width = image_width - (2 * image_offset) - (svg_width + image_offset if svg_renderer else 0)
+        h_offset = svg_width + image_offset if svg_renderer else 0
 
         if position == 'Bottom Left':
-            alignment = Qt.AlignLeft
-            if svg_file_path:
-                svg_rect = QRectF(float(image_offset), float(image_height - total_text_height - image_offset),
-                                  float(total_text_height), float(svg_rwidth))
-                text_rect = QRect(total_text_height + 2 * image_offset, image_height - image_offset - total_text_height,
-                                  image_width - total_text_height - 2 * image_offset, total_text_height)
-            else:
-                text_rect = QRect(image_offset, image_height - image_offset - total_text_height,
-                                  image_width - 2 * image_offset, total_text_height)
-
+            alignment = Qt.AlignLeft | Qt.AlignBottom
+            svg_y_base = image_height - image_offset - (max(total_text_height, svg_height))
+            svg_x, svg_y = image_offset, svg_y_base + (max(total_text_height, svg_height) - svg_height) / 2
+            text_x, text_y = svg_x + h_offset, image_height - image_offset - total_text_height
         elif position == 'Bottom Right':
-            alignment = Qt.AlignRight
-            if svg_file_path:
-                svg_rect = QRectF(float(image_width - total_text_height - image_offset),
-                                  float(image_height - total_text_height - image_offset), float(total_text_height),
-                                  float(svg_rwidth))
-                text_rect = QRect(50, image_height - total_text_height - image_offset,
-                                  image_width - total_text_height - 3 * image_offset,
-                                  total_text_height)
-            else:
-                text_rect = QRect(image_offset, image_height - image_offset - total_text_height,
-                                  image_width - 2 * image_offset, total_text_height)
-
+            alignment = Qt.AlignRight | Qt.AlignBottom
+            svg_y_base = image_height - image_offset - (max(total_text_height, svg_height))
+            svg_x, svg_y = image_width - image_offset - svg_width, svg_y_base + (
+                    max(total_text_height, svg_height) - svg_height) / 2
+            text_x, text_y = image_offset, image_height - image_offset - total_text_height
         elif position == 'Top Left':
-            alignment = Qt.AlignLeft
-            if svg_file_path:
-                svg_rect = QRectF(float(image_offset), float(image_offset), float(total_text_height), float(svg_rwidth))
-                text_rect = QRect(total_text_height + 2 * image_offset, image_offset,
-                                  image_width - total_text_height - 2 * image_offset, total_text_height)
-            else:
-                text_rect = QRect(image_offset, image_offset, image_width - 2 * image_offset, total_text_height)
-        elif position == 'Top Right':
-            alignment = Qt.AlignRight
-            if svg_file_path:
-                svg_rect = QRectF(float(image_width - total_text_height - image_offset), float(image_offset),
-                                  float(total_text_height),
-                                  float(svg_rwidth))
-                text_rect = QRect(image_offset, image_offset, image_width - total_text_height - 3 * image_offset,
-                                  total_text_height)
-            else:
-                text_rect = QRect(image_offset, image_offset, image_width - 2 * image_offset, total_text_height)
+            alignment = Qt.AlignLeft | Qt.AlignTop
+            svg_y_base = image_offset
+            svg_x, svg_y = image_offset, svg_y_base + (max(total_text_height, svg_height) - svg_height) / 2
+            text_x, text_y = svg_x + h_offset, image_offset
+        else:  # Top Right
+            alignment = Qt.AlignRight | Qt.AlignTop
+            svg_y_base = image_offset
+            svg_x, svg_y = image_width - image_offset - svg_width, svg_y_base + (
+                    max(total_text_height, svg_height) - svg_height) / 2
+            text_x, text_y = image_offset, image_offset
 
-        # Set the text color and draw it in the defined position
+        text_rect = QRect(int(text_x), int(text_y), int(text_width), int(total_text_height))
         painter.setPen(QColor(font_color))
-        painter.drawText(text_rect, alignment, full_text)  # Remover o argumento incorreto Qt.TextWordWrap
+        painter.drawText(text_rect, alignment, full_text)
 
-        if svg_file_path:
-            # Render the SVG image in the calculated position
+        if svg_renderer:
+            svg_rect = QRectF(svg_x, svg_y, svg_width, svg_height)
             svg_renderer.render(painter, svg_rect)
 
         painter.end()
 
     def insert_exif_data(self, temp_file_path, full_map_exif, feedback):
-
-        # Create an instance of QgsExifTools
+        if not full_map_exif: return
         exif_tools = QgsExifTools()
 
         # Iterate over full_map_exif and tag each EXIF tag into the image
@@ -388,83 +445,33 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
             try:
                 exif_tools.tagImage(temp_file_path, tag, value)
             except Exception as e:
-                feedback.pushInfo(tr(f"Failed to tag {tag}: {str(e)}"))
-       
+                feedback.pushInfo(tr(f"Could not write tag {tag}: {str(e)}"))
 
-    def save_image(self, input_qimage, raster_file_path ,output_folder, feedback):
-        # Construct the output file path
+    def save_image(self, input_qimage, raster_file_path, output_folder, feedback):
         raster_file_info = QFileInfo(raster_file_path)
-        output_image_path = os.path.join(output_folder, raster_file_info.baseName() + '_stamped.' + raster_file_info.suffix())
-    
-        # Check if the output directory exists, and if not, create it
+        output_image_path = os.path.join(output_folder,
+                                         raster_file_info.baseName() + '_stamped.' + raster_file_info.suffix())
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
-       
+
         # Check if the image was loaded correctly
         if input_qimage.isNull():
             raise QgsProcessingException("Failed to load the temporary image.")
-    
+
         # Save the processed image to the specified output folder
         if input_qimage.save(output_image_path):
             return output_image_path
         else:
-            raise QgsProcessingException("Failed to save the processed image.")        
-           
+            raise QgsProcessingException("Failed to save the processed image.")
 
     def create_points_layer(self, coordinates_list):
-        # Create fields for the attribute table
-        fields = QgsFields()
-        fields.append(QgsField("ID", QVariant.Int))
-        fields.append(QgsField("Latitude", QVariant.Double))
-        fields.append(QgsField("Longitude", QVariant.Double))
-        fields.append(QgsField("Image Name", QVariant.String))
-        fields.append(QgsField("Path", QVariant.String))
-        fields.append(QgsField("Model", QVariant.String))
-        fields.append(QgsField("DateTime", QVariant.String))
-        fields.append(QgsField("Coordinates", QVariant.String))
-        fields.append(QgsField("Altitude", QVariant.String))
-
-        # Create the point layer
-        point_layer = QgsVectorLayer("Point?crs=EPSG:4326", "Pontos Imagens", "memory")
-        provider = point_layer.dataProvider()
-        provider.addAttributes(fields)
-        point_layer.updateFields()
-
-        # Check if the coordinates list is not empty
-        if coordinates_list:
-            for idx, (
-            exif_latitude, exif_longitude, image_name, output_image_path, model, datetime_str, coordinates_str, altitude_str) in enumerate(
-                    coordinates_list, start=1):
-                # Check if coordinates are valid
-                if exif_latitude is not None and exif_longitude is not None:
-                    point = QgsPointXY(exif_longitude, exif_latitude)  # Usa QgsPointXY para criar o ponto
-                    feature = QgsFeature()
-                    feature.setGeometry(QgsGeometry.fromPointXY(point))  # Cria a geometria do ponto
-                    # Assign attribute values
-                    feature.setAttributes([
-                        idx,  # ID
-                        exif_latitude,  # Latitude
-                        exif_longitude,  # Longitude
-                        image_name,  # Image Name
-                        output_image_path, # Path
-                        model,  # Model
-                        datetime_str,  # DateTime
-                        coordinates_str,  # Coordinates
-                        altitude_str  # Altitude
-                    ])
-                    provider.addFeature(feature)
-
-        point_layer.updateExtents()
-
-        # Adds the layer to the project
-        QgsProject.instance().addMapLayer(point_layer)
-
+        pass
 
     def name(self):
         return "emiToolsStampPhotoRpa"
 
     def displayName(self):
-        return tr("Insert stamp on photo")
+        return tr("Stamp text and image on the photo")
 
     def group(self):
         return tr("Emi Tools")
