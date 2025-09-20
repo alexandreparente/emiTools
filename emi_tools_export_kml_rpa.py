@@ -26,8 +26,6 @@ __author__ = 'Alexandre Parente Lima'
 __date__ = '2024-10-10'
 __copyright__ = '(C) 2024 by Alexandre Parente Lima'
 
-# This will get replaced with a git SHA1 when you do a git archive
-
 __revision__ = '$Format:%H$'
 
 from qgis.PyQt.QtCore import QCoreApplication
@@ -43,11 +41,15 @@ from qgis.core import (QgsProcessing,
                        QgsVectorLayer,
                        QgsFeature,
                        QgsProcessingException,
-                       QgsWkbTypes)
+                       QgsWkbTypes,
+                       QgsCoordinateTransform,
+                       QgsCoordinateReferenceSystem)
 
 import os
 import zipfile
+import tempfile
 from .emi_tools_util import tr
+
 
 class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
 
@@ -69,9 +71,7 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
             QgsProcessingParameterField(
                 'export_field',
                 tr('Export file name field'),
-                '',
-                'layer',
-                optional=True
+                '', 'layer', optional=True
             )
         )
 
@@ -102,9 +102,6 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
         )
 
     def processAlgorithm(self, parameters, context, feedback):
-        feedback = QgsProcessingMultiStepFeedback(1, feedback)
-
-        # Get the input layer as a feature source
         layer = self.parameterAsSource(parameters, 'layer', context)
         if layer is None:
             raise QgsProcessingException(self.invalidSourceError(parameters, 'layer'))
@@ -112,155 +109,133 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
         # Get the field selected by the user
         export_field = self.parameterAsString(parameters, 'export_field', context)
 
-	# Get output folder
+	    # Get output folder
         output_folder = self.parameterAsString(parameters, self.OUTPUT_FOLDER, context)
-        
+        compress_output = self.parameterAsBoolean(parameters, 'compress_output', context)
+        load_output = self.parameterAsBoolean(parameters, 'load_output', context)
+
         if not output_folder:
-            output_folder = tempfile.mkdtemp()  # Create a secure temporary folder
+            output_folder = tempfile.mkdtemp()
             
         # Try to create the folder if it doesn't exist
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
 
-        compress_output = self.parameterAsBoolean(parameters, 'compress_output', context)
-        load_output = self.parameterAsBoolean(parameters, 'load_output', context)
-
-        # List to hold the output file names for loading later
         output_files = []
-        # Processes the features in batches
-        features = list(layer.getFeatures())
-        total_features = len(features)
 
+        source_crs = layer.sourceCrs()
+        dest_crs = QgsCoordinateReferenceSystem('EPSG:4326')
+        transform = QgsCoordinateTransform(source_crs, dest_crs, QgsProject.instance())
+
+        total_features = layer.featureCount()
+        if total_features == 0:
+            feedback.pushInfo(tr("No features to process."))
+            return {self.OUTPUT_FOLDER: output_folder}
+
+        features = layer.getFeatures()
         for i, feature in enumerate(features):
+            if feedback.isCanceled():
+                break
 
-            # Uses the field value for naming or a default name
-            field_value = feature[export_field] if export_field else f"{layer.sourceName()}_{i + 1}"
+            field_value = feature[export_field] if export_field and feature[
+                export_field] else f"{layer.sourceName()}_{feature.id()}"
 
-            # Gets the geometry of the feature and ensures it is valid
             geometry = feature.geometry()
             if not geometry or geometry.isEmpty():
-                feedback.pushInfo(f"Skipping feature {i + 1}: No valid geometry found.")
+                feedback.pushInfo(f"Skipping feature {feature.id()}: No valid geometry found.")
                 continue
+
+            geometry.transform(transform)
 
             geometries = [geometry] if not geometry.isMultipart() else geometry.asGeometryCollection()
 
             # Processes each part of the geometry
             for j, singlepart_geometry in enumerate(geometries):
-                # Adjusts the file name for multipart
-                part_suffix = f"_{j + 1}" if geometry.isMultipart() else ""
+                part_suffix = f"_{j + 1}" if len(geometries) > 1 else ""
+                file_name = f"{field_value}{part_suffix}"
+                output_file = os.path.join(output_folder, f"{file_name}.kml")
 
-                # Determines the geometry type of the feature
-                geometry_type = singlepart_geometry.wkbType()
+                try:
+                    self.write_geometry_to_kml(singlepart_geometry, file_name, output_file)
+                    output_files.append(output_file)
+                except Exception as e:
+                    feedback.reportError(f"Could not write KML for {file_name}: {e}")
 
-                geometry_type = singlepart_geometry.wkbType()
-                if QgsWkbTypes.geometryType(geometry_type) == QgsWkbTypes.LineGeometry:
-                    temp_layer = QgsVectorLayer("LineString?crs=EPSG:4326", f"{field_value}", "memory")
-                elif QgsWkbTypes.geometryType(geometry_type) == QgsWkbTypes.PolygonGeometry:
-                    temp_layer = QgsVectorLayer("Polygon?crs=EPSG:4326", f"{field_value}", "memory")
-                else:
-                    raise QgsProcessingException(
-                        f"Unsupported geometry type: {QgsWkbTypes.displayString(geometry_type)}")
+            feedback.setProgress((i + 1) / total_features * 100)
 
-                # Adds the feature to the temporary layer
-                temp_layer_data_provider = temp_layer.dataProvider()
-                temp_layer_data_provider.addAttributes(layer.fields())
+        feedback.pushInfo(f"Total files generated: {len(output_files)}")
 
-                # Updates the layer fields after adding the attributes
-                temp_layer.updateFields()
-
-                # Creates a new feature with the singlepart geometry
-                new_feature = QgsFeature()
-                new_feature.setGeometry(singlepart_geometry)
-                new_feature.setAttributes(feature.attributes())
-                temp_layer_data_provider.addFeature(new_feature)
-
-                output_file = self.export_output_file(temp_layer,output_folder,field_value,part_suffix)
-
-                # Removes the <Folder> tags and adds the <name> tag
-                self.edit_kml_tags(output_file, f"{field_value}{part_suffix}")
-
-                # Add file name for loading later
-                output_files.append(output_file)
-
-                temp_layer = None
-
-        #Apparently, this is causing a memory error
-        #for file in output_files:
-        #    feedback.pushInfo(f"Saved file: {file}")
-
-        # Print the total number of strings (files) generated
-        feedback.pushInfo(f"Total number of saved files: {len(output_files)}")
-
-        # Compresses the files
-        if compress_output:
+        if compress_output and output_files:
             for output_file in output_files:
                 self.compress_files(output_file)
 
-        # Loads all KML files into the project at once
-        if load_output:
+        if load_output and output_files:
             self.load_output_files(output_files)
-
-        temp_layer = None
 
         return {self.OUTPUT_FOLDER: output_folder}
 
-    def load_output_files (self, output_files):  
-       #Using the addMapLayers method to reduce the number of calls to QGIS when many layers need to be loaded
-       layers_to_add = []
-       for output_file in output_files:
-           layers_to_add.append(QgsVectorLayer(output_file, os.path.basename(output_file), "ogr"))
-       QgsProject.instance().addMapLayers(layers_to_add)
+    def write_geometry_to_kml(self, geom, name, output_path):
+        """Constrói um KML manualmente sem uso da tag <Folder> utilizada pela API do QGIS."""
 
+        kml = [
+            '<?xml version="1.0" encoding="UTF-8"?>',
+            '<kml xmlns="http://www.opengis.net/kml/2.2">',
+            '<Document>',
+            '<Placemark>',
+            f'<name>{name}</name>'
+        ]
+
+        geom_type = QgsWkbTypes.geometryType(geom.wkbType())
+
+        # O método asGeometryCollection retorna geometrias simples,
+
+        if geom_type == QgsWkbTypes.PolygonGeometry:
+            polygon = geom.get()
+            kml.append('<Polygon>')
+
+            exterior = polygon.exteriorRing()
+            if exterior:
+                coords = " ".join([f"{v.x()},{v.y()},0" for v in exterior.vertices()])
+                kml.append(
+                    f'<outerBoundaryIs><LinearRing><coordinates>{coords}</coordinates></LinearRing></outerBoundaryIs>')
+
+            for i in range(polygon.numInteriorRings()):
+                interior = polygon.interiorRing(i)
+                if interior:
+                    coords = " ".join([f"{v.x()},{v.y()},0" for v in interior.vertices()])
+                    kml.append(
+                        f'<innerBoundaryIs><LinearRing><coordinates>{coords}</coordinates></LinearRing></innerBoundaryIs>')
+
+            kml.append('</Polygon>')
+
+        elif geom_type == QgsWkbTypes.LineGeometry:
+            line = geom.get()
+            kml.append('<LineString>')
+            coords = " ".join([f"{v.x()},{v.y()},0" for v in line.vertices()])
+            kml.append(f'<coordinates>{coords}</coordinates>')
+            kml.append('</LineString>')
+
+        kml.extend(['</Placemark>', '</Document>', '</kml>'])
+
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(kml))
+
+    def load_output_files(self, output_files):
+
+        layers_to_add = []
+        for output_file in output_files:
+            layer_name = os.path.basename(output_file)
+            layer = QgsVectorLayer(output_file, layer_name, "ogr")
+            if not layer.isValid():
+                raise QgsProcessingException(f"Failed to load layer: {layer_name}")
+            layers_to_add.append(layer)
+        QgsProject.instance().addMapLayers(layers_to_add)
 
     def compress_files(self, output_file):
-          
-        base_name = os.path.splitext(output_file)[0]  # Remove a extensão .kml
-        zip_output_file = base_name + "_kml.zip"  # Adds .zip to the base name
-    
-        # Create the .zip file and add the original file
+        base_name = os.path.splitext(output_file)[0]
+        zip_output_file = base_name + "_kml.zip"
         with zipfile.ZipFile(zip_output_file, 'w') as zipf:
             zipf.write(output_file, os.path.basename(output_file))
-
-    def export_output_file(self, temp_layer, output_folder,field_value,part_suffix):
-
-        # Defines options to save the layer (writeAsVectorFormatV3)
-        options = QgsVectorFileWriter.SaveVectorOptions()
-        options.driverName = 'KML'
-        options.fileEncoding = 'UTF-8'
-        options.fieldNameSource = QgsVectorFileWriter.Original
-
-        # Ensures that the correct coordinate transformation is used.
-        transform_context = QgsProject.instance().transformContext()
-
-        # Writes the feature to a KML file
-        output_file = os.path.join(output_folder, f"{field_value}{part_suffix}.kml")
-        error = QgsVectorFileWriter.writeAsVectorFormatV3(temp_layer, output_file, transform_context,options)
-
-        if error[0] != QgsVectorFileWriter.NoError:
-            raise QgsProcessingException(f"Error saving KML file: {error[0]}")
-
-        return output_file
-
-
-    def edit_kml_tags(self, kml_file, field_value):
-    # This function edits the contents of a KML file generated by QGIS to ensure compatibility with the DJI Pilot app.
-    # QGIS automatically inserts the <Folder> tag in KML files to organize elements in a hierarchical structure.
-    # However, the DJI Pilot app does not recognize this structure and rejects KML files that contain <Folder> or </Folder>.
-    # To avoid this issue, this function removes those tags from the KML file.
-    # Additionally, it inserts a custom <name> tag inside each <Placemark> using the provided 'field_value',
-    # which improves element identification when viewing the file in the drone or the application.
-        with open(kml_file, 'r', encoding='utf-8') as file:
-            lines = file.readlines()
-
-        with open(kml_file, 'w', encoding='utf-8') as file:
-            for line in lines:
-                if '<Folder>' in line or '</Folder>' in line:
-                    continue
-                if '<Placemark>' in line:
-                    file.write(line)
-                    file.write(f"<name>{field_value}</name>\n")
-                else:
-                    file.write(line)
 
     def name(self):
         return "ExportKMLstoDrone"
@@ -275,9 +250,7 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
         return ""
 
     def shortHelpString(self):
-        return tr(
-            "This algorithm exports each feature from a polygon or line layer to a separate KML file, compatible with software DJI Pilot.<br> To ensure compatibility with the DJI Pilot app, the &lt;Folder&gt; tag—automatically added by QGIS to structure KML content— is removed, as it is not supported by the application.")
+        return tr("This algorithm exports each feature from a polygon or line layer to a separate KML file, compatible with software DJI Pilot.<br> To ensure compatibility with the DJI Pilot app, the &lt;Folder&gt; tag—automatically added by QGIS to structure KML content— is removed, as it is not supported by the application.")
 
     def createInstance(self):
         return emiToolsExportKmlRpa()
-
