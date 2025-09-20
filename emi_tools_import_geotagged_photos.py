@@ -43,8 +43,8 @@ from qgis.core import (QgsApplication,
                        QgsPoint,
                        QgsGeometry,
                        QgsProject,
-                       QgsProcessingParameterFile)
-
+                       QgsProcessingParameterFile,
+                       QgsProcessingParameterDefinition)
 
 from qgis.PyQt.QtCore import (QCoreApplication,
                               QDateTime,
@@ -58,7 +58,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
     INPUT_FOLDER = 'INPUT_FOLDER'
     OUTPUT_FILE = 'OUTPUT_FILE'
     NO_EXTRACT_DJI_XMP = 'NO_EXTRACT_DJI_XMP'
-
+    EXTRACT_ALL_TAGS = 'EXTRACT_ALL_TAGS'
 
     def initAlgorithm(self, config=None):
         self.addParameter(
@@ -76,46 +76,64 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             )
         )
 
-        self.addParameter(
-            QgsProcessingParameterBoolean(
-                self.NO_EXTRACT_DJI_XMP,
-                tr('Do not import XMP tags used by DJI'),
-                defaultValue=False
-            )
+        no_dji_param = QgsProcessingParameterBoolean(
+            self.NO_EXTRACT_DJI_XMP,
+            tr('Do not import XMP tags used by DJI'),
+            defaultValue=False,
+            optional=True
         )
+        no_dji_param.setFlags(no_dji_param.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        self.addParameter(no_dji_param)
+
+        extract_all_param = QgsProcessingParameterBoolean(
+            self.EXTRACT_ALL_TAGS,
+            tr('Extract all available EXIF/XMP tags'),
+            defaultValue=False,
+            optional=True
+        )
+        extract_all_param.setFlags(extract_all_param.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        self.addParameter(extract_all_param)
 
     def processAlgorithm(self, parameters, context, feedback):
         input_folder = self.parameterAsString(parameters, self.INPUT_FOLDER, context)
         output_file = self.parameterAsOutputLayer(parameters, self.OUTPUT_FILE, context)
         no_extract_dji_xmp = self.parameterAsBool(parameters, self.NO_EXTRACT_DJI_XMP, context)
+        extract_all_tags = self.parameterAsBool(parameters, self.EXTRACT_ALL_TAGS, context)
 
         feature_exif_dict = {}
         erro_feature_exif_dict = {}
 
         # Get all image files in the folder
         image_extensions = ('.jpg', '.jpeg', '.tif', '.tiff')
-        for root, dirs, files in os.walk(input_folder):
-            for file in files:
-                if file.lower().endswith(image_extensions):
-                    image_path = os.path.join(root, file)
 
-                    try:
-                        exif_dict = {
-                            'photo': image_path,
-                            'filename': os.path.basename(image_path),
-                            'directory': os.path.dirname(image_path),
-                            **self.get_exif_data(image_path, no_extract_dji_xmp, feedback)
-                        }
+        files_to_process = [os.path.join(root, file)
+                            for root, dirs, files in os.walk(input_folder)
+                            for file in files if file.lower().endswith(image_extensions)]
+        total = len(files_to_process)
+        feedback.pushInfo(tr(f'Found {total} images to process.'))
 
-                        # Adds the dictionary to feature_exif_dict
-                        if exif_dict.get('latitude') and exif_dict.get('longitude'):
-                            feature_exif_dict[file] = exif_dict
-                        else:
-                            erro_feature_exif_dict[file] = exif_dict
+        for i, image_path in enumerate(files_to_process):
+            if feedback.isCanceled():
+                break
+            feedback.setProgress(int((i + 1) / total * 100))
 
-                    except Exception as e:
-                        feedback.reportError(tr(f"Error processing {file}: {str(e)}"))
-                        erro_feature_exif_dict[file] = {'error': str(e)}
+            file = os.path.basename(image_path)
+            try:
+                exif_dict = {
+                    'photo': image_path,
+                    'filename': os.path.basename(image_path),
+                    'directory': os.path.dirname(image_path),
+                    **self.get_exif_data(image_path, no_extract_dji_xmp, extract_all_tags, feedback)
+                }
+
+                if exif_dict.get('latitude') and exif_dict.get('longitude'):
+                    feature_exif_dict[file] = exif_dict
+                else:
+                    erro_feature_exif_dict[file] = exif_dict
+
+            except Exception as e:
+                feedback.reportError(tr(f"Error processing {file}: {str(e)}"))
+                erro_feature_exif_dict[file] = {'error': str(e)}
 
         #create the point layer
         point_layer = self.create_points_layer(feature_exif_dict)
@@ -123,16 +141,12 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         #exports the layer to a file
         self.export_output_file(point_layer, output_file)
 
-
         feedback.pushInfo(tr(
             f"A total of {len(feature_exif_dict)} images with geotags and {len(erro_feature_exif_dict)} images without geotags were identified."))
 
         return {self.OUTPUT_FILE: output_file}
 
-    def get_exif_data(self, temp_file_path, no_extract_dji_xmp, feedback):
-        """
-        Extracts EXIF and XMP metadata from an image file using a single readTags() call.
-        """
+    def get_exif_data(self, temp_file_path, no_extract_dji_xmp, extract_all_tags, feedback):
         exif_tools = QgsExifTools()
 
         if not exif_tools.hasGeoTag(temp_file_path):
@@ -146,14 +160,10 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         exif_latitude = exif_geo_tag.y() if isinstance(exif_geo_tag, QgsPoint) else None
         exif_longitude = exif_geo_tag.x() if isinstance(exif_geo_tag, QgsPoint) else None
 
-        latitude_dms = QgsCoordinateFormatter.formatY(exif_latitude, QgsCoordinateFormatter.FormatDegreesMinutesSeconds,
-                                                      2) if exif_latitude else None
-        longitude_dms = QgsCoordinateFormatter.formatX(exif_longitude,
-                                                       QgsCoordinateFormatter.FormatDegreesMinutesSeconds,
-                                                       2) if exif_longitude else None
-        exif_coordinates_str = f"{latitude_dms}, {longitude_dms}" if latitude_dms and longitude_dms else None
+        # Se não houver lat/lon, não há mais nada a fazer nesta função.
+        if exif_latitude is None or exif_longitude is None:
+            return {}
 
-        # Uses readTags for DJI XMP/other tags
         tags = exif_tools.readTags(temp_file_path)
 
         def get_float(tag_name):
@@ -171,12 +181,15 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             'latitude': exif_latitude,
             'timestamp': tags.get('Exif.Photo.DateTimeOriginal') if isinstance(tags.get('Exif.Photo.DateTimeOriginal'),
                                                                                QDateTime) else None,
-            'coordinates': exif_coordinates_str,
             'model': tags.get('Exif.Image.Model') or None
         }
 
-        # DJI tags
-        xmp_tags = {}
+        latitude_dms = QgsCoordinateFormatter.formatY(exif_latitude, QgsCoordinateFormatter.FormatDegreesMinutesSeconds,
+                                                      2)
+        longitude_dms = QgsCoordinateFormatter.formatX(exif_longitude,
+                                                       QgsCoordinateFormatter.FormatDegreesMinutesSeconds, 2)
+        exif_dict['coordinates'] = f"{latitude_dms}, {longitude_dms}"
+
         if not no_extract_dji_xmp:
             dji_fields = [
                 'Xmp.drone-dji.CamReverse',
@@ -191,53 +204,88 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             ]
             for tag in dji_fields:
                 key = tag.split('.')[-1]
-                xmp_tags[key] = get_float(tag)
+                exif_dict[key] = get_float(tag)
 
-            exif_dict.update(xmp_tags)
+        exif_dict['rotation'] = exif_dict.get('direction') or exif_dict.get('FlightYawDegree')
 
-        #Set rotation field
-        exif_dict['rotation'] = exif_dict['direction'] or xmp_tags.get(
-            'FlightYawDegree') if not no_extract_dji_xmp else None
+        if extract_all_tags:
+            for original_key, value in tags.items():
+                if no_extract_dji_xmp and original_key.startswith('Xmp.drone-dji'):
+                    continue
+
+                renamed_key = original_key.replace('.', '_')
+                if renamed_key in exif_dict:
+                    continue
+
+                if value is not None:
+                    if isinstance(value, QDateTime):
+                        exif_dict[renamed_key] = value
+                    else:
+                        try:
+                            exif_dict[renamed_key] = float(value)
+                        except (ValueError, TypeError):
+                            exif_dict[renamed_key] = str(value)
+                else:
+                    exif_dict[renamed_key] = None
 
         return exif_dict
 
-
     def create_points_layer(self, feature_exif_dict):
-        # Uses the first item as a reference for the field structure
-        first_exif = next(iter(feature_exif_dict.values()))
-        keys = list(first_exif.keys())
+        priority_keys = [
+            'photo',
+            'filename',
+            'directory',
+            'altitude',
+            'direction',
+            'rotation',
+            'longitude',
+            'latitude',
+            'timestamp',
+            'coordinates',
+            'model',
+            'CamReverse',
+            'FlightPitchDegree',
+            'FlightRollDegree',
+            'FlightYawDegree',
+            'GimbalPitchDegree',
+            'GimbalReverse',
+            'GimbalRollDegree',
+            'GimbalYawDegree',
+            'RelativeAltitude'
+        ]
 
-        # Defines the fields based on the value types from the first EXIF entry
+        all_keys_set = set()
+        for exif_data in feature_exif_dict.values():
+            all_keys_set.update(exif_data.keys())
+
+        ordered_keys = [key for key in priority_keys if key in all_keys_set]
+        other_keys = sorted(list(all_keys_set - set(ordered_keys)))
+        keys = ordered_keys + other_keys
+
         fields = QgsFields()
 
-        #Ensure that 'direction' and 'rotation' are created as float fields.
-        for sub_key in keys:
-            if sub_key in ['altitude',
-                           'direction',
-                           'rotation',
-                           'CamReverse',
-                           'FlightPitchDegree',
-                           'FlightRollDegree',
-                           'FlightYawDegree',
-                           'GimbalPitchDegree',
-                           'GimbalReverse',
-                           'GimbalRollDegree',
-                           'GimbalYawDegree',
-                           'RelativeAltitude',
-                           ]:
-                fields.append(QgsField(sub_key, QVariant.Double))
-                continue
+        known_numeric_keys = {'altitude',
+                              'direction',
+                              'rotation',
+                              'CamReverse',
+                              'FlightPitchDegree',
+                              'FlightRollDegree',
+                              'FlightYawDegree',
+                              'GimbalPitchDegree',
+                              'GimbalReverse',
+                              'GimbalRollDegree',
+                              'GimbalYawDegree',
+                              'RelativeAltitude'}
 
-        #Dynamic assignment, in case the algorithm supports other tags in the future.
-            value = first_exif.get(sub_key)
-            if isinstance(value, int):
-                fields.append(QgsField(sub_key, QVariant.Int))
-            elif isinstance(value, float):
-                fields.append(QgsField(sub_key, QVariant.Double))
-            elif isinstance(value, QDateTime):
-                fields.append(QgsField(sub_key, QVariant.DateTime))
+        known_datetime_keys = {'timestamp'}
+
+        for key in keys:
+            if key in known_numeric_keys:
+                fields.append(QgsField(key, QVariant.Double))
+            elif key in known_datetime_keys:
+                fields.append(QgsField(key, QVariant.DateTime))
             else:
-                fields.append(QgsField(sub_key, QVariant.String))
+                fields.append(QgsField(key, QVariant.String))
 
         #Creates the point layer
         point_layer = QgsVectorLayer("Point?crs=EPSG:4326", "Pontos Imagens", "memory")
@@ -291,7 +339,8 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
     def shortHelpString(self):
         return tr(
             "This algorithm generates a point layer based on georeferenced locations (geotags) extracted from JPEG images in a source folder."
-            "It supports both standard EXIF metadata and specific tags used by DJI drones."
+            "It supports both standard EXIF metadata and specific tags used by DJI drones. "
+            "In the advanced options, you can choose to extract all available tags."
         )
 
     def createInstance(self):
