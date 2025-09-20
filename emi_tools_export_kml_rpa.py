@@ -187,7 +187,7 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
 
         geom_type = QgsWkbTypes.geometryType(geom.wkbType())
 
-        # O método asGeometryCollection retorna geometrias simples,
+        # O metodo asGeometryCollection retorna geometrias simples
 
         if geom_type == QgsWkbTypes.PolygonGeometry:
             polygon = geom.get()
