@@ -110,51 +110,48 @@ def mask_name_logic(full_name) -> str:
     return parts[0] + ' ' + ' '.join(middle) + ' ' + parts[-1]
 
 
-# -------------------------------------------------------------------
 # List of words that must remain in lowercase in names/titles
 # according to Portuguese language conventions and ABNT standards.
-# -------------------------------------------------------------------
 
 PT_BR_LOWERCASE_WORDS = {
-    # --- Artigos definidos e indefinidos ---
+    # Artigos definidos e indefinidos
     'a', 'o', 'as', 'os',
     'um', 'uma', 'uns', 'umas',
 
-    # --- Preposições simples ---
+    # Preposições simples
     'de', 'em', 'por', 'para', 'com', 'sem', 'sob', 'sobre',
     'até', 'após', 'ante', 'contra', 'desde', 'entre', 'trás',
 
-    # --- Conjunções coordenativas ---
+    # Conjunções coordenativas
     'e', 'ou', 'mas', 'nem',
 
-    # --- Conjunções subordinativas comuns ---
+    # Conjunções subordinativas comuns
     'se', 'que', 'porque', 'como', 'quando', 'conforme',
     'embora', 'caso', 'enquanto', 'logo', 'pois', 'porquanto', 'salvo',
 
-    # --- Contrações com artigos ---
+    # Contrações com artigos
     'da', 'do', 'das', 'dos',
     'na', 'no', 'nas', 'nos',
     'à', 'às', 'ao', 'aos',
     'pela', 'pelo', 'pelas', 'pelos',
 
-    # --- Contrações com pronomes ---
+    # Contrações com pronomes
     'dela', 'dele', 'delas', 'deles',
     'nela', 'nele', 'nelas', 'neles',
 
-    # --- Contrações demonstrativas ---
+    # Contrações demonstrativas
     'deste', 'desta', 'destes', 'destas',
     'neste', 'nesta', 'nestes', 'nestas',
     'daquele', 'daquela', 'daqueles', 'daquelas',
     'naquele', 'naquela', 'naqueles', 'naquelas',
 
-    # --- Outras contrações usuais ---
+    # Outras contrações usuais
     'doutro', 'doutros', 'doutra', 'doutras',
     'noutro', 'noutros', 'noutra', 'noutras',
 
-    # --- Palavras de locuções ---
+    # Palavras de locuções
     'depois', 'antes', 'além', 'aquém'
 }
-
 
 _PUNCT = set('"' + "'«»“”‘’" + string.punctuation)  # pontuação que pode estar colada
 _STRONG_PUNCT = {'.', ':', '!', '?', ';'}           # pontuação que reinicia capitalização em títulos
@@ -174,7 +171,6 @@ def _capitalize_core(core: str) -> str:
     """Capitalizes a regular word."""
     if not core:
         return core
-    # A verificação de acrônimo foi removida.
     return core[0].upper() + core[1:].lower()
 
 def _process_hyphenated(core: str, force_capitalize: bool, lowercase_words: set) -> str:
@@ -240,14 +236,13 @@ def format_capitalization_logic(
     return ' '.join(result)
 
 
-# -------------------------------------------------------------------
+
 #   This dictionary for all satellites.
-# -------------------------------------------------------------------
 
 SATELLITE_PROPERTIES = {
     # Regex Pattern: { 'name': ..., 'date_format': ..., 'source': ... }
 
-    # --- Landsat Family ---
+    # Landsat Family
     r'^LC09': {'name': 'LandSat 9', 'date_format': 'YYYYMMDD', 'source': 'United States Geological Survey (USGS).'},
     r'^LC08': {'name': 'LandSat 8', 'date_format': 'YYYYMMDD', 'source': 'United States Geological Survey (USGS).'},
     r'^LE07': {'name': 'LandSat 7', 'date_format': 'YYYYMMDD', 'source': 'United States Geological Survey (USGS).'},
@@ -255,7 +250,7 @@ SATELLITE_PROPERTIES = {
     r'^LT04': {'name': 'LandSat 4', 'date_format': 'YYYYMMDD', 'source': 'United States Geological Survey (USGS).'},
     r'^LM0[1-3]': {'name': 'LandSat MSS (1–3)', 'date_format': 'YYYYMMDD', 'source': 'United States Geological Survey (USGS).'},
 
-    # --- Sentinel Family (Copernicus) ---
+    # Sentinel Family (Copernicus)
     r'^S1[AB]': {'name': 'Sentinel 1', 'date_format': 'YYYYMMDD',
                  'source': "European Union's Earth Observation Programme (COPERNICUS)."},
     r'^S2[A-C]': {'name': 'Sentinel 2', 'date_format': 'YYYYMMDD',
@@ -269,31 +264,31 @@ SATELLITE_PROPERTIES = {
     r'^T\d{2}[A-Z]{3}': {'name': 'Sentinel 2', 'date_format': 'YYYYMMDD',
                          'source': "European Union's Earth Observation Programme (COPERNICUS)."},
 
-    # --- NASA Satellites (EOS) ---
+    # NASA Satellites (EOS)
     r'^MOD|MYD': {'name': 'MODIS', 'date_format': 'JULIAN_y_ddd',
                   'source': 'National Aeronautics and Space Administration (NASA).'},
     r'^A\d{7}\b': {'name': 'MODIS', 'date_format': 'JULIAN_y_ddd', 'source': 'National Aeronautics and Space Administration (NASA).'},
     r'^(VNP|VJ\d{2})': {'name': 'VIIRS', 'date_format': 'JULIAN_y_ddd', 'source': 'National Aeronautics and Space Administration (NASA).'},
     r'^AST_': {'name': 'ASTER', 'date_format': 'MMDDYYYY', 'source': 'NASA/METI.'},
 
-    # --- Indian Remote Sensing Satellites (IRS) ---
+    # Indian Remote Sensing Satellites (IRS)
     r'^L[34]_RS[12]|^AW_RS[12]': {'name': 'Resourcesat', 'date_format': 'YYYYMMDD',
                                   'source': 'Indian Space Research Organisation (ISRO).'},
     r'^C[123]_': {'name': 'Cartosat', 'date_format': 'YYYYMMDD',
                   'source': 'Indian Space Research Organisation (ISRO).'},
 
-    # --- Sino-Brazilian Satellite ---
+    # Sino-Brazilian Satellite
     r'^CBERS': {'name': 'CBERS', 'date_format': 'YYYYMMDD',
                 'source': 'Instituto Nacional de Pesquisas Espaciais (INPE) / China Academy of Space Technology (CAST).'},
     r'^CBERS[_-]?4A': {'name': 'CBERS-4A', 'date_format': 'YYYYMMDD',
                        'source': 'Instituto Nacional de Pesquisas Espaciais (INPE) / China Academy of Space Technology (CAST).'},
 
-    # --- High-Resolution Commercial Satellites ---
+    # High-Resolution Commercial Satellites
     r'WV0[1-4]|GE01': {'name': 'Maxar/DigitalGlobe', 'date_format': 'DDMONYY', 'source': 'Maxar Technologies.'},
     r'^IK01': {'name': 'IKONOS', 'date_format': 'YYYYMMDD', 'source': 'Maxar Technologies.'},
     r'^QB02': {'name': 'QuickBird', 'date_format': 'YYYYMMDD', 'source': 'Maxar Technologies.'},
 
-    # --- Planet (variações) ---
+    # Planet (variações)
     r'PSScene': {'name': 'PlanetScope', 'date_format': 'YYYYMMDD',
                  'source': 'Includes material © (2025) Planet Labs Inc. All rights reserved.'},
     r'^SkySat': {'name': 'SkySat', 'date_format': 'YYYYMMDD',
