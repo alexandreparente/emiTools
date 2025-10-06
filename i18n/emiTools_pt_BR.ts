@@ -34,7 +34,7 @@
         <translation>Exportar o arquivo de definição da camada (QLR)</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="72"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="99"/>
         <source>Output file</source>
         <translation>Arquivo de saída</translation>
     </message>
@@ -49,7 +49,7 @@
         <translation>Arquivo de definição da camada exportado para: {qlr_path}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="324"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="267"/>
         <source>Error saving the file: {error[1]}</source>
         <translation>Erro ao salvar o arquivo: {error[1]}</translation>
     </message>
@@ -89,12 +89,12 @@
         <translation>Aplicar estilo à camada de fotos com geotags</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="379"/>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="371"/>
         <source>Emi Tools</source>
         <translation>Emi Tools</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="171"/>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="173"/>
         <source>Output folder</source>
         <translation>Pasta de saída</translation>
     </message>
@@ -159,67 +159,57 @@
         <translation>Exportar polígonos para o SICAFI</translation>
     </message>
     <message>
-        <location filename="../emi_tools_expressions.py" line="341"/>
+        <location filename="../emi_tools_util_expressions.py" line="78"/>
         <source>Invalid number. Please provide an 11-digit numeric string.</source>
         <translation>Número inválido. Forneça uma sequência numérica de 11 dígitos.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_expressions.py" line="348"/>
+        <location filename="../emi_tools_util_expressions.py" line="85"/>
         <source>Invalid number. Pass a numeric string as the input parameter.</source>
         <translation>Número inválido. Informe uma sequência numérica como parâmetro de entrada.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="129"/>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="68"/>
         <source>Input folder</source>
         <translation>Pasta de entrada</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="79"/>
-        <source>Do not import XMP tags used by DJI</source>
-        <translation>Não importar tags XMP usadas pela DJI</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="135"/>
-        <source>Error processing {file}: {str(e)}</source>
-        <translation>Erro ao processar {file}: {str(e)}</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="144"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="200"/>
         <source>A total of {len(feature_exif_dict)} images with geotags and {len(erro_feature_exif_dict)} images without geotags were identified.</source>
         <translation>Um total de {len(feature_exif_dict)} imagens com geotags e {len(erro_feature_exif_dict)} imagens sem geotags foram identificadas.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="331"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="274"/>
         <source>Import geotagged photos from DJI drones</source>
         <translation>Importar fotos com geotags de drones DJI</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="159"/>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="135"/>
         <source>Font color</source>
         <translation>Cor da fonte</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="161"/>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="143"/>
         <source>Font size</source>
         <translation>Tamanho da fonte</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="92"/>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="157"/>
         <source>Bottom Left</source>
         <translation>Inferior Esquerdo</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="93"/>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="158"/>
         <source>Bottom Right</source>
         <translation>Inferior Direito</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="94"/>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="159"/>
         <source>Top Left</source>
         <translation>Superior Esquerdo</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="95"/>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="160"/>
         <source>Top Right</source>
         <translation>Superior Direito</translation>
     </message>
@@ -229,27 +219,27 @@
         <translation>Posição do texto e da imagem</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="226"/>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="251"/>
         <source>Image saved at {output_image_path}</source>
         <translation>Imagem salva em {output_image_path}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="310"/>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="297"/>
         <source>Failed to load SVG file: {svg_file_path}</source>
         <translation>Falha ao carregar o arquivo SVG: {svg_file_path}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="131"/>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="76"/>
         <source>SVG Image</source>
         <translation>Imagem SVG</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="132"/>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="85"/>
         <source>Text</source>
         <translation>Texto</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="157"/>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="126"/>
         <source>Font</source>
         <translation>Fonte</translation>
     </message>
@@ -274,7 +264,7 @@
         <translation>Este algoritmo exporta feições de uma camada de polígonos para arquivos vetoriais individuais ou um único arquivo, compatíveis com o envio de áreas embargadas ao Sistema de Cadastro, Arrecadação e Fiscalização (Sicafi). O algoritmo remove campos desnecessários, renomeia os campos obrigatórios para &apos;NUM_TEI&apos; e &apos;SERIE_TEI&apos;, e oferece a opção de compactar os arquivos de saída em um arquivo ZIP.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="385"/>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="377"/>
         <source>This algorithm inscribes text and an optional SVG logo onto JPEG or PNG images using EXIF metadata such as coordinates, altitude, date, and camera model. The stamp position, font style, and color are customizable. The processed images are saved in the output folder, preserving EXIF data.</source>
         <translation>Este algoritmo inscreve texto e um logotipo SVG opcional em imagens JPEG ou PNG, utilizando metadados EXIF como coordenadas, altitude, data e modelo da câmera. A posição do carimbo, o estilo da fonte e a cor são personalizáveis. As imagens processadas são salvas na pasta de saída, preservando os dados EXIF.</translation>
     </message>
@@ -320,144 +310,64 @@ Para garantir a compatibilidade com o aplicativo DJI Pilot, a tag &amp;lt;Folder
         <translation>Número total de arquivos salvos: {len(output_files)}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_expressions.py" line="358"/>
+        <location filename="../emi_tools_util_expressions.py" line="95"/>
         <source>Invalid number. Pass a numeric string as the input parameter..</source>
         <translation>Número inválido. Forneça uma sequência numérica como parâmetro de entrada.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="88"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="130"/>
         <source>Extract all available EXIF/XMP tags</source>
         <translation>Extrair todas as tags EXIF/XMP disponíveis</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="113"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="167"/>
         <source>Found {total} images to process.</source>
         <translation>Encontradas {total} imagens para processar.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="340"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="283"/>
         <source>This algorithm generates a point layer based on georeferenced locations (geotags) extracted from JPEG images in a source folder.It supports both standard EXIF metadata and specific tags used by DJI drones. In the advanced options, you can choose to extract all available tags.</source>
         <translation>Este algoritmo gera uma camada de pontos com base em localizações georreferenciadas (geotags) extraídas de imagens JPEG em uma pasta de origem. Ele suporta tanto os metadados EXIF padrão quanto tags específicas usadas por drones DJI. Nas opções avançadas, você pode optar por extrair todas as tags disponíveis.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="141"/>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="105"/>
         <source>Metadata to stamp</source>
         <translation>Metadados a serem gravados</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="204"/>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="222"/>
         <source>Failed to load input image: {}</source>
         <translation>Falha ao carregar a imagem de entrada: {}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="355"/>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="345"/>
         <source>Could not write tag {tag}: {str(e)}</source>
         <translation>Não foi possível gravar a tag {tag}: {str(e)}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="376"/>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="368"/>
         <source>Stamp text and image on the photo</source>
         <translation>Gravar texto e imagem na foto</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="104"/>
-        <source>Photo Path</source>
-        <translation>Caminho da foto</translation>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="106"/>
+        <source>Scan recursively</source>
+        <translation>Digitalizar recursivamente</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="105"/>
-        <source>Filename</source>
-        <translation>Nome do arquivo</translation>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="178"/>
+        <source>No geotag found</source>
+        <translation>Nenhum geotag encontrada</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="106"/>
-        <source>Directory</source>
-        <translation>Diretório</translation>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="180"/>
+        <source>Error processing {image_path}: {str(e)}</source>
+        <translation>Erro ao processar {image_path}: {str(e)}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="107"/>
-        <source>Altitude</source>
-        <translation>Altitude</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="108"/>
-        <source>Direction</source>
-        <translation>Direção</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="109"/>
-        <source>Rotation</source>
-        <translation>Rotação</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="110"/>
-        <source>Longitude</source>
-        <translation>Longitude</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="111"/>
-        <source>Latitude</source>
-        <translation>Latitude</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="112"/>
-        <source>DateTime</source>
-        <translation>Data e hora</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="113"/>
-        <source>Coordinates</source>
-        <translation>Coordenadas</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="114"/>
-        <source>Model</source>
-        <translation>Modelo</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="115"/>
-        <source>CamReverse</source>
-        <translation>Inversão da câmera</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="116"/>
-        <source>Flight Pitch Degree</source>
-        <translation>Inclinação de voo</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="117"/>
-        <source>Flight Roll Degree</source>
-        <translation>Inclinação lateral de voo</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="118"/>
-        <source>Flight Yaw Degree</source>
-        <translation>Direção de voo</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="119"/>
-        <source>Gimbal Pitch Degree</source>
-        <translation>Inclinação do gimbal</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="120"/>
-        <source>GimbalReverse</source>
-        <translation>Inversão do gimbal</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="121"/>
-        <source>Gimbal Roll Degree</source>
-        <translation>Inclinação lateral do gimbal</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="122"/>
-        <source>Gimbal Yaw Degree</source>
-        <translation>Direção do gimbal</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="123"/>
-        <source>Relative Altitude</source>
-        <translation>Altitude Relativa</translation>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="120"/>
+        <source>Metadata to import</source>
+        <translation>Importar metadados</translation>
     </message>
 </context>
 </TS>

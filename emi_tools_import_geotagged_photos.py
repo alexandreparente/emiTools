@@ -119,7 +119,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
 
         param_select_meta = QgsProcessingParameterEnum(
             self.METADATA_TO_IMPORT,
-            tr('Metadata to import (if not extracting all)'),
+            tr('Metadata to import'),
             options=metadata_options_display,
             allowMultiple=True,
             defaultValue=default_indices
