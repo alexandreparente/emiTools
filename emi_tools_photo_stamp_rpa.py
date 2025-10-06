@@ -28,38 +28,26 @@ __copyright__ = '(C) 2024 by Alexandre Parente Lima'
 
 __revision__ = '$Format:%H$'
 
-from qgis.PyQt.QtCore import (QCoreApplication, Qt, QRect, QRectF, QDateTime, QVariant, QFileInfo)
+from qgis.PyQt.QtCore import (Qt, QRect, QRectF, QDateTime, QFileInfo)
 from qgis.PyQt.QtGui import (QImage, QPainter, QFont, QColor, QFontMetrics, QFontDatabase)
 from qgis.PyQt.QtSvg import QSvgRenderer
 from qgis.PyQt.QtWidgets import QApplication
 from qgis.core import (QgsProcessing,
-                       QgsVectorFileWriter,
                        QgsProcessingAlgorithm,
-                       QgsProcessingParameterFeatureSource,
-                       QgsProcessingParameterField,
-                       QgsProcessingParameterBoolean,
                        QgsProcessingParameterFolderDestination,
                        QgsProcessingParameterFile,
                        QgsProcessingParameterString,
                        QgsProcessingParameterColor,
                        QgsProcessingParameterEnum,
                        QgsProcessingParameterNumber,
-                       QgsProject,
-                       QgsVectorLayer,
-                       QgsFeature,
                        QgsProcessingException,
-                       QgsWkbTypes,
-                       QgsExifTools,
-                       QgsCoordinateFormatter,
-                       QgsFields,
-                       QgsField,
-                       QgsPoint,
-                       QgsGeometry,
-                       QgsPointXY)
+                       QgsExifTools)
 
 import os
 import tempfile
 from .emi_tools_util import tr
+# ADAPTADO: Importações atualizadas para a nova estrutura de configuração.
+from .emi_tools_photo_metadata import get_exif_data, get_translated_metadata_map, get_metadata_keys
 
 
 class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
@@ -75,57 +63,8 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
 
     POSITION_OPTIONS = ['Bottom Left', 'Bottom Right', 'Top Left', 'Top Right']
 
-    METADATA_MAP = {
-        'photo': 'Photo Path', 'filename': 'Filename', 'directory': 'Directory',
-        'altitude': 'Altitude', 'direction': 'Direction', 'rotation': 'Rotation',
-        'longitude': 'Longitude', 'latitude': 'Latitude', 'timestamp': 'DateTime',
-        'coordinates': 'Coordinates', 'model': 'Model', 'CamReverse': 'CamReverse',
-        'FlightPitchDegree': 'Flight Pitch Degree', 'FlightRollDegree': 'Flight Roll Degree',
-        'FlightYawDegree': 'Flight Yaw Degree', 'GimbalPitchDegree': 'Gimbal Pitch Degree',
-        'GimbalReverse': 'GimbalReverse', 'GimbalRollDegree': 'Gimbal Roll Degree',
-        'GimbalYawDegree': 'Gimbal Yaw Degree', 'RelativeAltitude': 'Relative Altitude'
-    }
-
-    def get_translated_position_options(self):
-        """Retorna uma lista de opções de posição traduzidas para a interface."""
-        return [
-            tr('Bottom Left'),
-            tr('Bottom Right'),
-            tr('Top Left'),
-            tr('Top Right')
-        ]
-
-    def get_translated_metadata_map(self):
-        """
-        Retorna um dicionário mapeando chaves internas para nomes traduzidos.
-        Este é o local central para todas as traduções de metadados.
-        """
-        return {
-            'photo': tr('Photo Path'),
-            'filename': tr('Filename'),
-            'directory': tr('Directory'),
-            'altitude': tr('Altitude'),
-            'direction': tr('Direction'),
-            'rotation': tr('Rotation'),
-            'longitude': tr('Longitude'),
-            'latitude': tr('Latitude'),
-            'timestamp': tr('DateTime'),
-            'coordinates': tr('Coordinates'),
-            'model': tr('Model'),
-            'CamReverse': tr('CamReverse'),
-            'FlightPitchDegree': tr('Flight Pitch Degree'),
-            'FlightRollDegree': tr('Flight Roll Degree'),
-            'FlightYawDegree': tr('Flight Yaw Degree'),
-            'GimbalPitchDegree': tr('Gimbal Pitch Degree'),
-            'GimbalReverse': tr('GimbalReverse'),
-            'GimbalRollDegree': tr('Gimbal Roll Degree'),
-            'GimbalYawDegree': tr('Gimbal Yaw Degree'),
-            'RelativeAltitude': tr('Relative Altitude')
-        }
-
     def initAlgorithm(self, config=None):
         # Initializes the algorithm's parameters
-
         self.addParameter(
             QgsProcessingParameterFile(
                 self.INPUT_PHOTO,
@@ -152,12 +91,16 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
             )
         )
 
-        translated_map = self.get_translated_metadata_map()
-        metadata_options_display = list(translated_map.values())
+        translated_map = get_translated_metadata_map()
+        all_known_keys = get_metadata_keys()
+        metadata_options_display = [translated_map[key] for key in all_known_keys]
 
-        untranslated_defaults = ['Model', 'DateTime', 'Coordinates', 'Altitude']
-        default_indices = [list(self.METADATA_MAP.values()).index(opt) for opt in untranslated_defaults if
-                           opt in self.METADATA_MAP.values()]
+        # Defines which fields are pre-selected by default
+        untranslated_defaults = ['model',
+                                 'timestamp',
+                                 'coordinates',
+                                 'altitude']
+        default_indices = [all_known_keys.index(key) for key in untranslated_defaults if key in all_known_keys]
 
         self.addParameter(
             QgsProcessingParameterEnum(
@@ -208,7 +151,8 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
         )
 
         # Return the translated options for display to the user
-        def positionOptions():
+        def get_translated_position_options():
+            """Retorna uma lista de opções de posição traduzidas para a interface."""
             return [
                 tr('Bottom Left'),
                 tr('Bottom Right'),
@@ -221,7 +165,7 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
             QgsProcessingParameterEnum(
                 self.POSITION,
                 tr('Position of text and image'),
-                options=self.get_translated_position_options(),
+                options=get_translated_position_options(),
                 defaultValue=0
             )
         )
@@ -235,7 +179,6 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
 
     def processAlgorithm(self, parameters, context, feedback):
         # Loads the input raster layers
-
         input_folder = self.parameterAsString(parameters, self.INPUT_PHOTO, context)
 
         # List the image files in the folder
@@ -265,10 +208,11 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
         position_index = self.parameterAsInt(parameters, self.POSITION, context)
         position = self.POSITION_OPTIONS[position_index]
 
-        translated_map = self.get_translated_metadata_map()
-        internal_keys = list(translated_map.keys())
+        # Get the user-selected keys
+        translated_map = get_translated_metadata_map()
+        all_known_keys = get_metadata_keys()
         selected_indices = self.parameterAsEnums(parameters, self.METADATA_TO_STAMP, context)
-        internal_keys_to_stamp = [internal_keys[i] for i in selected_indices]
+        internal_keys_to_stamp = [all_known_keys[i] for i in selected_indices]
 
         # Processes each selected image
         for raster_file_path in input_photos:
@@ -278,7 +222,8 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
                 feedback.pushWarning(tr("Failed to load input image: {}").format(raster_file_path))
                 continue
 
-            exif_data = self.get_exif_data(raster_file_path, feedback)
+            # Fetches the full EXIF tag backup ('full_map') to preserve it in the output file.
+            exif_data = get_exif_data(raster_file_path, internal_keys_to_stamp, extract_all_tags=False, include_full_map=True)
 
             # Transform the input_text into a list of lines while preserving empty paragraphs
             if input_text:
@@ -293,12 +238,13 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
                     friendly_name = translated_map.get(key, key)
                     if isinstance(value, float):
                         formatted_value = f"{value:.2f}"
+                    elif isinstance(value, QDateTime):
+                        formatted_value = value.toString("dd-MM-yyyy HH:mm:ss")
                     else:
-                        formatted_value = value
+                        formatted_value = str(value)
                     lines_to_stamp.append(f"{friendly_name}: {formatted_value}")
 
-            self.insert_stamp(input_qimage, svg_file_path, font_color, font_size, position, font_name, lines_to_stamp,
-                              feedback)
+            self.insert_stamp(input_qimage, svg_file_path, font_color, font_size, position, font_name, lines_to_stamp, feedback)
             output_image_path = self.save_image(input_qimage, raster_file_path, output_folder, feedback)
 
             self.insert_exif_data(output_image_path, exif_data.get('full_map', {}), feedback)
@@ -306,57 +252,8 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
 
         return {self.OUTPUT_FOLDER: output_folder}
 
-    def get_exif_data(self, temp_file_path, feedback):
-        exif_tools = QgsExifTools()
-        data = {
-            'photo': temp_file_path,
-            'filename': os.path.basename(temp_file_path),
-            'directory': os.path.dirname(temp_file_path)
-        }
-        tags = exif_tools.readTags(temp_file_path)
-        data['full_map'] = tags
 
-        def get_float(tag_name):
-            val = tags.get(tag_name)
-            try:
-                return float(val) if val is not None else None
-            except (ValueError, TypeError):
-                return None
-
-        if exif_tools.hasGeoTag(temp_file_path):
-            geo_tag_result = exif_tools.getGeoTag(temp_file_path)
-            if geo_tag_result and isinstance(geo_tag_result[0], QgsPoint):
-                exif_point = geo_tag_result[0]
-                data['latitude'] = exif_point.y()
-                data['longitude'] = exif_point.x()
-                lat_dms = QgsCoordinateFormatter.formatY(data['latitude'],
-                                                         QgsCoordinateFormatter.FormatDegreesMinutesSeconds, 2)
-                lon_dms = QgsCoordinateFormatter.formatX(data['longitude'],
-                                                         QgsCoordinateFormatter.FormatDegreesMinutesSeconds, 2)
-                data['coordinates'] = f"{lat_dms}, {lon_dms}"
-
-        data['altitude'] = get_float('Exif.GPSInfo.GPSAltitude')
-        data['direction'] = get_float('Exif.GPSInfo.GPSImgDirection')
-        dt = tags.get('Exif.Photo.DateTimeOriginal')
-        if isinstance(dt, QDateTime):
-            data['timestamp'] = dt.toString("yyyy-MM-dd HH:mm:ss")
-        data['model'] = tags.get('Exif.Image.Model')
-
-        dji_fields = {
-            'CamReverse': 'Xmp.drone-dji.CamReverse', 'FlightPitchDegree': 'Xmp.drone-dji.FlightPitchDegree',
-            'FlightRollDegree': 'Xmp.drone-dji.FlightRollDegree', 'FlightYawDegree': 'Xmp.drone-dji.FlightYawDegree',
-            'GimbalPitchDegree': 'Xmp.drone-dji.GimbalPitchDegree', 'GimbalReverse': 'Xmp.drone-dji.GimbalReverse',
-            'GimbalRollDegree': 'Xmp.drone-dji.GimbalRollDegree', 'GimbalYawDegree': 'Xmp.drone-dji.GimbalYawDegree',
-            'RelativeAltitude': 'Xmp.drone-dji.RelativeAltitude'
-        }
-        for key, tag in dji_fields.items():
-            data[key] = get_float(tag)
-
-        data['rotation'] = data.get('direction') or data.get('FlightYawDegree')
-        return data
-
-    def insert_stamp(self, input_qimage, svg_file_path, font_color, font_size, position, font_name, lines_to_stamp,
-                     feedback):
+    def insert_stamp(self, input_qimage, svg_file_path, font_color, font_size, position, font_name, lines_to_stamp, feedback):
         painter = QPainter(input_qimage)
 
         # Input image dimensions
@@ -463,9 +360,6 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
             return output_image_path
         else:
             raise QgsProcessingException("Failed to save the processed image.")
-
-    def create_points_layer(self, coordinates_list):
-        pass
 
     def name(self):
         return "emiToolsStampPhotoRpa"
