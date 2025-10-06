@@ -33,4 +33,5 @@ __revision__ = '$Format:%H$'
 from qgis.PyQt.QtCore import QCoreApplication
 
 def tr(string):
+    """Translates a string using the default QGIS context"""
     return QCoreApplication.translate('@default', string)
