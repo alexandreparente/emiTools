@@ -63,12 +63,10 @@ class emiToolsProvider(QgsProcessingProvider):
         self.addAlgorithm(emiToolsStampPhotoRpa())
         self.addAlgorithm(emiToolsImportGeotaggedPhotos())
         self.addAlgorithm(emiToolsApplyStyleGeotaggedPhotos())
-        #self.addAlgorithm(emiToolsPhotographicReport())
-        #self.addAlgorithm(AssociarFotosPoligonos())
         self.addAlgorithm(emiToolsBatchPhotoExport())
 
     # add additional algorithms here
-        # self.addAlgorithm(MyOtherAlgorithm())
+        #self.addAlgorithm(emiToolsPhotographicReport())
 
     def id(self):
         """
