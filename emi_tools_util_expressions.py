@@ -30,9 +30,12 @@ __copyright__ = '(C) 2024 by Alexandre Parente Lima'
 __revision__ = '$Format:%H$'
 
 from qgis.PyQt.QtCore import QDate
+from qgis.core import QgsProject, QgsExpressionUtils
 from datetime import datetime, date
+import os
 import re
 import string
+from osgeo import gdal
 
 
 def validate_cpf_logic(cpf_number) -> bool:
@@ -197,8 +200,7 @@ def format_capitalization_logic(
       - the first word is always capitalized;
       - articles/prepositions/conjunctions remain lowercase (list);
       - after strong punctuation (.:;!?) the next word is capitalized;
-      - handles hyphenated words;
-      - no preserves acronyms as they were typed;
+      - handles hyphenated words.
     """
     if not text:
         return ""
@@ -238,7 +240,6 @@ def format_capitalization_logic(
 
 
 #   This dictionary for all satellites.
-
 SATELLITE_PROPERTIES = {
     # Regex Pattern: { 'name': ..., 'date_format': ..., 'source': ... }
 
@@ -298,13 +299,14 @@ SATELLITE_PROPERTIES = {
 }
 
 
-def get_satellite_info(filename):
+def get_satellite_logic(filename) -> str:
     """
     Identifies the satellite from the filename and returns a dictionary of its properties.
     """
     for pattern, properties in SATELLITE_PROPERTIES.items():
         if re.search(pattern, filename, re.IGNORECASE):
-            return properties  # Return the properties dictionary
+            # Return the properties dictionary
+            return properties
     return None
 
 
@@ -352,3 +354,24 @@ def get_image_date_logic(filename) -> date:
             return datetime.strptime(match.group(1).upper(), '%d%b%y').date()
 
     raise ValueError(f"Could not parse date from filename with expected format '{date_format}'.")
+
+
+def get_layer_custom_property_logic(layer_name: str, property_key: str):
+    """
+    Returns the value of a 'Custom Property' from a layer in the project.
+    """
+
+    layers = QgsProject.instance().mapLayersByName(layer_name)
+
+    if not layers:
+        QgsMessageLog.logMessage(f"Function 'get_layer_custom_property' could not find layer: {layer_name}",
+                                 'Python Functions')
+        return None
+
+    # Get the first layer found with this name
+    layer = layers[0]
+
+    property_value = layer.customProperty(property_key)
+    return property_value
+
+

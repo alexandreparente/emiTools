@@ -259,7 +259,7 @@ def get_image_source(filename, feature, parent):
     <p>get_source_imagen('LC08_L1TP_216065_20210206_20210305_01_T1') -> 'United States Geological Survey (USGS).'</p>
     <p>get_source_imagen('S2A_MSIL1C_20170105T013442_N0204_R031_T53NMJ_20170105T013443') -> 'European Union's Earth Observation Programme (COPERNICUS).'</p>
     """
-    info = get_satellite_info(filename)
+    info = get_satellite_logic(filename)
     if info:
         return info['source']
     raise Exception("Image source could not be determined from the filename.")
@@ -282,3 +282,24 @@ def get_image_date(filename, feature, parent):
     """
     d = get_image_date_logic(filename)
     return QDate(d.year, d.month, d.day)
+
+
+@qgsfunction(args="auto", group='EMI Tools')
+def get_layer_custom_property(layer_name, property_key, feature, parent):
+    """
+    Returns the value of a 'Custom Property' from a specific layer in the project.
+
+    <h4>Syntax</h4>
+    <p><b style="color:#0a6099;">get_layer_custom_property</b>
+    (<i style="color:#bf0c0c;">string</i>, <i style="color:#bf0c0c;">string</i>)</p>
+
+    <h4>Arguments</h4>
+    <p><b>layer_name</b> (<i style="color:#bf0c0c;">string</i>): Name of the project layer.</p>
+    <p><b>property_key</b> (<i style="color:#bf0c0c;">string</i>): Name of the custom property to retrieve.</p>
+
+    <h4>Example</h4>
+    <p>get_layer_custom_property('my_layer', 'my_property')</p>
+    <p>get_layer_custom_property(@layer_name, 'my_property')</p>
+    """
+
+    return get_layer_custom_property_logic(layer_name, property_key)
