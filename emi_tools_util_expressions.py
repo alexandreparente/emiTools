@@ -30,7 +30,7 @@ __copyright__ = '(C) 2024 by Alexandre Parente Lima'
 __revision__ = '$Format:%H$'
 
 from qgis.PyQt.QtCore import QDate
-from qgis.core import QgsProject, QgsExpressionUtils
+from qgis.core import QgsProject, QgsMessageLog
 from datetime import datetime, date
 import os
 import re
@@ -314,7 +314,7 @@ def get_image_date_logic(filename) -> date:
     """
     Extracts the acquisition date from the filename, returning a datetime.date.
     """
-    info = get_satellite_info(filename)
+    info = get_satellite_logic(filename)
     if not info:
         raise ValueError("Could not identify satellite to determine date format.")
     date_format = info['date_format']

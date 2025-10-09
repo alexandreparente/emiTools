@@ -238,7 +238,7 @@ def get_satellite_name(filename, feature, parent):
     <p>get_satellite_name('S2A_MSIL1C_20170105T013442_N0204_R031_T53NMJ_20170105T013443') -> 'Sentinel 2A'</p>
     <p>get_satellite_name('S2B_MSIL1C_20170105T013442_N0204_R031_T53NMJ_20170105T013443') -> 'Sentinel 2B'</p>
     """
-    info = get_satellite_info(filename)
+    info = get_satellite_logic(filename)
     if info:
         return info['name']
     raise Exception("Satellite name could not be determined from the filename.")
@@ -298,8 +298,9 @@ def get_layer_custom_property(layer_name, property_key, feature, parent):
     <p><b>property_key</b> (<i style="color:#bf0c0c;">string</i>): Name of the custom property to retrieve.</p>
 
     <h4>Example</h4>
-    <p>get_layer_custom_property('my_layer', 'my_property')</p>
-    <p>get_layer_custom_property(@layer_name, 'my_property')</p>
+    <p>get_layer_custom_property('my_layer', 'my_property') -> 'property'</p>
+    <p>get_layer_custom_property('Image previews','planet/previewItemIds') -> '["PSScene:20251006_131906_03_24f6", "PSScene:20251006_131903_99_24f6"]'</p>
+    <p>get_image_date(from_json(  get_layer_custom_property('Image previews','planet/previewItemIds'))[0]) -> QDate('2017-01-05')</p>
     """
 
     return get_layer_custom_property_logic(layer_name, property_key)
