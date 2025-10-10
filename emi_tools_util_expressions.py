@@ -36,6 +36,7 @@ import os
 import re
 import string
 from osgeo import gdal
+from .emi_tools_util import tr
 
 
 def validate_cpf_logic(cpf_number) -> bool:
