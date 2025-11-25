@@ -239,7 +239,6 @@ def format_capitalization_logic(
     return ' '.join(result)
 
 
-
 #   This dictionary for all satellites.
 SATELLITE_PROPERTIES = {
     # Regex Pattern: { 'name': ..., 'date_format': ..., 'source': ... }

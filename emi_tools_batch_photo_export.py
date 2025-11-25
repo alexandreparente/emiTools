@@ -52,23 +52,29 @@ class emiToolsBatchPhotoExport(QgsProcessingAlgorithm):
     OUTPUT_FOLDER = 'OUTPUT_FOLDER'
 
     def initAlgorithm(self, config=None):
-        self.addParameter(QgsProcessingParameterFeatureSource(
-            self.INPUT_LAYER,
-            tr('Input layer'),
-            [QgsProcessing.TypeVector]
-        ))
+        self.addParameter(
+            QgsProcessingParameterFeatureSource(
+                self.INPUT_LAYER,
+                tr('Input layer'),
+                [QgsProcessing.TypeVector]
+            )
+        )
 
-        self.addParameter(QgsProcessingParameterField(
-            self.INPUT_FIELD,
-            tr('Field containing photo path'),
-            parentLayerParameterName=self.INPUT_LAYER,
-            type=QgsProcessingParameterField.String
-        ))
+        self.addParameter(
+            QgsProcessingParameterField(
+                self.INPUT_FIELD,
+                tr('Field containing photo path'),
+                parentLayerParameterName=self.INPUT_LAYER,
+                type=QgsProcessingParameterField.String
+            )
+        )
 
-        self.addParameter(QgsProcessingParameterFolderDestination(
-            self.OUTPUT_FOLDER,
-            tr('Output folder')
-        ))
+        self.addParameter(
+            QgsProcessingParameterFolderDestination(
+                self.OUTPUT_FOLDER,
+                tr('Output folder')
+            )
+        )
 
     def processAlgorithm(self, parameters, context, feedback):
         layer = self.parameterAsSource(parameters, self.INPUT_LAYER, context)

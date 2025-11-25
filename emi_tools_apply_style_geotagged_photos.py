@@ -60,28 +60,66 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
     EXPORT_STYLE = 'EXPORT_STYLE'
 
     def initAlgorithm(self, config=None):
-        self.addParameter(QgsProcessingParameterVectorLayer(
-            self.INPUT_FILE, tr('Input layer'), [QgsProcessing.TypeVectorPoint]))
+        self.addParameter(
+            QgsProcessingParameterVectorLayer(
+                self.INPUT_FILE,
+                tr('Input layer'),
+                [QgsProcessing.TypeVectorPoint]
+            )
+        )
 
-        self.addParameter(QgsProcessingParameterField(
-            self.PHOTO_FIELD, tr('Field containing photo path'), parentLayerParameterName=self.INPUT_FILE,
-            type=QgsProcessingParameterField.String, defaultValue='photo', optional=False))
+        self.addParameter(
+            QgsProcessingParameterField(
+                self.PHOTO_FIELD,
+                tr('Field containing photo path'),
+                parentLayerParameterName=self.INPUT_FILE,
+                type=QgsProcessingParameterField.String,
+                defaultValue='photo',
+                optional=False
+            )
+        )
 
-        self.addParameter(QgsProcessingParameterField(
-            self.ROTATION_FIELD, tr('Field containing the camera direction'), parentLayerParameterName=self.INPUT_FILE,
-            type=QgsProcessingParameterField.Numeric, defaultValue='rotation', optional=False))
+        self.addParameter(
+            QgsProcessingParameterField(
+                self.ROTATION_FIELD,
+                tr('Field containing the camera direction'),
+                parentLayerParameterName=self.INPUT_FILE,
+                type=QgsProcessingParameterField.Numeric,
+                defaultValue='rotation',
+                optional=False
+            )
+        )
 
-        self.addParameter(QgsProcessingParameterBoolean(
-            self.CONFIG_MAP_TIPS, tr('Configure map tips'), defaultValue=False))
+        self.addParameter(
+            QgsProcessingParameterBoolean(
+                self.CONFIG_MAP_TIPS,
+                tr('Configure map tips'),
+                defaultValue=False
+            )
+        )
 
-        self.addParameter(QgsProcessingParameterBoolean(
-            self.CONFIG_PHOTO_FIELD, tr('Configure the form attributes for the photo field'), defaultValue=False))
+        self.addParameter(
+            QgsProcessingParameterBoolean(
+                self.CONFIG_PHOTO_FIELD,
+                tr('Configure the form attributes for the photo field'),
+                defaultValue=False
+            )
+        )
 
-        self.addParameter(QgsProcessingParameterBoolean(
-            self.EXPORT_STYLE, tr('Export the Layer Definition file (QLR)'), defaultValue=False))
+        self.addParameter(
+            QgsProcessingParameterBoolean(
+                self.EXPORT_STYLE,
+                tr('Export the Layer Definition file (QLR)'),
+                defaultValue=False
+            )
+        )
 
-        self.addParameter(QgsProcessingParameterVectorDestination(
-            self.OUTPUT_FILE, tr('Output file')))
+        self.addParameter(
+            QgsProcessingParameterVectorDestination(
+                self.OUTPUT_FILE,
+                tr('Output file')
+            )
+        )
 
     def processAlgorithm(self, parameters, context, feedback):
         input_layer = self.parameterAsVectorLayer(parameters, self.INPUT_FILE, context)

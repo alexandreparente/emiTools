@@ -52,7 +52,6 @@ from .emi_tools_util import tr
 
 
 class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
-
     # Definition of input and output parameters
     OUTPUT_FOLDER = 'OUTPUT_FOLDER'
 
@@ -65,7 +64,7 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
                 [QgsProcessing.TypeVectorPolygon, QgsProcessing.TypeVectorLine]
             )
         )
-        
+
         # Input field parameter to select a field for naming the exported files
         self.addParameter(
             QgsProcessingParameterField(
@@ -82,7 +81,7 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
                 tr('Output folder')
             )
         )
-        
+
         # Option to compress the output
         self.addParameter(
             QgsProcessingParameterBoolean(
@@ -102,21 +101,24 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
         )
 
     def processAlgorithm(self, parameters, context, feedback):
+
+        print(f"morri")
         layer = self.parameterAsSource(parameters, 'layer', context)
+
         if layer is None:
             raise QgsProcessingException(self.invalidSourceError(parameters, 'layer'))
 
         # Get the field selected by the user
         export_field = self.parameterAsString(parameters, 'export_field', context)
 
-	    # Get output folder
+        # Get output folder
         output_folder = self.parameterAsString(parameters, self.OUTPUT_FOLDER, context)
         compress_output = self.parameterAsBoolean(parameters, 'compress_output', context)
         load_output = self.parameterAsBoolean(parameters, 'load_output', context)
 
         if not output_folder:
             output_folder = tempfile.mkdtemp()
-            
+
         # Try to create the folder if it doesn't exist
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
@@ -248,7 +250,8 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
         return ""
 
     def shortHelpString(self):
-        return tr("This algorithm exports each feature from a polygon or line layer to a separate KML file, compatible with software DJI Pilot.<br> To ensure compatibility with the DJI Pilot app, the &lt;Folder&gt; tag—automatically added by QGIS to structure KML content— is removed, as it is not supported by the application.")
+        return tr(
+            "This algorithm exports each feature from a polygon or line layer to a separate KML file, compatible with software DJI Pilot.<br> To ensure compatibility with the DJI Pilot app, the &lt;Folder&gt; tag ( automatically added by QGIS to structure KML content) is removed, as it is not supported by the application.")
 
     def createInstance(self):
         return emiToolsExportKmlRpa()

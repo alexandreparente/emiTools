@@ -59,49 +59,79 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
     }
 
     def initAlgorithm(self, config=None):
+
         self.addParameter(
-            QgsProcessingParameterFeatureSource('layer', tr('Input layer'), [QgsProcessing.TypeVectorPolygon])
+            QgsProcessingParameterFeatureSource(
+                'layer',
+                tr('Input layer'),
+                [QgsProcessing.TypeVectorPolygon]
+            )
         )
         
         # Parameter to select the field for the embargo term number
         self.addParameter(
-            QgsProcessingParameterField('num_tei_field', tr('Embargo term field'), parentLayerParameterName='layer',
-                                        type=QgsProcessingParameterField.String, defaultValue='numero_tad')
+            QgsProcessingParameterField(
+                'num_tei_field',
+                tr('Embargo term field'),
+                parentLayerParameterName='layer',
+                type=QgsProcessingParameterField.String,
+                defaultValue='numero_tad'
+            )
         )
 
         # Parameter to select the field for the embargo term series        
         self.addParameter(
-            QgsProcessingParameterField('serie_tei_field', tr('Embargo term series field'),
-                                        parentLayerParameterName='layer', type=QgsProcessingParameterField.String,
-                                        defaultValue='serie_tad')
+            QgsProcessingParameterField(
+                'serie_tei_field',
+                tr('Embargo term series field'),
+                parentLayerParameterName='layer',
+                type=QgsProcessingParameterField.String,
+                defaultValue='serie_tad'
+            )
         )
         
         # Setting the default output folder to the user's home directory
         self.addParameter(
-            QgsProcessingParameterFolderDestination(self.OUTPUT_FOLDER, tr('Output folder'))
+            QgsProcessingParameterFolderDestination(
+                self.OUTPUT_FOLDER,
+                tr('Output folder')
+            )
         )
 
         # Parameter to choose the output format        
         self.addParameter(
-            QgsProcessingParameterEnum('output_format', tr('Output file format:'),
-                                       options=[info['driver'] for info in self.FORMAT_INFO.values()], defaultValue=0)
+            QgsProcessingParameterEnum(
+                'output_format',
+                tr('Output file format:'),
+                options=[info['driver'] for info in self.FORMAT_INFO.values()], defaultValue=0
+            )
         )
         
         # Add parameter to export all features to a single file        
         self.addParameter(
-            QgsProcessingParameterBoolean('export_all_to_single', tr('Export all features to a single file'),
-                                          defaultValue=False)
+            QgsProcessingParameterBoolean(
+                'export_all_to_single',
+                tr('Export all features to a single file'),
+                defaultValue=False
+            )
         )
         
         # Parameter to compress the output file
         self.addParameter(
-            QgsProcessingParameterBoolean('compress_output', tr('Compress output file copy (.zip)'), defaultValue=False)
+            QgsProcessingParameterBoolean(
+                'compress_output',
+                tr('Compress output file copy (.zip)'),
+                defaultValue=False
+            )
         )
         
         # Parameter to load the output file        
         self.addParameter(
-            QgsProcessingParameterBoolean('load_output', tr('Open output files after executing the algorithm'),
-                                          defaultValue=True)
+            QgsProcessingParameterBoolean(
+                'load_output',
+                tr('Open output files after executing the algorithm'),
+                defaultValue=True
+            )
         )
 
     def processAlgorithm(self, parameters, context, feedback):
