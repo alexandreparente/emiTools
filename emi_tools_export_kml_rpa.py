@@ -139,8 +139,9 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
             if feedback.isCanceled():
                 break
 
-            field_value = feature[export_field] if export_field and feature[
+            raw_value = feature[export_field] if export_field and feature[
                 export_field] else f"{layer.sourceName()}_{feature.id()}"
+            field_value = str(raw_value).replace('.', '_')
 
             geometry = feature.geometry()
             if not geometry or geometry.isEmpty():
