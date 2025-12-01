@@ -259,6 +259,7 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
         # Input image dimensions
         image_width = painter.device().width()
         image_height = painter.device().height()
+        image_offset = 50
 
         # Set font
         font = QFont(font_name, font_size)
@@ -274,14 +275,10 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
             painter.end()
             return
 
-        metrics = QFontMetrics(font)
-        line_spacing = metrics.lineSpacing()
-
-        # Count all lines, including empty ones
-        num_lines = max(1, len(full_text.split('\n')))
-        total_text_height = line_spacing * num_lines
-
-        image_offset = 50
+        # Creates a bounding box just to calculate the text height
+        bounding_box_text = QRect(0, 0, image_width - (2 * image_offset), image_height - (2 * image_offset))
+        actual_text_rect = painter.boundingRect(bounding_box_text, Qt.AlignLeft | Qt.AlignTop, full_text)
+        total_text_height = actual_text_rect.height()
 
         svg_width, svg_height = 0, 0
         svg_renderer = None
@@ -297,35 +294,46 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
                 feedback.pushWarning(tr(f"Failed to load SVG file: {svg_file_path}"))
                 svg_renderer = None
 
-        text_width = image_width - (2 * image_offset) - (svg_width + image_offset if svg_renderer else 0)
         h_offset = svg_width + image_offset if svg_renderer else 0
+        text_width = image_width - (2 * image_offset) - h_offset
+
+        svg_x, svg_y = 0, 0
 
         if position == 'Bottom Left':
             alignment = Qt.AlignLeft | Qt.AlignBottom
-            svg_y_base = image_height - image_offset - (max(total_text_height, svg_height))
-            svg_x, svg_y = image_offset, svg_y_base + (max(total_text_height, svg_height) - svg_height) / 2
-            text_x, text_y = svg_x + h_offset, image_height - image_offset - total_text_height
+            base_y = image_height - image_offset - total_text_height
+
+            text_x, text_y = image_offset + h_offset, base_y
+            if svg_renderer:
+                svg_x, svg_y = image_offset, base_y
+
         elif position == 'Bottom Right':
             alignment = Qt.AlignRight | Qt.AlignBottom
-            svg_y_base = image_height - image_offset - (max(total_text_height, svg_height))
-            svg_x, svg_y = image_width - image_offset - svg_width, svg_y_base + (
-                    max(total_text_height, svg_height) - svg_height) / 2
-            text_x, text_y = image_offset, image_height - image_offset - total_text_height
+            base_y = image_height - image_offset - total_text_height
+
+            text_x, text_y = image_offset, base_y
+            if svg_renderer:
+                svg_x, svg_y = image_width - image_offset - svg_width, base_y
+
         elif position == 'Top Left':
             alignment = Qt.AlignLeft | Qt.AlignTop
-            svg_y_base = image_offset
-            svg_x, svg_y = image_offset, svg_y_base + (max(total_text_height, svg_height) - svg_height) / 2
-            text_x, text_y = svg_x + h_offset, image_offset
+            base_y = image_offset
+
+            text_x, text_y = image_offset + h_offset, base_y
+            if svg_renderer:
+                svg_x, svg_y = image_offset, base_y
+
         else:  # Top Right
             alignment = Qt.AlignRight | Qt.AlignTop
-            svg_y_base = image_offset
-            svg_x, svg_y = image_width - image_offset - svg_width, svg_y_base + (
-                    max(total_text_height, svg_height) - svg_height) / 2
-            text_x, text_y = image_offset, image_offset
+            base_y = image_offset
 
-        text_rect = QRect(int(text_x), int(text_y), int(text_width), int(total_text_height))
+            text_x, text_y = image_offset, base_y
+            if svg_renderer:
+                svg_x, svg_y = image_width - image_offset - svg_width, base_y
+
+        final_text_rect = QRect(int(text_x), int(text_y), int(text_width), int(total_text_height))
         painter.setPen(QColor(font_color))
-        painter.drawText(text_rect, alignment, full_text)
+        painter.drawText(final_text_rect, alignment, full_text)
 
         if svg_renderer:
             svg_rect = QRectF(svg_x, svg_y, svg_width, svg_height)
