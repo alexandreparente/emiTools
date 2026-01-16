@@ -43,7 +43,7 @@ from qgis.core import (
 from .emi_tools_util import tr
 
 
-class emiToolsArrayAggregate(QgsProcessingAlgorithm):
+class emiToolsAggregateArray(QgsProcessingAlgorithm):
     """
     Aggregates features by a selected field.
     Aggregated attributes are stored as arrays
@@ -245,4 +245,4 @@ class emiToolsArrayAggregate(QgsProcessingAlgorithm):
         )
 
     def createInstance(self):
-        return emiToolsArrayAggregate()
+        return emiToolsAggregateArray()

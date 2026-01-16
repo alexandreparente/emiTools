@@ -37,7 +37,7 @@ from .emi_tools_apply_style_geotagged_photos import emiToolsApplyStyleGeotaggedP
 #from .emi_tools_join_geotagged_photos_features import AssociarFotosPoligonos
 #from .emi_tools_photographic_report import emiToolsPhotographicReport
 from .emi_tools_batch_photo_export import emiToolsBatchPhotoExport
-from .emi_tools_array_aggregate import emiToolsArrayAggregate
+from .emi_tools_aggregate_array import emiToolsAggregateArray
 
 
 class emiToolsProvider(QgsProcessingProvider):
