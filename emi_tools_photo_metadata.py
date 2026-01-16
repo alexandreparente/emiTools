@@ -39,6 +39,7 @@ METADATA_CONF = {
     'photo': {'exif_tag': None, 'friendly_name': 'Photo Path', 'type': str},
     'filename': {'exif_tag': None, 'friendly_name': 'Filename', 'type': str},
     'directory': {'exif_tag': None, 'friendly_name': 'Directory', 'type': str},
+    'dirname': {'exif_tag': None, 'friendly_name': 'DirName', 'type': str},
     'latitude': {'exif_tag': None, 'friendly_name': 'Latitude', 'type': float},
     'longitude': {'exif_tag': None, 'friendly_name': 'Longitude', 'type': float},
     'coordinates': {'exif_tag': None, 'friendly_name': 'Coordinates', 'type': str},

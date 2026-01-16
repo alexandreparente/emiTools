@@ -68,6 +68,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         'photo',
         'filename',
         'directory',
+        'dirname',
         'altitude',
         'direction',
         'rotation',
@@ -115,7 +116,11 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         all_known_keys = get_metadata_keys()
         metadata_options_display = [translated_map[key] for key in all_known_keys]
 
-        default_indices = [all_known_keys.index(opt) for opt in self.PRIORITY_KEYS if opt in all_known_keys]
+        default_indices = [
+            all_known_keys.index(opt)
+            for opt in self.PRIORITY_KEYS
+            if opt in all_known_keys
+        ]
 
         param_select_meta = QgsProcessingParameterEnum(
             self.METADATA_TO_IMPORT,
@@ -124,7 +129,10 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             allowMultiple=True,
             defaultValue=default_indices
         )
-        param_select_meta.setFlags(param_select_meta.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        param_select_meta.setFlags(
+            param_select_meta.flags() |
+            QgsProcessingParameterDefinition.FlagAdvanced
+        )
         self.addParameter(param_select_meta)
 
         param_extract_all = QgsProcessingParameterBoolean(
@@ -132,7 +140,10 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             tr('Extract all available EXIF/XMP tags'),
             defaultValue=False
         )
-        param_extract_all.setFlags(param_extract_all.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        param_extract_all.setFlags(
+            param_extract_all.flags() |
+            QgsProcessingParameterDefinition.FlagAdvanced
+        )
         self.addParameter(param_extract_all)
 
     def processAlgorithm(self, parameters, context, feedback):
@@ -146,8 +157,10 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             all_known_keys = get_metadata_keys()
             selected_indices = self.parameterAsEnums(parameters, self.METADATA_TO_IMPORT, context)
             keys_to_import = [all_known_keys[i] for i in selected_indices]
-            if 'latitude' not in keys_to_import: keys_to_import.append('latitude')
-            if 'longitude' not in keys_to_import: keys_to_import.append('longitude')
+            if 'latitude' not in keys_to_import:
+                keys_to_import.append('latitude')
+            if 'longitude' not in keys_to_import:
+                keys_to_import.append('longitude')
 
         feature_exif_dict = {}
         erro_feature_exif_dict = {}
@@ -157,11 +170,19 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
 
         # Recursive folder scan
         if recursive:
-            files_to_process = [os.path.join(r, f) for r, d, fs in os.walk(input_folder) for f in fs if
-                                f.lower().endswith(image_extensions)]
+            files_to_process = [
+                os.path.join(r, f)
+                for r, d, fs in os.walk(input_folder)
+                for f in fs
+                if f.lower().endswith(image_extensions)
+            ]
         else:
-            files_to_process = [os.path.join(input_folder, f) for f in os.listdir(input_folder) if
-                                os.path.isfile(os.path.join(input_folder, f)) and f.lower().endswith(image_extensions)]
+            files_to_process = [
+                os.path.join(input_folder, f)
+                for f in os.listdir(input_folder)
+                if os.path.isfile(os.path.join(input_folder, f))
+                and f.lower().endswith(image_extensions)
+            ]
 
         total = len(files_to_process)
         feedback.pushInfo(tr(f'Found {total} images to process.'))
@@ -171,14 +192,24 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
                 break
             feedback.setProgress(int((i + 1) / total * 100))
             try:
-                exif_dict = get_exif_data(image_path, keys_to_import, extract_all_tags, include_full_map=False)
+                exif_dict = get_exif_data(
+                    image_path,
+                    keys_to_import,
+                    extract_all_tags,
+                    include_full_map=False
+                )
+
+                exif_dict['dirname'] = os.path.basename(
+                    os.path.dirname(image_path)
+                )
+
                 if exif_dict.get('latitude') and exif_dict.get('longitude'):
                     feature_exif_dict[image_path] = exif_dict
                 else:
                     erro_feature_exif_dict[image_path] = {'error': tr('No geotag found')}
             except Exception as e:
                 feedback.reportError(tr(f"Error processing {image_path}: {str(e)}"))
-                erro_feature_exif_dict[file] = {'error': str(e)}
+                erro_feature_exif_dict[image_path] = {'error': str(e)}
 
         # Determines the final set and order of fields for the output layer.
         if extract_all_tags:
