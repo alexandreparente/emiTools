@@ -229,7 +229,7 @@
         <translation>Falha ao carregar o arquivo SVG: {svg_file_path}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_kml_rpa.py" line="185"/>
+        <location filename="../emi_tools_export_kml_rpa.py" line="184"/>
         <source>Export KML files to DJI Pilot</source>
         <translation>Exportar arquivos KML para o DJI Pilot</translation>
     </message>
@@ -334,48 +334,43 @@
         <translation>Importar metadados</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_kml_rpa.py" line="194"/>
+        <location filename="../emi_tools_export_kml_rpa.py" line="193"/>
         <source>This algorithm exports each feature from a polygon or line layer to a separate KML file, compatible with software DJI Pilot.&lt;br&gt; To ensure compatibility with the DJI Pilot app, the &amp;lt;Folder&amp;gt; tag ( automatically added by QGIS to structure KML content) is removed, as it is not supported by the application.</source>
         <translation>Este algoritmo exporta cada feição de uma camada de polígonos ou linhas para um arquivo KML separado, compatível com o software DJI Pilot.&lt;br&gt;
 Para garantir a compatibilidade com o aplicativo DJI Pilot, a tag &lt;Folder&gt; (adicionada automaticamente pelo QGIS para estruturar o conteúdo do KML) é removida, pois não é suportada pelo aplicativo.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_aggregate_array.py" line="67"/>
+        <location filename="../emi_tools_aggregate_by_field.py" line="67"/>
         <source>Group by field</source>
         <translation>Agrupar por campo</translation>
     </message>
     <message>
-        <location filename="../emi_tools_aggregate_array.py" line="76"/>
+        <location filename="../emi_tools_aggregate_by_field.py" line="76"/>
         <source>Maximum features per group (0 = unlimited)</source>
         <translation>Máximo de feições por grupo (0 = ilimitado)</translation>
     </message>
     <message>
-        <location filename="../emi_tools_aggregate_array.py" line="87"/>
+        <location filename="../emi_tools_aggregate_by_field.py" line="87"/>
         <source>Aggregated layer</source>
         <translation>Camada agregada</translation>
     </message>
     <message>
-        <location filename="../emi_tools_aggregate_array.py" line="105"/>
+        <location filename="../emi_tools_aggregate_by_field.py" line="105"/>
         <source>Field &apos;{group_field_name}&apos; not found.</source>
         <translation>Campo &apos;{group_field_name}&apos; não encontrado.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_aggregate_array.py" line="178"/>
+        <location filename="../emi_tools_aggregate_by_field.py" line="178"/>
         <source>Constructing aggregated features...</source>
         <translation>Construindo feições agregadas...</translation>
     </message>
     <message>
-        <location filename="../emi_tools_aggregate_array.py" line="226"/>
-        <source>Aggregate Rows to Array</source>
-        <translation>Agregar linhas para matriz (Array)</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_aggregate_array.py" line="235"/>
+        <location filename="../emi_tools_aggregate_by_field.py" line="235"/>
         <source>Aggregates features by a selected field.
 Aggregated attributes are stored as arrays in fields suffixed with &apos;_list&apos;.
 </source>
         <translation>Agrega feições por um campo selecionado.
-Atributos agregados são armazenados como matrizes em campos com o sufixo &apos;_list&apos;.
+Atributos agregados são armazenados como lista em campos com o sufixo &apos;_list&apos;.
 </translation>
     </message>
     <message>
@@ -417,6 +412,11 @@ Atributos agregados são armazenados como matrizes em campos com o sufixo &apos;
         <location filename="../emi_tools_batch_photo_export.py" line="167"/>
         <source>This algorithm copies or moves image files listed in a field of a vector layer to a destination folder.</source>
         <translation>This algorithm copies or moves image files listed in a field of a vector layer to a destination folder.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_aggregate_by_field.py" line="226"/>
+        <source>Aggregate Features by Field</source>
+        <translation>Agregar feições por campo</translation>
     </message>
 </context>
 </TS>

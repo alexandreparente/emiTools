@@ -30,7 +30,7 @@ __copyright__ = '(C) 2024 by Alexandre Parente Lima'
 
 from qgis.core import QgsProcessingProvider
 
-from .emi_tools_aggregate_array import emiToolsAggregateArray
+from .emi_tools_aggregate_by_field import emiToolsAggregateArray
 from .emi_tools_apply_style_geotagged_photos import emiToolsApplyStyleGeotaggedPhotos
 # from .emi_tools_join_geotagged_photos_features import AssociarFotosPoligonos
 # from .emi_tools_photographic_report import emiToolsPhotographicReport

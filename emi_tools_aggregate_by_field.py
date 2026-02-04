@@ -223,7 +223,7 @@ class emiToolsAggregateArray(QgsProcessingAlgorithm):
         return "emiToolsAggregateArray"
 
     def displayName(self):
-        return tr("Aggregate Rows to Array")
+        return tr("Aggregate Features by Field")
 
     def group(self):
         return tr("Emi Tools")
