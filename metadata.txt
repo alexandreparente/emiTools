@@ -1,0 +1,66 @@
+# This file contains metadata for your plugin.
+
+# This file should be included when you package your plugin.# Mandatory items:
+
+[general]
+name=Emi Tools
+qgisMinimumVersion=3.40
+description=Collection of auxiliary tools for processing and exporting geospatial data from drone surveys
+
+version=0.7
+author=Alexandre Parente Lima
+email=alexandre.parente@gmail.com
+
+about=This plugin provides a collection of auxiliary tools aimed at supporting the preparation of technical and environmental reports.
+
+    Included functionalities:
+    - Import of EXIF metadata and XMP tags from DJI drone photos;
+    - Export photos in batch to a folder;
+    - Export of KML files compatible with DJI Pilot;
+    - Insertion of informative stamps on photo (date, time, coordinates, etc.);
+    - Conversion and compression of vector data for export and sharing;
+    - Aggregates features by a selected field, with an optional limit on the number of features per group.
+    - Adds custom user functions to the Field Calculator for validating CPF and CNPJ numbers, formatting titles, proper names, numbers and more.
+
+tracker=https://github.com/alexandreparente/emiTools/issues
+repository=https://github.com/alexandreparente/emiTools
+# End of mandatory metadata
+
+# Recommended items:
+
+hasProcessingProvider=yes
+# Uncomment the following line and add your changelog:
+# changelog=
+
+# Tags are comma separated with spaces allowed
+tags=python
+
+homepage=https://github.com/alexandreparente/emiTools
+category=Analysis
+icon=icon.png
+# experimental flag
+experimental=False
+
+# deprecated flag (applies to the whole plugin, not just a single version)
+deprecated=False
+
+# Since QGIS 3.8, a comma separated list of plugins to be installed
+# (or upgraded) can be specified.
+# Check the documentation for more information.
+# plugin_dependencies=
+
+Category of the plugin: Raster, Vector, Database or Web
+# category=
+
+# If the plugin can run on QGIS Server.
+server=False
+
+changelog=0.7
+        - New algorithm: Aggregate Features by Field — aggregates features by a selected field, with an optional limit on the number of features per group.
+        - Batch Photo Export: Added options to move files and control overwriting of existing data.
+        - Export DJI KML: Code refactored to improve efficiency and maintainability.
+        - Stamp Text and Image on Photo: The stamp size is now user-defined in %%, px, or cm, with automatic font size adjustment.
+        - Stamp Text and Image on Photo: Added an option to select which specific metadata will be written onto the image.
+        - Import Geotagged Photos: Added a new option for recursive scanning of subfolders.
+        - Import Geotagged Photos: Added custom selection of metadata for extraction.
+        - Import Geotagged Photos: Added optional inclusion of the fields "description" and "selected".
