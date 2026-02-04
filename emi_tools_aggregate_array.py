@@ -21,7 +21,6 @@
  ***************************************************************************/
 """
 
-
 from qgis.PyQt.QtCore import QVariant
 from qgis.core import (
     QgsProcessing,
@@ -194,24 +193,19 @@ class emiToolsAggregateArray(QgsProcessingAlgorithm):
 
             for i in range(0, num_items, chunk_size):
                 end_index = i + chunk_size
-
                 new_feature = QgsFeature()
                 new_feature.setFields(output_fields)
-
                 new_feature.setAttribute('fid', fid_counter)
                 fid_counter += 1
 
                 subset_geoms = group_data['geometries'][i:end_index]
                 if subset_geoms:
                     combined_geom = QgsGeometry.unaryUnion(subset_geoms)
-
                     if not combined_geom.isMultipart():
                         combined_geom.convertToMultiType()
-
                     new_feature.setGeometry(combined_geom)
 
                 new_feature.setAttribute(group_field_name, group_key)
-
                 for field_name, values in group_data['attributes'].items():
                     subset_values = values[i:end_index]
                     new_feature.setAttribute(
@@ -232,7 +226,7 @@ class emiToolsAggregateArray(QgsProcessingAlgorithm):
         return tr("Aggregate Rows to Array")
 
     def group(self):
-        return tr("EMI Tools")
+        return tr("Emi Tools")
 
     def groupId(self):
         return ""
