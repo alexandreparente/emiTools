@@ -5,9 +5,10 @@
 [general]
 name=Emi Tools
 qgisMinimumVersion=3.40
+qgisMaximumVersion=4.99
 description=Collection of auxiliary tools for processing and exporting geospatial data from drone surveys
 
-version=0.7
+version=0.8
 author=Alexandre Parente Lima
 email=alexandre.parente@gmail.com
 
@@ -43,6 +44,8 @@ experimental=False
 
 # deprecated flag (applies to the whole plugin, not just a single version)
 deprecated=False
+
+supportsQt6=True
 
 # Since QGIS 3.8, a comma separated list of plugins to be installed
 # (or upgraded) can be specified.
