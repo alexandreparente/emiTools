@@ -69,7 +69,7 @@ def get_validated_folder(path=None):
             QgsMessageLog.logMessage(
                 tr(f"Could not create directory {path}: {str(e)}"),
                 'emiTools',
-                Qgis.Critical
+                Qgis.MessageLevel.Critical
             )
             path = tempfile.mkdtemp(prefix='emi_tools_fallback_')
 

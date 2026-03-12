@@ -150,7 +150,7 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
 
         g_type = QgsWkbTypes.geometryType(geom.wkbType())
 
-        if g_type == QgsWkbTypes.PolygonGeometry:
+        if g_type == QgsWkbTypes.GeometryType.PolygonGeometry:
             poly_elem = ET.SubElement(placemark, 'Polygon')
             poly_obj = geom.get()
 
@@ -165,7 +165,7 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
                 ET.SubElement(inner, 'coordinates').text = " ".join(
                     [f"{v.x()},{v.y()},0" for v in poly_obj.interiorRing(i).vertices()])
 
-        elif g_type == QgsWkbTypes.LineGeometry:
+        elif g_type == QgsWkbTypes.GeometryType.LineGeometry:
             line_elem = ET.SubElement(placemark, 'LineString')
             ET.SubElement(line_elem, 'coordinates').text = " ".join(
                 [f"{v.x()},{v.y()},0" for v in geom.get().vertices()])

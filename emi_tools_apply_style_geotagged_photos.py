@@ -45,6 +45,7 @@ from qgis.core import (QgsApplication,
                        QgsProperty,
                        QgsEditorWidgetSetup,
                        QgsLayerDefinition,
+                       QgsLayerTreeLayer,
                        QgsProject,
                        QgsVectorLayer)
 
@@ -142,9 +143,9 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
         if not exported_layer.isValid():
             raise QgsProcessingException(tr("Error loading the exported layer."))
 
-        # Adds to the project without displaying it automatically.
+        # Adds to the project and inserts into the layer tree root.
         QgsProject.instance().addMapLayer(exported_layer, False)
-        QgsProject.instance().layerTreeRoot().addLayer(exported_layer)
+        QgsProject.instance().layerTreeRoot().insertLayer(0, exported_layer)
 
         self.apply_symbology(exported_layer, rotation_field)
 
@@ -164,12 +165,12 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
         svg_path_arrow = os.path.join(QgsApplication.svgPaths()[0], 'arrows', 'Arrow_01.svg')
         svg_path_point = os.path.join(QgsApplication.svgPaths()[0], 'gpsicons', 'city_medium.svg')
 
-        symbol_arrow = QgsMarkerSymbol.defaultSymbol(QgsWkbTypes.PointGeometry)
+        symbol_arrow = QgsMarkerSymbol.defaultSymbol(QgsWkbTypes.GeometryType.PointGeometry)
         svg_marker_arrow = QgsSvgMarkerSymbolLayer(svg_path_arrow)
         svg_marker_arrow.setDataDefinedProperty(QgsSymbolLayer.PropertyAngle, QgsProperty.fromField(rotation_field))
         symbol_arrow.changeSymbolLayer(0, svg_marker_arrow)
 
-        symbol_point = QgsMarkerSymbol.defaultSymbol(QgsWkbTypes.PointGeometry)
+        symbol_point = QgsMarkerSymbol.defaultSymbol(QgsWkbTypes.GeometryType.PointGeometry)
         svg_marker_point = QgsSvgMarkerSymbolLayer(svg_path_point)
         symbol_point.changeSymbolLayer(0, svg_marker_point)
 
@@ -197,7 +198,7 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
                     <th>[%"filename"%]</th>
                 </tr> 
                 <tr>
-                <th><img src="file:///[%"{photo_field}"%]" width="350" height="250"></th>
+                <th><img src="file:///[%"{photo_field}"%]" width="230" height="130"></th>
                 </tr>
             </table>
         """
@@ -211,6 +212,8 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
         field_idx = fields.indexOf(photo_field)
         config = {
             'DocumentViewer': 1,
+            'DocumentViewerWidth': 230,
+            'DocumentViewerHeight': 130,
             'FileWidget': True,
             'FullUrl': True,
             'UseLink': True
@@ -223,9 +226,12 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
         base_path, _ = os.path.splitext(output_file)
         qlr_file_path = f"{base_path}.qlr"
 
-        layer_tree_node = QgsProject.instance().layerTreeRoot().findLayer(exported_layer.id())
+        root = QgsProject.instance().layerTreeRoot()
+        layer_tree_node = root.findLayer(exported_layer.id())
+
+        # Fallback: manually create a layer node if not found in the tree
         if not layer_tree_node:
-            raise QgsProcessingException(tr(f"Layer node not found in the layer tree (ID: {exported_layer.id()})."))
+            layer_tree_node = QgsLayerTreeLayer(exported_layer)
 
         try:
             QgsLayerDefinition.exportLayerDefinition(qlr_file_path, [layer_tree_node])

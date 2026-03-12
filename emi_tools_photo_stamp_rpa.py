@@ -77,6 +77,13 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
         'Inches (pol)'
     ]
 
+    def __init__(self):
+        super().__init__()
+        try:
+            self.fonts = QFontDatabase.families()   # Qt6 / QGIS 4.x
+        except TypeError:
+            self.fonts = QFontDatabase().families() # Qt5 / QGIS 3.x
+
     def initAlgorithm(self, config=None):
         # Initializes the algorithm's parameters
         self.addParameter(
@@ -146,23 +153,19 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
             )
         )
 
-        # font parameters
-        font_db = QFontDatabase()
-        fonts = font_db.families()
-
         # Get the default font from QGIS
         app = QApplication.instance()
         default_font = app.font().family()
 
         # Check if the default font is available on the system
-        default_font_index = fonts.index(default_font) if default_font in fonts else 0
+        default_font_index = self.fonts.index(default_font) if default_font in self.fonts else 0
 
         # Add the Enum parameter to select the font
         self.addParameter(
             QgsProcessingParameterEnum(
                 self.FONT_NAME,
                 tr('Font'),
-                options=fonts,
+                options=self.fonts,
                 defaultValue=default_font_index
             )
         )
@@ -249,9 +252,7 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
 
         # get font
         font_index = self.parameterAsEnum(parameters, self.FONT_NAME, context)
-        font_db = QFontDatabase()
-        fonts = font_db.families()
-        font_name = fonts[font_index]
+        font_name = self.fonts[font_index]
 
         # Use the index to access the string (untranslated)
         position_index = self.parameterAsInt(parameters, self.POSITION, context)
@@ -359,14 +360,14 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
             painter.setFont(font)
             # Check bounding rect height
             temp_rect = painter.boundingRect(QRect(0, 0, int(image_width - (2 * margin_px)), int(image_height)),
-                                             Qt.AlignLeft, full_text)
+                                             Qt.AlignmentFlag.AlignLeft, full_text)
             if temp_rect.height() <= target_stamp_height:
                 break
             current_font_size -= 1
 
         painter.setFont(font)
         actual_text_rect_calc = painter.boundingRect(QRect(0, 0, int(image_width - (2 * margin_px)), int(image_height)),
-                                                     Qt.AlignLeft, full_text)
+                                                     Qt.AlignmentFlag.AlignLeft, full_text)
         total_text_height = actual_text_rect_calc.height()
 
         # SVG logic
@@ -390,28 +391,28 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
         svg_x, svg_y = 0, 0
 
         if position == 'Bottom Left':
-            alignment = Qt.AlignLeft | Qt.AlignBottom
+            alignment = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom
             base_y = image_height - margin_px - target_stamp_height
             text_x, text_y = margin_px + h_offset, base_y
             if svg_renderer:
                 svg_x, svg_y = margin_px, base_y
 
         elif position == 'Bottom Right':
-            alignment = Qt.AlignRight | Qt.AlignBottom
+            alignment = Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom
             base_y = image_height - margin_px - target_stamp_height
             text_x, text_y = margin_px, base_y
             if svg_renderer:
                 svg_x, svg_y = image_width - margin_px - svg_width, base_y
 
         elif position == 'Top Left':
-            alignment = Qt.AlignLeft | Qt.AlignTop
+            alignment = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop
             base_y = margin_px
             text_x, text_y = margin_px + h_offset, base_y
             if svg_renderer:
                 svg_x, svg_y = margin_px, base_y
 
         else:  # Top Right
-            alignment = Qt.AlignRight | Qt.AlignTop
+            alignment = Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop
             base_y = margin_px
             text_x, text_y = margin_px, base_y
             if svg_renderer:
