@@ -22,19 +22,19 @@
  ***************************************************************************/
 """
 
-__author__ = 'Alexandre Parente Lima'
-__date__ = '2024-10-10'
-__copyright__ = '(C) 2024 by Alexandre Parente Lima'
+__author__ = "Alexandre Parente Lima"
+__date__ = "2024-10-10"
+__copyright__ = "(C) 2024 by Alexandre Parente Lima"
 
 # This will get replaced with a git SHA1 when you do a git archive
 
-__revision__ = '$Format:%H$'
+__revision__ = "$Format:%H$"
 
-from qgis.core import *
-from qgis.gui import *
+from qgis.core import QgsGeometry
+from qgis.utils import qgsfunction
 
 
-@qgsfunction(args='auto', group='Custom')
+@qgsfunction(args="auto", group="Custom")
 def vertex_table(geometry, pagina, tamanho_bloco, feature, parent):
     """
     Generates paginated HTML of vertices.
@@ -48,7 +48,9 @@ def vertex_table(geometry, pagina, tamanho_bloco, feature, parent):
 
     # Convert to MultiPolygon to standardize the loop
     if not geometry.isMultipart():
-        geometry = geometry.asGeometryCollection()[0]  # Force collection structure if necessary
+        geometry = geometry.asGeometryCollection()[
+            0
+        ]  # Force collection structure if necessary
 
     # Extract structure (Parts -> Rings -> Vertices)
     # Handles QgsGeometry.asMultiPolygon() returning [[point, ...], ...]
@@ -57,7 +59,7 @@ def vertex_table(geometry, pagina, tamanho_bloco, feature, parent):
     try:
         # Try to get as multipolygon
         partes = geometry.asMultiPolygon()
-    except:
+    except Exception:
         # If it fails (e.g. simple polygon), convert it
         temp_geom = QgsGeometry(geometry)
         temp_geom.convertToMultiType()
@@ -74,7 +76,9 @@ def vertex_table(geometry, pagina, tamanho_bloco, feature, parent):
 
             # If it is a closed polygon, the last point is equal to the first, we ignore it in the loop
             # unless the geometry is corrupted and is open
-            pontos_uteis = anel[:-1] if total_pontos > 1 and anel[0] == anel[-1] else anel
+            pontos_uteis = (
+                anel[:-1] if total_pontos > 1 and anel[0] == anel[-1] else anel
+            )
 
             for pt in pontos_uteis:
                 idx_geral += 1
@@ -83,12 +87,14 @@ def vertex_table(geometry, pagina, tamanho_bloco, feature, parent):
                 # i_parte + 1 to start from 1
                 identificador = f"P{i_parte + 1}-R{i_anel}"
 
-                lista_vertices.append({
-                    'id': idx_geral,
-                    'ref': identificador,
-                    'x': f"{pt.x():.6f}",  # Format here to save processing
-                    'y': f"{pt.y():.6f}"
-                })
+                lista_vertices.append(
+                    {
+                        "id": idx_geral,
+                        "ref": identificador,
+                        "x": f"{pt.x():.6f}",  # Format here to save processing
+                        "y": f"{pt.y():.6f}",
+                    }
+                )
 
     # --- Pagination Logic ---
     inicio = (pagina - 1) * tamanho_bloco
@@ -122,10 +128,10 @@ def vertex_table(geometry, pagina, tamanho_bloco, feature, parent):
     for v in vertices_pagina:
         html += f"""
         <tr>
-            <td>{v['id']}</td>
-            <td>{v['ref']}</td>
-            <td>{v['x']}</td>
-            <td>{v['y']}</td>
+            <td>{v["id"]}</td>
+            <td>{v["ref"]}</td>
+            <td>{v["x"]}</td>
+            <td>{v["y"]}</td>
         </tr>
         """
 
