@@ -22,26 +22,24 @@
  ***************************************************************************/
 """
 
-__author__ = 'Alexandre Parente Lima'
-__date__ = '2024-10-10'
-__copyright__ = '(C) 2024 by Alexandre Parente Lima'
+__author__ = "Alexandre Parente Lima"
+__date__ = "2024-10-10"
+__copyright__ = "(C) 2024 by Alexandre Parente Lima"
 
 # This will get replaced with a git SHA1 when you do a git archive
-__revision__ = '$Format:%H$'
+__revision__ = "$Format:%H$"
 
-import os
 import re
 import string
-from datetime import datetime, date
-from osgeo import gdal
-from qgis.PyQt.QtCore import QDate
-from qgis.core import QgsProject, QgsMessageLog
+from datetime import date, datetime
+
+from qgis.core import QgsMessageLog, QgsProject
 
 from .emi_tools_util import tr
 
 
 def validate_cpf_logic(cpf_number) -> bool:
-    s = ''.join(filter(str.isdigit, str(cpf_number)))
+    s = "".join(filter(str.isdigit, str(cpf_number)))
     if len(s) != 11:
         return False
     # rejeita CPFs com todos dígitos iguais
@@ -62,7 +60,7 @@ def validate_cpf_logic(cpf_number) -> bool:
 
 
 def validate_cnpj_logic(cnpj_number) -> bool:
-    s = ''.join(filter(str.isdigit, str(cnpj_number)))
+    s = "".join(filter(str.isdigit, str(cnpj_number)))
     if len(s) != 14:
         return False
     if s == s[0] * 14:
@@ -78,30 +76,36 @@ def validate_cnpj_logic(cnpj_number) -> bool:
 
 
 def format_cpf_logic(cpf_string) -> str:
-    cleaned_string = ''.join(filter(str.isdigit, str(cpf_string)))
+    cleaned_string = "".join(filter(str.isdigit, str(cpf_string)))
     if len(cleaned_string) != 11:
-        raise ValueError(tr("Invalid number. Please provide an 11-digit numeric string."))
+        raise ValueError(
+            tr("Invalid number. Please provide an 11-digit numeric string.")
+        )
     return f"{cleaned_string[:3]}.{cleaned_string[3:6]}.{cleaned_string[6:9]}-{cleaned_string[9:]}"
 
 
 def format_cnpj_logic(cnpj_string) -> str:
-    cleaned_string = ''.join(filter(str.isdigit, str(cnpj_string)))
+    cleaned_string = "".join(filter(str.isdigit, str(cnpj_string)))
     if len(cleaned_string) != 14:
-        raise ValueError(tr("Invalid number. Pass a numeric string as the input parameter."))
+        raise ValueError(
+            tr("Invalid number. Pass a numeric string as the input parameter.")
+        )
     return f"{cleaned_string[:2]}.{cleaned_string[2:5]}.{cleaned_string[5:8]}/{cleaned_string[8:12]}-{cleaned_string[12:]}"
 
 
 def format_cpf_cnpj_logic(cpf_cnpj_string) -> str:
-    cleaned_string = ''.join(filter(str.isdigit, str(cpf_cnpj_string)))
+    cleaned_string = "".join(filter(str.isdigit, str(cpf_cnpj_string)))
     if len(cleaned_string) == 11:
         return format_cpf_logic(cleaned_string)
     if len(cleaned_string) == 14:
         return format_cnpj_logic(cleaned_string)
-    raise ValueError(tr("Invalid number. Pass a numeric string as the input parameter.."))
+    raise ValueError(
+        tr("Invalid number. Pass a numeric string as the input parameter..")
+    )
 
 
 def mask_cpf_logic(cpf_number) -> str:
-    s = ''.join(filter(str.isdigit, str(cpf_number)))
+    s = "".join(filter(str.isdigit, str(cpf_number)))
     if len(s) != 11:
         return "Invalid CPF"
     return f"***.{s[3:6]}.{s[6:9]}-**"
@@ -111,8 +115,8 @@ def mask_name_logic(full_name) -> str:
     parts = str(full_name).split()
     if len(parts) < 3:
         return str(full_name)
-    middle = ['*' * len(p) for p in parts[1:-1]]
-    return parts[0] + ' ' + ' '.join(middle) + ' ' + parts[-1]
+    middle = ["*" * len(p) for p in parts[1:-1]]
+    return parts[0] + " " + " ".join(middle) + " " + parts[-1]
 
 
 # List of words that must remain in lowercase in names/titles
@@ -120,46 +124,116 @@ def mask_name_logic(full_name) -> str:
 
 PT_BR_LOWERCASE_WORDS = {
     # Artigos definidos e indefinidos
-    'a', 'o', 'as', 'os',
-    'um', 'uma', 'uns', 'umas',
-
+    "a",
+    "o",
+    "as",
+    "os",
+    "um",
+    "uma",
+    "uns",
+    "umas",
     # Preposições simples
-    'de', 'em', 'por', 'para', 'com', 'sem', 'sob', 'sobre',
-    'até', 'após', 'ante', 'contra', 'desde', 'entre', 'trás',
-
+    "de",
+    "em",
+    "por",
+    "para",
+    "com",
+    "sem",
+    "sob",
+    "sobre",
+    "até",
+    "após",
+    "ante",
+    "contra",
+    "desde",
+    "entre",
+    "trás",
     # Conjunções coordenativas
-    'e', 'ou', 'mas', 'nem',
-
+    "e",
+    "ou",
+    "mas",
+    "nem",
     # Conjunções subordinativas comuns
-    'se', 'que', 'porque', 'como', 'quando', 'conforme',
-    'embora', 'caso', 'enquanto', 'logo', 'pois', 'porquanto', 'salvo',
-
+    "se",
+    "que",
+    "porque",
+    "como",
+    "quando",
+    "conforme",
+    "embora",
+    "caso",
+    "enquanto",
+    "logo",
+    "pois",
+    "porquanto",
+    "salvo",
     # Contrações com artigos
-    'da', 'do', 'das', 'dos',
-    'na', 'no', 'nas', 'nos',
-    'à', 'às', 'ao', 'aos',
-    'pela', 'pelo', 'pelas', 'pelos',
-
+    "da",
+    "do",
+    "das",
+    "dos",
+    "na",
+    "no",
+    "nas",
+    "nos",
+    "à",
+    "às",
+    "ao",
+    "aos",
+    "pela",
+    "pelo",
+    "pelas",
+    "pelos",
     # Contrações com pronomes
-    'dela', 'dele', 'delas', 'deles',
-    'nela', 'nele', 'nelas', 'neles',
-
+    "dela",
+    "dele",
+    "delas",
+    "deles",
+    "nela",
+    "nele",
+    "nelas",
+    "neles",
     # Contrações demonstrativas
-    'deste', 'desta', 'destes', 'destas',
-    'neste', 'nesta', 'nestes', 'nestas',
-    'daquele', 'daquela', 'daqueles', 'daquelas',
-    'naquele', 'naquela', 'naqueles', 'naquelas',
-
+    "deste",
+    "desta",
+    "destes",
+    "destas",
+    "neste",
+    "nesta",
+    "nestes",
+    "nestas",
+    "daquele",
+    "daquela",
+    "daqueles",
+    "daquelas",
+    "naquele",
+    "naquela",
+    "naqueles",
+    "naquelas",
     # Outras contrações usuais
-    'doutro', 'doutros', 'doutra', 'doutras',
-    'noutro', 'noutros', 'noutra', 'noutras',
-
+    "doutro",
+    "doutros",
+    "doutra",
+    "doutras",
+    "noutro",
+    "noutros",
+    "noutra",
+    "noutras",
     # Palavras de locuções
-    'depois', 'antes', 'além', 'aquém'
+    "depois",
+    "antes",
+    "além",
+    "aquém",
 }
 
 _PUNCT = set('"' + "'«»“”‘’" + string.punctuation)  # pontuação que pode estar colada
-_STRONG_PUNCT = {'.', ':', '!', '?', ';'}  # pontuação que reinicia capitalização em títulos
+_STRONG_PUNCT = {
+    ".",
+    ":",
+    "!",
+    "?",
+    ";",
+}  # pontuação que reinicia capitalização em títulos
 
 
 def _split_affixes(token: str):
@@ -171,7 +245,7 @@ def _split_affixes(token: str):
         i += 1
     while j >= i and token[j] in _PUNCT:
         j -= 1
-    return token[:i], token[i:j + 1], token[j + 1:]
+    return token[:i], token[i : j + 1], token[j + 1 :]
 
 
 def _capitalize_core(core: str) -> str:
@@ -183,7 +257,7 @@ def _capitalize_core(core: str) -> str:
 
 def _process_hyphenated(core: str, force_capitalize: bool, lowercase_words: set) -> str:
     """Processes hyphenated words part by part."""
-    parts = core.split('-')
+    parts = core.split("-")
     out = []
     for part in parts:
         if not part:
@@ -194,12 +268,11 @@ def _process_hyphenated(core: str, force_capitalize: bool, lowercase_words: set)
             out.append(_capitalize_core(part))
         else:
             out.append(lw)
-    return '-'.join(out)
+    return "-".join(out)
 
 
 def format_capitalization_logic(
-        text: str,
-        force_after_strong_punct: bool = False
+    text: str, force_after_strong_punct: bool = False
 ) -> str:
     """
     Capitalizes names/titles according to PT-BR/ABNT rules:
@@ -223,7 +296,7 @@ def format_capitalization_logic(
         if core:
             lw = core.lower()
             force_cap = next_force
-            if '-' in core:
+            if "-" in core:
                 new_core = _process_hyphenated(core, force_cap, lower)
             else:
                 if force_cap or lw not in lower:
@@ -241,94 +314,358 @@ def format_capitalization_logic(
         else:
             next_force = False
 
-    return ' '.join(result)
+    return " ".join(result)
 
 
-#   This dictionary for all satellites.
+# ---------------------------------------------------------------------------
+#   Satellite sensor properties dictionary
+# ---------------------------------------------------------------------------
+#   Pattern: regex string → { 'name': ..., 'date_format': ..., 'source': ... }
+# ---------------------------------------------------------------------------
+
 SATELLITE_PROPERTIES = {
-    # Regex Pattern: { 'name': ..., 'date_format': ..., 'source': ... }
-
     # Landsat Family
-    r'^LC09': {'name': 'LandSat 9', 'date_format': 'YYYYMMDD', 'source': 'United States Geological Survey (USGS).'},
-    r'^LC08': {'name': 'LandSat 8', 'date_format': 'YYYYMMDD', 'source': 'United States Geological Survey (USGS).'},
-    r'^LE07': {'name': 'LandSat 7', 'date_format': 'YYYYMMDD', 'source': 'United States Geological Survey (USGS).'},
-    r'^LT05': {'name': 'LandSat 5', 'date_format': 'YYYYMMDD', 'source': 'United States Geological Survey (USGS).'},
-    r'^LT04': {'name': 'LandSat 4', 'date_format': 'YYYYMMDD', 'source': 'United States Geological Survey (USGS).'},
-    r'^LM0[1-3]': {'name': 'LandSat MSS (1–3)', 'date_format': 'YYYYMMDD',
-                   'source': 'United States Geological Survey (USGS).'},
-
+    r"^LC09": {
+        "name": "LandSat 9",
+        "date_format": "YYYYMMDD",
+        "source": "United States Geological Survey (USGS).",
+    },
+    r"^LC08": {
+        "name": "LandSat 8",
+        "date_format": "YYYYMMDD",
+        "source": "United States Geological Survey (USGS).",
+    },
+    r"^LE07": {
+        "name": "LandSat 7",
+        "date_format": "YYYYMMDD",
+        "source": "United States Geological Survey (USGS).",
+    },
+    r"^LT05": {
+        "name": "LandSat 5",
+        "date_format": "YYYYMMDD",
+        "source": "United States Geological Survey (USGS).",
+    },
+    r"^LT04": {
+        "name": "LandSat 4",
+        "date_format": "YYYYMMDD",
+        "source": "United States Geological Survey (USGS).",
+    },
+    r"^LM0[1-3]": {
+        "name": "LandSat MSS (1–3)",
+        "date_format": "YYYYMMDD",
+        "source": "United States Geological Survey (USGS).",
+    },
     # Sentinel Family (Copernicus)
-    r'^S1[AB]': {'name': 'Sentinel 1', 'date_format': 'YYYYMMDD',
-                 'source': "European Union's Earth Observation Programme (COPERNICUS)."},
-    r'^S2[A-C]': {'name': 'Sentinel 2', 'date_format': 'YYYYMMDD',
-                  'source': "European Union's Earth Observation Programme (COPERNICUS)."},
-    r'^S3[AB]': {'name': 'Sentinel 3', 'date_format': 'YYYYMMDD',
-                 'source': "European Union's Earth Observation Programme (COPERNICUS)."},
-    r'^S5P': {'name': 'Sentinel 5P', 'date_format': 'YYYYMMDD',
-              'source': "European Union's Earth Observation Programme (COPERNICUS)."},
-
+    r"^S1[AB]": {
+        "name": "Sentinel 1",
+        "date_format": "YYYYMMDD",
+        "source": "European Union's Earth Observation Programme (COPERNICUS).",
+    },
+    r"^S2[A-C]": {
+        "name": "Sentinel 2",
+        "date_format": "YYYYMMDD",
+        "source": "European Union's Earth Observation Programme (COPERNICUS).",
+    },
+    r"^S3[AB]": {
+        "name": "Sentinel 3",
+        "date_format": "YYYYMMDD",
+        "source": "European Union's Earth Observation Programme (COPERNICUS).",
+    },
+    r"^S5P": {
+        "name": "Sentinel 5P",
+        "date_format": "YYYYMMDD",
+        "source": "European Union's Earth Observation Programme (COPERNICUS).",
+    },
     # Pattern for individual bands
-    r'^T\d{2}[A-Z]{3}': {'name': 'Sentinel 2', 'date_format': 'YYYYMMDD',
-                         'source': "European Union's Earth Observation Programme (COPERNICUS)."},
-
+    r"^T\d{2}[A-Z]{3}": {
+        "name": "Sentinel 2",
+        "date_format": "YYYYMMDD",
+        "source": "European Union's Earth Observation Programme (COPERNICUS).",
+    },
     # NASA Satellites (EOS)
-    r'^MOD|MYD': {'name': 'MODIS', 'date_format': 'JULIAN_y_ddd',
-                  'source': 'National Aeronautics and Space Administration (NASA).'},
-    r'^A\d{7}\b': {'name': 'MODIS', 'date_format': 'JULIAN_y_ddd',
-                   'source': 'National Aeronautics and Space Administration (NASA).'},
-    r'^(VNP|VJ\d{2})': {'name': 'VIIRS', 'date_format': 'JULIAN_y_ddd',
-                        'source': 'National Aeronautics and Space Administration (NASA).'},
-    r'^AST_': {'name': 'ASTER', 'date_format': 'MMDDYYYY', 'source': 'NASA/METI.'},
-
+    r"^MOD|MYD": {
+        "name": "MODIS",
+        "date_format": "JULIAN_y_ddd",
+        "source": "National Aeronautics and Space Administration (NASA).",
+    },
+    r"^A\d{7}\b": {
+        "name": "MODIS",
+        "date_format": "JULIAN_y_ddd",
+        "source": "National Aeronautics and Space Administration (NASA).",
+    },
+    r"^(VNP|VJ\d{2})": {
+        "name": "VIIRS",
+        "date_format": "JULIAN_y_ddd",
+        "source": "National Aeronautics and Space Administration (NASA).",
+    },
+    r"^AST_": {"name": "ASTER", "date_format": "MMDDYYYY", "source": "NASA/METI."},
     # Indian Remote Sensing Satellites (IRS)
-    r'^L[34]_RS[12]|^AW_RS[12]': {'name': 'Resourcesat', 'date_format': 'YYYYMMDD',
-                                  'source': 'Indian Space Research Organisation (ISRO).'},
-    r'^C[123]_': {'name': 'Cartosat', 'date_format': 'YYYYMMDD',
-                  'source': 'Indian Space Research Organisation (ISRO).'},
-
+    r"^L[34]_RS[12]|^AW_RS[12]": {
+        "name": "Resourcesat",
+        "date_format": "YYYYMMDD",
+        "source": "Indian Space Research Organisation (ISRO).",
+    },
+    r"^C[123]_": {
+        "name": "Cartosat",
+        "date_format": "YYYYMMDD",
+        "source": "Indian Space Research Organisation (ISRO).",
+    },
     # Sino-Brazilian Satellite
-    r'^CBERS': {'name': 'CBERS', 'date_format': 'YYYYMMDD',
-                'source': 'Instituto Nacional de Pesquisas Espaciais (INPE) / China Academy of Space Technology (CAST).'},
-    r'^CBERS[_-]?4A': {'name': 'CBERS-4A', 'date_format': 'YYYYMMDD',
-                       'source': 'Instituto Nacional de Pesquisas Espaciais (INPE) / China Academy of Space Technology (CAST).'},
-
+    r"^CBERS": {
+        "name": "CBERS",
+        "date_format": "YYYYMMDD",
+        "source": "Instituto Nacional de Pesquisas Espaciais (INPE) / China Academy of Space Technology (CAST).",
+    },
+    r"^CBERS[_-]?4A": {
+        "name": "CBERS-4A",
+        "date_format": "YYYYMMDD",
+        "source": "Instituto Nacional de Pesquisas Espaciais (INPE) / China Academy of Space Technology (CAST).",
+    },
     # High-Resolution Commercial Satellites
-    r'WV0[1-4]|GE01': {'name': 'Maxar/DigitalGlobe', 'date_format': 'DDMONYY', 'source': 'Maxar Technologies.'},
-    r'^IK01': {'name': 'IKONOS', 'date_format': 'YYYYMMDD', 'source': 'Maxar Technologies.'},
-    r'^QB02': {'name': 'QuickBird', 'date_format': 'YYYYMMDD', 'source': 'Maxar Technologies.'},
-
-    # Planet (variações)
-    r'PSScene': {'name': 'PlanetScope', 'date_format': 'YYYYMMDD',
-                 'source': 'Includes material © (2025) Planet Labs Inc. All rights reserved.'},
-    r'^SkySat': {'name': 'SkySat', 'date_format': 'YYYYMMDD',
-                 'source': 'Includes material © (2025) Planet Labs Inc. All rights reserved.'},
-    r'_psb_|_pss_': {'name': 'PlanetScope', 'date_format': 'YYYYMMDD',
-                     'source': 'Includes material © (2025) Planet Labs Inc. All rights reserved.'}
+    r"WV0[1-4]|GE01": {
+        "name": "Maxar/DigitalGlobe",
+        "date_format": "DDMONYY",
+        "source": "Maxar Technologies.",
+    },
+    r"^IK01": {
+        "name": "IKONOS",
+        "date_format": "YYYYMMDD",
+        "source": "Maxar Technologies.",
+    },
+    r"^QB02": {
+        "name": "QuickBird",
+        "date_format": "YYYYMMDD",
+        "source": "Maxar Technologies.",
+    },
+    # Planet
+    r"PSScene": {
+        "name": "PlanetScope",
+        "date_format": "YYYYMMDD",
+        "source": "Includes material © (2025) Planet Labs Inc. All rights reserved.",
+    },
+    r"^SkySat": {
+        "name": "SkySat",
+        "date_format": "YYYYMMDD",
+        "source": "Includes material © (2025) Planet Labs Inc. All rights reserved.",
+    },
+    r"_psb_|_pss_": {
+        "name": "PlanetScope",
+        "date_format": "YYYYMMDD",
+        "source": "Includes material © (2025) Planet Labs Inc. All rights reserved.",
+    },
 }
 
 
-def get_satellite_logic(filename) -> str:
+# ---------------------------------------------------------------------------
+#   RPA (drone) sensor properties dictionary
+#
+#   Naming convention:  RPA_<MODEL>_<SENSOR>_<YYYYMMDD>[_<optional suffix>]
+#
+#   Model codes
+#   -----------
+#   M2EA   DJI Mavic 2 Enterprise Advanced
+#   M3E    DJI Mavic 3 Enterprise
+#   M3T    DJI Mavic 3 Thermal (standalone thermal version)
+#   M3M    DJI Mavic 3 Multispectral
+#   P4MS   DJI Phantom 4 Multispectral
+#   P4R    DJI Phantom 4 RTK
+#   M300   DJI Matrice 300 RTK
+#   M350   DJI Matrice 350 RTK
+#   AGR    Generic agricultural drone (e.g. DJI Agras series)
+#
+#   Sensor codes
+#   ------------
+#   V   Visível / RGB
+#   T   Termal (infravermelho termal)
+#   M   Multiespectral
+#   L   LiDAR
+#   H   Hiperespectral
+#
+#   Examples
+#   --------
+#   RPA_M2EA_V_20240315   Mavic 2 Enterprise Advanced – câmera visível
+#   RPA_M2EA_T_20240315   Mavic 2 Enterprise Advanced – câmera termal
+#   RPA_M3M_M_20240315    Mavic 3 Multispectral – câmera multiespectral
+#   RPA_M300_L_20240315   Matrice 300 RTK – sensor LiDAR
+#   RPA_M350_H_20240315   Matrice 350 RTK – sensor hiperespectral
+# ---------------------------------------------------------------------------
+
+RPA_PROPERTIES = {
+    # ── DJI Mavic 2 Enterprise Advanced ────────────────────────────────────
+    r"^RPA_M2EA_V": {
+        "name": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
+        "DJI Mavic 2 Enterprise Advanced,câmera RGB",
+        "date_format": "YYYYMMDD",
+        "source": "",
+    },
+    r"^RPA_M2EA_T": {
+        "name": "DJI Mavic 2 Enterprise Advanced (Termal)",
+        "date_format": "YYYYMMDD",
+        "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
+        "DJI Mavic 2 Enterprise Advanced – Câmera Termal.",
+    },
+    # ── DJI Mavic 3 Enterprise ──────────────────────────────────────────────
+    r"^RPA_M3E_V": {
+        "name": "DJI Mavic 3 Enterprise (Visível)",
+        "date_format": "YYYYMMDD",
+        "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
+        "DJI Mavic 3 Enterprise – Câmera RGB.",
+    },
+    r"^RPA_M3E_T": {
+        "name": "DJI Mavic 3 Enterprise (Termal)",
+        "date_format": "YYYYMMDD",
+        "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
+        "DJI Mavic 3 Enterprise – Câmera Termal.",
+    },
+    # ── DJI Mavic 3 Thermal ─────────────────────────────────────────────────
+    r"^RPA_M3T_V": {
+        "name": "DJI Mavic 3 Thermal (Visível)",
+        "date_format": "YYYYMMDD",
+        "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
+        "DJI Mavic 3 Thermal – Câmera RGB.",
+    },
+    r"^RPA_M3T_T": {
+        "name": "DJI Mavic 3 Thermal (Termal)",
+        "date_format": "YYYYMMDD",
+        "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
+        "DJI Mavic 3 Thermal – Câmera Termal.",
+    },
+    # ── DJI Mavic 3 Multispectral ───────────────────────────────────────────
+    r"^RPA_M3M_V": {
+        "name": "DJI Mavic 3 Multispectral (Visível)",
+        "date_format": "YYYYMMDD",
+        "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
+        "DJI Mavic 3 Multispectral – Câmera RGB.",
+    },
+    r"^RPA_M3M_M": {
+        "name": "DJI Mavic 3 Multispectral (Multiespectral)",
+        "date_format": "YYYYMMDD",
+        "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
+        "DJI Mavic 3 Multispectral – Câmera Multiespectral.",
+    },
+    # ── DJI Phantom 4 Multispectral ─────────────────────────────────────────
+    r"^RPA_P4MS_V": {
+        "name": "DJI Phantom 4 Multispectral (Visível)",
+        "date_format": "YYYYMMDD",
+        "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
+        "DJI Phantom 4 Multispectral – Câmera RGB.",
+    },
+    r"^RPA_P4MS_M": {
+        "name": "DJI Phantom 4 Multispectral (Multiespectral)",
+        "date_format": "YYYYMMDD",
+        "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
+        "DJI Phantom 4 Multispectral – Câmera Multiespectral.",
+    },
+    # ── DJI Phantom 4 RTK ───────────────────────────────────────────────────
+    r"^RPA_P4R_V": {
+        "name": "DJI Phantom 4 RTK (Visível)",
+        "date_format": "YYYYMMDD",
+        "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
+        "DJI Phantom 4 RTK – Câmera RGB.",
+    },
+    # ── DJI Matrice 300 RTK ─────────────────────────────────────────────────
+    r"^RPA_M300_V": {
+        "name": "DJI Matrice 300 RTK (Visível)",
+        "date_format": "YYYYMMDD",
+        "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
+        "DJI Matrice 300 RTK – Câmera RGB.",
+    },
+    r"^RPA_M300_T": {
+        "name": "DJI Matrice 300 RTK (Termal)",
+        "date_format": "YYYYMMDD",
+        "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
+        "DJI Matrice 300 RTK – Câmera Termal.",
+    },
+    r"^RPA_M300_L": {
+        "name": "DJI Matrice 300 RTK (LiDAR)",
+        "date_format": "YYYYMMDD",
+        "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
+        "DJI Matrice 300 RTK – Sensor LiDAR.",
+    },
+    r"^RPA_M300_H": {
+        "name": "DJI Matrice 300 RTK (Hiperespectral)",
+        "date_format": "YYYYMMDD",
+        "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
+        "DJI Matrice 300 RTK – Sensor Hiperespectral.",
+    },
+    # ── DJI Matrice 350 RTK ─────────────────────────────────────────────────
+    r"^RPA_M350_V": {
+        "name": "DJI Matrice 350 RTK (Visível)",
+        "date_format": "YYYYMMDD",
+        "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
+        "DJI Matrice 350 RTK – Câmera RGB.",
+    },
+    r"^RPA_M350_T": {
+        "name": "DJI Matrice 350 RTK (Termal)",
+        "date_format": "YYYYMMDD",
+        "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
+        "DJI Matrice 350 RTK – Câmera Termal.",
+    },
+    r"^RPA_M350_L": {
+        "name": "DJI Matrice 350 RTK (LiDAR)",
+        "date_format": "YYYYMMDD",
+        "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
+        "DJI Matrice 350 RTK – Sensor LiDAR.",
+    },
+    r"^RPA_M350_H": {
+        "name": "DJI Matrice 350 RTK (Hiperespectral)",
+        "date_format": "YYYYMMDD",
+        "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
+        "DJI Matrice 350 RTK – Sensor Hiperespectral.",
+    },
+    # ── Drone agrícola genérico ─────────────────────────────────────────────
+    r"^RPA_AGR_V": {
+        "name": "Drone Agrícola (Visível)",
+        "date_format": "YYYYMMDD",
+        "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
+        "de uso agrícola – Câmera RGB.",
+    },
+    r"^RPA_AGR_M": {
+        "name": "Drone Agrícola (Multiespectral)",
+        "date_format": "YYYYMMDD",
+        "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
+        "de uso agrícola – Câmera Multiespectral.",
+    },
+}
+
+
+def get_satellite_logic(filename) -> dict:
     """
     Identifies the satellite from the filename and returns a dictionary of its properties.
+    Kept for backwards compatibility. Use get_sensor_logic() for new code.
     """
     for pattern, properties in SATELLITE_PROPERTIES.items():
         if re.search(pattern, filename, re.IGNORECASE):
-            # Return the properties dictionary
             return properties
     return None
+
+
+def get_sensor_logic(filename) -> dict:
+    """
+    Identifies the sensor (satellite or RPA/drone) from the filename and returns
+    a dictionary with 'name', 'source', and 'date_format'.
+
+    RPA filenames are checked first (pattern: RPA_<MODEL>_<SENSOR>_<YYYYMMDD>).
+    Falls back to SATELLITE_PROPERTIES for all other filenames.
+    """
+    for pattern, properties in RPA_PROPERTIES.items():
+        if re.search(pattern, filename, re.IGNORECASE):
+            return properties
+    return get_satellite_logic(filename)
 
 
 def get_image_date_logic(filename) -> date:
     """
     Extracts the acquisition date from the filename, returning a datetime.date.
+    Works for both satellite and RPA filenames.
     """
-    info = get_satellite_logic(filename)
+    info = get_sensor_logic(filename)
     if not info:
-        raise ValueError("Could not identify satellite to determine date format.")
-    date_format = info['date_format']
+        raise ValueError("Could not identify sensor to determine date format.")
+    date_format = info["date_format"]
 
-    if date_format == 'YYYYMMDD':
-        possible_dates_str = re.findall(r'\d{8}', filename)
+    if date_format == "YYYYMMDD":
+        possible_dates_str = re.findall(r"\d{8}", filename)
         vals = []
         for s in possible_dates_str:
             try:
@@ -338,14 +675,14 @@ def get_image_date_logic(filename) -> date:
         if vals:
             return min(vals)
 
-    elif date_format == 'JULIAN_y_ddd':
-        match = re.search(r'A?(\d{4})(\d{3})', filename, re.IGNORECASE)
+    elif date_format == "JULIAN_y_ddd":
+        match = re.search(r"A?(\d{4})(\d{3})", filename, re.IGNORECASE)
         if match:
             year, day_of_year = match.groups()
-            return datetime.strptime(f'{year}{day_of_year}', '%Y%j').date()
+            return datetime.strptime(f"{year}{day_of_year}", "%Y%j").date()
 
-    elif date_format == 'MMDDYYYY':
-        possible_dates_str = re.findall(r'\d{8}', filename)
+    elif date_format == "MMDDYYYY":
+        possible_dates_str = re.findall(r"\d{8}", filename)
         vals = []
         for s in possible_dates_str:
             for fmt in ("%Y%m%d", "%m%d%Y"):
@@ -356,12 +693,14 @@ def get_image_date_logic(filename) -> date:
         if vals:
             return min(vals)
 
-    elif date_format == 'DDMONYY':
-        match = re.search(r'(\d{2}[A-Za-z]{3}\d{2})', filename)
+    elif date_format == "DDMONYY":
+        match = re.search(r"(\d{2}[A-Za-z]{3}\d{2})", filename)
         if match:
-            return datetime.strptime(match.group(1).upper(), '%d%b%y').date()
+            return datetime.strptime(match.group(1).upper(), "%d%b%y").date()
 
-    raise ValueError(f"Could not parse date from filename with expected format '{date_format}'.")
+    raise ValueError(
+        f"Could not parse date from filename with expected format '{date_format}'."
+    )
 
 
 def get_layer_custom_property_logic(layer_name: str, property_key: str):
@@ -372,8 +711,10 @@ def get_layer_custom_property_logic(layer_name: str, property_key: str):
     layers = QgsProject.instance().mapLayersByName(layer_name)
 
     if not layers:
-        QgsMessageLog.logMessage(f"Function 'get_layer_custom_property' could not find layer: {layer_name}",
-                                 'Python Functions')
+        QgsMessageLog.logMessage(
+            f"Function 'get_layer_custom_property' could not find layer: {layer_name}",
+            "Python Functions",
+        )
         return None
 
     # Get the first layer found with this name
