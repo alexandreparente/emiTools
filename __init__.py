@@ -22,9 +22,9 @@
  This script initializes the plugin, making it known to QGIS.
 """
 
-__author__ = 'Alexandre Parente Lima'
-__date__ = '2024-10-10'
-__copyright__ = '(C) 2024 by Alexandre Parente Lima'
+__author__ = "Alexandre Parente Lima"
+__date__ = "2024-10-10"
+__copyright__ = "(C) 2024 by Alexandre Parente Lima"
 
 
 # noinspection PyPep8Naming
@@ -37,5 +37,3 @@ def classFactory(iface):  # pylint: disable=invalid-name
     from .emi_tools import emiToolsPlugin
 
     return emiToolsPlugin()
-
-
