@@ -22,42 +22,65 @@
  ***************************************************************************/
 """
 
-__author__ = 'Alexandre Parente Lima'
-__date__ = '2024-10-10'
-__copyright__ = '(C) 2024 by Alexandre Parente Lima'
+__author__ = "Alexandre Parente Lima"
+__date__ = "2024-10-10"
+__copyright__ = "(C) 2024 by Alexandre Parente Lima"
 
 # This will get replaced with a git SHA1 when you do a git archive
-__revision__ = '$Format:%H$'
+__revision__ = "$Format:%H$"
 
-from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtCore import QDate
-from qgis.core import QgsExpression
 from qgis.utils import qgsfunction
 
-from .emi_tools_util_expressions import *
+from .emi_tools_util_expressions import (
+    format_capitalization_logic,
+    format_cnpj_logic,
+    format_cpf_cnpj_logic,
+    format_cpf_logic,
+    get_image_date_logic,
+    get_layer_custom_property_logic,
+    get_satellite_logic,
+    get_sensor_logic,
+    mask_cpf_logic,
+    mask_name_logic,
+    validate_cnpj_logic,
+    validate_cpf_logic,
+)
 
 
-@qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
+@qgsfunction(
+    args="auto",
+    group="EMI Tools",
+    register=True,
+    usesgeometry=False,
+    referenced_columns=[],
+)
 def validate_cpf(cpf_number, feature, parent):
     """
-        Returns True if the provided string is a valid Brazilian Individual Taxpayer Identification Number (CPF). Otherwise, returns False.
+    Returns True if the provided string is a valid Brazilian Individual Taxpayer Identification Number (CPF). Otherwise, returns False.
 
-        <h4>Syntax</h4>
-        <p><b style="color:#0a6099;">validate_cpf</b> (<i style="color:#bf0c0c;">string</i>)</p>
+    <h4>Syntax</h4>
+    <p><b style="color:#0a6099;">validate_cpf</b> (<i style="color:#bf0c0c;">string</i>)</p>
 
-        <h4>Arguments</h4>
-        <p><i style="color:#bf0c0c;">string</i>: A string containing 11 numeric characters representing a CPF number.</p>
+    <h4>Arguments</h4>
+    <p><i style="color:#bf0c0c;">string</i>: A string containing 11 numeric characters representing a CPF number.</p>
 
-        <h4>Example:</h4>
-        <ul>
-          <li> validate_cpf('000.000.000-00') -> True</li>
-          <li> validate_cpf('000.000.000-01') -> False</li>
-        </ul>
+    <h4>Example:</h4>
+    <ul>
+      <li> validate_cpf('000.000.000-00') -> True</li>
+      <li> validate_cpf('000.000.000-01') -> False</li>
+    </ul>
     """
     return validate_cpf_logic(cpf_number)
 
 
-@qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
+@qgsfunction(
+    args="auto",
+    group="EMI Tools",
+    register=True,
+    usesgeometry=False,
+    referenced_columns=[],
+)
 def validate_cnpj(cnpj_number, feature, parent):
     """
     Returns True if the provided string is a valid Brazilian Corporate Taxpayer Identification Number (CNPJ). Otherwise, returns False.
@@ -77,7 +100,13 @@ def validate_cnpj(cnpj_number, feature, parent):
     return validate_cnpj_logic(cnpj_number)
 
 
-@qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
+@qgsfunction(
+    args="auto",
+    group="EMI Tools",
+    register=True,
+    usesgeometry=False,
+    referenced_columns=[],
+)
 def format_cpf(cpf_string, feature, parent):
     """
     Returns a formatted string for CPF (Brazilian individual taxpayer ID).
@@ -95,45 +124,63 @@ def format_cpf(cpf_string, feature, parent):
     return format_cpf_logic(cpf_string)
 
 
-@qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
+@qgsfunction(
+    args="auto",
+    group="EMI Tools",
+    register=True,
+    usesgeometry=False,
+    referenced_columns=[],
+)
 def format_cnpj(cnpj_string, feature, parent):
     """
-        Returns a formatted string for CNPJ (Brazilian corporate taxpayer ID).
-        <br><br>Note: This function does not verify the validity of the provided number.
-        <h4>Syntax</h4>
-        <p><b style="color:#0a6099;">format_cpf_cnpj</b> (<i style="color:#bf0c0c;">string</i>)</p>
-        <h4>Arguments</h4>
-        <p><i style="color:#bf0c0c;">string</i>: 11 or 14-numeric character string.</p>
-        <h4>Example:</h4>
-        <ul>
-          <li> format_cnpj('00000000000000') -> 00.000.000/0000-00</li>
-          <li> format_cnpj('BR00,000,000/0000-00') -> 00.000.000/0000-00</li>
-        </ul>
-        """
+    Returns a formatted string for CNPJ (Brazilian corporate taxpayer ID).
+    <br><br>Note: This function does not verify the validity of the provided number.
+    <h4>Syntax</h4>
+    <p><b style="color:#0a6099;">format_cpf_cnpj</b> (<i style="color:#bf0c0c;">string</i>)</p>
+    <h4>Arguments</h4>
+    <p><i style="color:#bf0c0c;">string</i>: 11 or 14-numeric character string.</p>
+    <h4>Example:</h4>
+    <ul>
+      <li> format_cnpj('00000000000000') -> 00.000.000/0000-00</li>
+      <li> format_cnpj('BR00,000,000/0000-00') -> 00.000.000/0000-00</li>
+    </ul>
+    """
     return format_cnpj_logic(cnpj_string)
 
 
-@qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
+@qgsfunction(
+    args="auto",
+    group="EMI Tools",
+    register=True,
+    usesgeometry=False,
+    referenced_columns=[],
+)
 def format_cpf_cnpj(cpf_cnpj_string, feature, parent):
     """
-        Returns a formatted string for CPF (Brazilian individual taxpayer ID) or CNPJ (Brazilian corporate taxpayer ID).
-        <br><br>Note: This function does not verify the validity of the provided number.
-        <h4>Syntax</h4>
-        <p><b style="color:#0a6099;">format_cpf_cnpj</b> (<i style="color:#bf0c0c;">string</i>)</p>
-        <h4>Arguments</h4>
-        <p><i style="color:#bf0c0c;">string</i>: 11 or 14-numeric character string.</p>
-        <h4>Example:</h4>
-        <ul>
-          <li> format_cpf_cnpj('00000000000') -> 000.000.000-00</li>
-          <li> format_cpf_cnpj('00000000000000') -> 00.000.000/0000-00</li>
-          <li> format_cpf_cnpj('000,000,000-00') -> 000.000.000-00</li>
-          <li> format_cpf_cnpj('BR00,000,000/0000-00') -> 00.000.000/0000-00</li>
-        </ul>
-        """
+    Returns a formatted string for CPF (Brazilian individual taxpayer ID) or CNPJ (Brazilian corporate taxpayer ID).
+    <br><br>Note: This function does not verify the validity of the provided number.
+    <h4>Syntax</h4>
+    <p><b style="color:#0a6099;">format_cpf_cnpj</b> (<i style="color:#bf0c0c;">string</i>)</p>
+    <h4>Arguments</h4>
+    <p><i style="color:#bf0c0c;">string</i>: 11 or 14-numeric character string.</p>
+    <h4>Example:</h4>
+    <ul>
+      <li> format_cpf_cnpj('00000000000') -> 000.000.000-00</li>
+      <li> format_cpf_cnpj('00000000000000') -> 00.000.000/0000-00</li>
+      <li> format_cpf_cnpj('000,000,000-00') -> 000.000.000-00</li>
+      <li> format_cpf_cnpj('BR00,000,000/0000-00') -> 00.000.000/0000-00</li>
+    </ul>
+    """
     return format_cpf_cnpj_logic(cpf_cnpj_string)
 
 
-@qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
+@qgsfunction(
+    args="auto",
+    group="EMI Tools",
+    register=True,
+    usesgeometry=False,
+    referenced_columns=[],
+)
 def mask_cpf(cpf_number, feature, parent):
     """
     Masks a CPF number by hiding the first three and last two digits.
@@ -154,7 +201,13 @@ def mask_cpf(cpf_number, feature, parent):
     return mask_cpf_logic(cpf_number)
 
 
-@qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
+@qgsfunction(
+    args="auto",
+    group="EMI Tools",
+    register=True,
+    usesgeometry=False,
+    referenced_columns=[],
+)
 def mask_name(full_name, feature, parent):
     """
     Masks the middle part of a name by hiding the internal parts, leaving the first and last names visible.
@@ -173,7 +226,13 @@ def mask_name(full_name, feature, parent):
     return mask_name_logic(full_name)
 
 
-@qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
+@qgsfunction(
+    args="auto",
+    group="EMI Tools",
+    register=True,
+    usesgeometry=False,
+    referenced_columns=[],
+)
 def format_proper_name(text, feature, parent):
     """
     Formats a proper name following the conventions of Portuguese in Brazil. It capitalizes the first letter of each name, except articles, prepositions, and conjunctions, which remain lowercase unless they are the first word of the name.
@@ -192,13 +251,16 @@ def format_proper_name(text, feature, parent):
     format_proper_name('joaquim maria machado de assis') -> 'Joaquim Maria Machado de Assis'
     </pre>
     """
-    return format_capitalization_logic(
-        text,
-        force_after_strong_punct=False
-    )
+    return format_capitalization_logic(text, force_after_strong_punct=False)
 
 
-@qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
+@qgsfunction(
+    args="auto",
+    group="EMI Tools",
+    register=True,
+    usesgeometry=False,
+    referenced_columns=[],
+)
 def format_title_abnt(text, feature, parent):
     """
     Formats the input text as a title according to the guidelines set by the ABNT (Brazilian Association of Technical Standards). It capitalizes all major words, excluding articles, prepositions, and conjunctions, unless they are the first word of the title.
@@ -217,13 +279,136 @@ def format_title_abnt(text, feature, parent):
     format_title_abnt('Qgis: Um Sistema de Informação Geográfica livre e aberto.') -> 'QGIS: Um Sistema de Informação Geográfica Livre e Aberto.'
     </pre>
     """
-    return format_capitalization_logic(
-        text,
-        force_after_strong_punct=True
-    )
+    return format_capitalization_logic(text, force_after_strong_punct=True)
 
 
-@qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
+# =============================================================================
+#  Sensor functions  (satellites + RPA/drones)
+# =============================================================================
+
+
+@qgsfunction(
+    args="auto",
+    group="EMI Tools",
+    register=True,
+    usesgeometry=False,
+    referenced_columns=[],
+)
+def get_sensor_name(filename, feature, parent):
+    """
+    Returns the sensor name based on the provided file name.
+    Supports satellite imagery and RPA (drone) imagery following the
+    <tt>RPA_&lt;MODEL&gt;_&lt;SENSOR&gt;_&lt;YYYYMMDD&gt;</tt> naming convention.
+
+    <h4>Syntax</h4>
+    <p><b style="color:#0a6099;">get_sensor_name</b> (<i style="color:#bf0c0c;">string</i>)</p>
+
+    <h4>Argument</h4>
+    <p><i style="color:#bf0c0c;">string</i>: The file name of the image.</p>
+
+    <h4>RPA model codes</h4>
+    <table>
+      <tr><td><b>M2EA</b></td><td>DJI Mavic 2 Enterprise Advanced</td></tr>
+      <tr><td><b>M3E</b></td><td>DJI Mavic 3 Enterprise</td></tr>
+      <tr><td><b>M3T</b></td><td>DJI Mavic 3 Thermal</td></tr>
+      <tr><td><b>M3M</b></td><td>DJI Mavic 3 Multispectral</td></tr>
+      <tr><td><b>P4MS</b></td><td>DJI Phantom 4 Multispectral</td></tr>
+      <tr><td><b>P4R</b></td><td>DJI Phantom 4 RTK</td></tr>
+      <tr><td><b>M300</b></td><td>DJI Matrice 300 RTK</td></tr>
+      <tr><td><b>M350</b></td><td>DJI Matrice 350 RTK</td></tr>
+    </table>
+
+    <h4>RPA sensor codes</h4>
+    <table>
+      <tr><td><b>V</b></td><td>Visível (RGB)</td></tr>
+      <tr><td><b>T</b></td><td>Termal</td></tr>
+      <tr><td><b>M</b></td><td>Multiespectral</td></tr>
+      <tr><td><b>L</b></td><td>LiDAR</td></tr>
+      <tr><td><b>H</b></td><td>Hiperespectral</td></tr>
+    </table>
+
+    <h4>Examples</h4>
+    <p>get_sensor_name('LC08_L1TP_216065_20210206_20210305_01_T1') -> 'LandSat 8'</p>
+    <p>get_sensor_name('S2A_MSIL1C_20170105T013442_N0204_R031_T53NMJ_20170105T013443') -> 'Sentinel 2'</p>
+    <p>get_sensor_name('RPA_M2EA_V_20240315') -> 'DJI Mavic 2 Enterprise Advanced (Visível)'</p>
+    <p>get_sensor_name('RPA_M2EA_T_20240315') -> 'DJI Mavic 2 Enterprise Advanced (Termal)'</p>
+    <p>get_sensor_name('RPA_M300_L_20240315') -> 'DJI Matrice 300 RTK (LiDAR)'</p>
+    """
+    info = get_sensor_logic(filename)
+    if info:
+        return info["name"]
+    raise Exception("Sensor name could not be determined from the filename.")
+
+
+@qgsfunction(
+    args="auto",
+    group="EMI Tools",
+    register=True,
+    usesgeometry=False,
+    referenced_columns=[],
+)
+def get_sensor_source(filename, feature, parent):
+    """
+    Returns the image source based on the file name.
+    Supports satellite imagery and RPA (drone) imagery following the
+    <tt>RPA_&lt;MODEL&gt;_&lt;SENSOR&gt;_&lt;YYYYMMDD&gt;</tt> naming convention.
+
+    <h4>Syntax</h4>
+    <p><b style="color:#0a6099;">get_sensor_source</b> (<i style="color:#bf0c0c;">string</i>)</p>
+
+    <h4>Argument</h4>
+    <p><i style="color:#bf0c0c;">string</i>: The file name of the image.</p>
+
+    <h4>Examples</h4>
+    <p>get_sensor_source('LC08_L1TP_216065_20210206_20210305_01_T1') -> 'United States Geological Survey (USGS).'</p>
+    <p>get_sensor_source('RPA_M2EA_V_20240315') -> 'Imagem obtida por Aeronave Remotamente Pilotada (RPA) DJI Mavic 2 Enterprise Advanced – Câmera RGB.'</p>
+    """
+    info = get_sensor_logic(filename)
+    if info:
+        return info["source"]
+    raise Exception("Image source could not be determined from the filename.")
+
+
+@qgsfunction(
+    args="auto",
+    group="EMI Tools",
+    register=True,
+    usesgeometry=False,
+    referenced_columns=[],
+)
+def get_sensor_date(filename, feature, parent):
+    """
+    Returns the acquisition date of the image based on the provided file name.
+    Supports satellite imagery and RPA (drone) imagery following the
+    <tt>RPA_&lt;MODEL&gt;_&lt;SENSOR&gt;_&lt;YYYYMMDD&gt;</tt> naming convention.
+
+    <h4>Syntax</h4>
+    <p><b style="color:#0a6099;">get_sensor_date</b> (<i style="color:#bf0c0c;">string</i>)</p>
+
+    <h4>Argument</h4>
+    <p><i style="color:#bf0c0c;">String</i>: The file name of the image.</p>
+
+    <h4>Examples</h4>
+    <p>get_sensor_date('LC08_L1TP_216065_20210206_20210305_01_T1') -> QDate('2021-02-06')</p>
+    <p>get_sensor_date('RPA_M2EA_V_20240315') -> QDate('2024-03-15')</p>
+    <p>get_sensor_date('RPA_M300_L_20231120') -> QDate('2023-11-20')</p>
+    """
+    d = get_image_date_logic(filename)
+    return QDate(d.year, d.month, d.day)
+
+
+# =============================================================================
+#  Legacy satellite functions  (kept for backwards compatibility)
+# =============================================================================
+
+
+@qgsfunction(
+    args="auto",
+    group="EMI Tools",
+    register=True,
+    usesgeometry=False,
+    referenced_columns=[],
+)
 def get_satellite_name(filename, feature, parent):
     """
     Returns the satellite name based on the provided file name, following the compact naming convention.
@@ -236,43 +421,54 @@ def get_satellite_name(filename, feature, parent):
 
     <h4>Example</h4>
     <p>get_satellite_name('LC08_L1TP_216065_20210206_20210305_01_T1') -> 'LandSat 8'</p>
-    <p>get_satellite_name('S2A_MSIL1C_20170105T013442_N0204_R031_T53NMJ_20170105T013443') -> 'Sentinel 2A'</p>
-    <p>get_satellite_name('S2B_MSIL1C_20170105T013442_N0204_R031_T53NMJ_20170105T013443') -> 'Sentinel 2B'</p>
+    <p>get_satellite_name('S2A_MSIL1C_20170105T013442_N0204_R031_T53NMJ_20170105T013443') -> 'Sentinel 2'</p>
     """
     info = get_satellite_logic(filename)
     if info:
-        return info['name']
+        return info["name"]
     raise Exception("Satellite name could not be determined from the filename.")
 
 
-@qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
+@qgsfunction(
+    args="auto",
+    group="EMI Tools",
+    register=True,
+    usesgeometry=False,
+    referenced_columns=[],
+)
 def get_image_source(filename, feature, parent):
     """
     Returns the satellite image source based on the file name.
 
     <h4>Syntax</h4>
-    <p><b style="color:#0a6099;">get_source_imagen</b> (<i style="color:#bf0c0c;">string</i>)</p>
+    <p><b style="color:#0a6099;">get_image_source</b> (<i style="color:#bf0c0c;">string</i>)</p>
 
     <h4>Argument</h4>
     <p><i style="color:#bf0c0c;">string</i>: The file name of the satellite image.</p>
 
     <h4>Example</h4>
-    <p>get_source_imagen('LC08_L1TP_216065_20210206_20210305_01_T1') -> 'United States Geological Survey (USGS).'</p>
-    <p>get_source_imagen('S2A_MSIL1C_20170105T013442_N0204_R031_T53NMJ_20170105T013443') -> 'European Union's Earth Observation Programme (COPERNICUS).'</p>
+    <p>get_image_source('LC08_L1TP_216065_20210206_20210305_01_T1') -> 'United States Geological Survey (USGS).'</p>
+    <p>get_image_source('S2A_MSIL1C_20170105T013442_N0204_R031_T53NMJ_20170105T013443') -> 'European Union's Earth Observation Programme (COPERNICUS).'</p>
     """
     info = get_satellite_logic(filename)
     if info:
-        return info['source']
+        return info["source"]
     raise Exception("Image source could not be determined from the filename.")
 
 
-@qgsfunction(args='auto', group='EMI Tools', register=True, usesgeometry=False, referenced_columns=[])
+@qgsfunction(
+    args="auto",
+    group="EMI Tools",
+    register=True,
+    usesgeometry=False,
+    referenced_columns=[],
+)
 def get_image_date(filename, feature, parent):
     """
     Returns the date of the satellite image based on the provided file name, following the compact naming convention of the filename.
 
     <h4>Syntax</h4>
-    <p><b style="color:#0a6099;">get_date_image</b> (<i style="color:#bf0c0c;">string</i>)</p>
+    <p><b style="color:#0a6099;">get_image_date</b> (<i style="color:#bf0c0c;">string</i>)</p>
 
     <h4>Argument</h4>
     <p><i style="color:#bf0c0c;">String</i>: The file name of the Landsat or Sentinel image.</p>
@@ -285,7 +481,7 @@ def get_image_date(filename, feature, parent):
     return QDate(d.year, d.month, d.day)
 
 
-@qgsfunction(args="auto", group='EMI Tools')
+@qgsfunction(args="auto", group="EMI Tools")
 def get_layer_custom_property(layer_name, property_key, feature, parent):
     """
     Returns the value of a 'Custom Property' from a specific layer in the project.
