@@ -22,23 +22,48 @@
  ***************************************************************************/
 """
 
-__author__ = 'Alexandre Parente Lima'
-__date__ = '2024-10-10'
-__copyright__ = '(C) 2024 by Alexandre Parente Lima'
+__author__ = "Alexandre Parente Lima"
+__date__ = "2024-10-10"
+__copyright__ = "(C) 2024 by Alexandre Parente Lima"
 
-__revision__ = '$Format:%H$'
+__revision__ = "$Format:%H$"
 
 import os
 import sys
-from qgis.PyQt.QtCore import QTranslator, QCoreApplication, QSettings, QLocale
-from qgis.core import (QgsProcessingAlgorithm,
-                       QgsApplication)
 
-from .emi_tools_expressions import *
+from qgis.core import QgsApplication, QgsExpression
+from qgis.PyQt.QtCore import QCoreApplication, QLocale, QSettings, QTranslator
+
+from .emi_tools_expressions import (
+    format_cnpj,
+    format_cpf,
+    format_cpf_cnpj,
+    format_proper_name,
+    format_title_abnt,
+    get_image_date,
+    get_image_source,
+    get_satellite_name,
+    mask_cpf,
+    mask_name,
+    validate_cnpj,
+    validate_cpf,
+)
 from .emi_tools_provider import emiToolsProvider
 
-listFunctions = (validate_cpf, validate_cnpj, format_cpf, format_cnpj, format_cpf_cnpj, mask_cpf, mask_name,
-                 format_proper_name, format_title_abnt, get_image_date, get_satellite_name, get_image_source)
+listFunctions = (
+    validate_cpf,
+    validate_cnpj,
+    format_cpf,
+    format_cnpj,
+    format_cpf_cnpj,
+    mask_cpf,
+    mask_name,
+    format_proper_name,
+    format_title_abnt,
+    get_image_date,
+    get_satellite_name,
+    get_image_source,
+)
 
 cmd_folder = os.path.dirname(os.path.abspath(__file__))
 
@@ -47,7 +72,6 @@ if cmd_folder not in sys.path:
 
 
 class emiToolsPlugin(object):
-
     def __init__(self):
         self.provider = None
 
@@ -59,7 +83,9 @@ class emiToolsPlugin(object):
         locale = settings.value("locale/userLocale", QLocale.system().name())
 
         # Initialize locale
-        locale_path = os.path.join(self.plugin_dir, 'i18n', 'emiTools_{}.qm'.format(locale))
+        locale_path = os.path.join(
+            self.plugin_dir, "i18n", "emiTools_{}.qm".format(locale)
+        )
 
         if os.path.exists(locale_path):
             self.translator = QTranslator()
