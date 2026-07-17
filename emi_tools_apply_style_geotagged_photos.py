@@ -22,113 +22,113 @@
  ***************************************************************************/
 """
 
-__author__ = 'Alexandre Parente Lima'
-__date__ = '2024-10-10'
-__copyright__ = '(C) 2024 by Alexandre Parente Lima'
+__author__ = "Alexandre Parente Lima"
+__date__ = "2024-10-10"
+__copyright__ = "(C) 2024 by Alexandre Parente Lima"
 
 import os
-from qgis.PyQt.QtCore import QCoreApplication, QVariant
-from qgis.core import (QgsApplication,
-                       QgsProcessing,
-                       QgsProcessingAlgorithm,
-                       QgsProcessingParameterVectorLayer,
-                       QgsProcessingParameterVectorDestination,
-                       QgsProcessingParameterBoolean,
-                       QgsProcessingParameterField,
-                       QgsProcessingException,
-                       QgsVectorFileWriter,
-                       QgsSvgMarkerSymbolLayer,
-                       QgsMarkerSymbol,
-                       QgsWkbTypes,
-                       QgsRuleBasedRenderer,
-                       QgsSymbolLayer,
-                       QgsProperty,
-                       QgsEditorWidgetSetup,
-                       QgsLayerDefinition,
-                       QgsLayerTreeLayer,
-                       QgsProject,
-                       QgsVectorLayer)
 
-from .emi_tools_util import tr, save_as_vector
+from qgis.core import (
+    QgsApplication,
+    QgsEditorWidgetSetup,
+    QgsLayerDefinition,
+    QgsLayerTreeLayer,
+    QgsMarkerSymbol,
+    QgsProcessing,
+    QgsProcessingAlgorithm,
+    QgsProcessingException,
+    QgsProcessingParameterBoolean,
+    QgsProcessingParameterField,
+    QgsProcessingParameterVectorDestination,
+    QgsProcessingParameterVectorLayer,
+    QgsProject,
+    QgsProperty,
+    QgsRuleBasedRenderer,
+    QgsSvgMarkerSymbolLayer,
+    QgsSymbolLayer,
+    QgsVectorLayer,
+    QgsWkbTypes,
+)
+
+from .emi_tools_util import save_as_vector, tr
 
 
 class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
-    INPUT_FILE = 'INPUT_FILE'
-    OUTPUT_FILE = 'OUTPUT_FILE'
-    CONFIG_MAP_TIPS = 'CONFIG_MAP_TIPS'
-    CONFIG_PHOTO_FIELD = 'CONFIG_PHOTO_FIELD'
-    PHOTO_FIELD = 'PHOTO_FIELD'
-    ROTATION_FIELD = 'ROTATION_FIELD'
-    EXPORT_STYLE = 'EXPORT_STYLE'
+    INPUT_FILE = "INPUT_FILE"
+    OUTPUT_FILE = "OUTPUT_FILE"
+    CONFIG_MAP_TIPS = "CONFIG_MAP_TIPS"
+    CONFIG_PHOTO_FIELD = "CONFIG_PHOTO_FIELD"
+    PHOTO_FIELD = "PHOTO_FIELD"
+    ROTATION_FIELD = "ROTATION_FIELD"
+    EXPORT_STYLE = "EXPORT_STYLE"
 
     def initAlgorithm(self, config=None):
         self.addParameter(
             QgsProcessingParameterVectorLayer(
-                self.INPUT_FILE,
-                tr('Input layer'),
-                [QgsProcessing.TypeVectorPoint]
+                self.INPUT_FILE, tr("Input layer"), [QgsProcessing.TypeVectorPoint]
             )
         )
 
         self.addParameter(
             QgsProcessingParameterField(
                 self.PHOTO_FIELD,
-                tr('Field containing photo path'),
+                tr("Field containing photo path"),
                 parentLayerParameterName=self.INPUT_FILE,
                 type=QgsProcessingParameterField.String,
-                defaultValue='photo',
-                optional=False
+                defaultValue="photo",
+                optional=False,
             )
         )
 
         self.addParameter(
             QgsProcessingParameterField(
                 self.ROTATION_FIELD,
-                tr('Field containing the camera direction'),
+                tr("Field containing the camera direction"),
                 parentLayerParameterName=self.INPUT_FILE,
                 type=QgsProcessingParameterField.Numeric,
-                defaultValue='rotation',
-                optional=False
+                defaultValue="rotation",
+                optional=False,
             )
         )
 
         self.addParameter(
             QgsProcessingParameterBoolean(
-                self.CONFIG_MAP_TIPS,
-                tr('Configure map tips'),
-                defaultValue=False
+                self.CONFIG_MAP_TIPS, tr("Configure map tips"), defaultValue=False
             )
         )
 
         self.addParameter(
             QgsProcessingParameterBoolean(
                 self.CONFIG_PHOTO_FIELD,
-                tr('Configure the form attributes for the photo field'),
-                defaultValue=False
+                tr("Configure the form attributes for the photo field"),
+                defaultValue=False,
             )
         )
 
         self.addParameter(
             QgsProcessingParameterBoolean(
                 self.EXPORT_STYLE,
-                tr('Export the Layer Definition file (QLR)'),
-                defaultValue=False
+                tr("Export the Layer Definition file (QLR)"),
+                defaultValue=False,
             )
         )
 
         self.addParameter(
-            QgsProcessingParameterVectorDestination(
-                self.OUTPUT_FILE,
-                tr('Output file')
-            )
+            QgsProcessingParameterVectorDestination(self.OUTPUT_FILE, tr("Output file"))
         )
 
     def processAlgorithm(self, parameters, context, feedback):
         input_layer = self.parameterAsVectorLayer(parameters, self.INPUT_FILE, context)
         photo_field = self.parameterAsString(parameters, self.PHOTO_FIELD, context)
-        rotation_field = self.parameterAsString(parameters, self.ROTATION_FIELD, context)
-        config_map_tips = self.parameterAsBool(parameters, self.CONFIG_MAP_TIPS, context)
-        config_photo_field = self.parameterAsBool(parameters, self.CONFIG_PHOTO_FIELD, context)
+        rotation_field = self.parameterAsString(
+            parameters, self.ROTATION_FIELD, context
+        )
+        config_map_tips = self.parameterAsBool(
+            parameters, self.CONFIG_MAP_TIPS, context
+        )
+        config_photo_field = self.parameterAsBool(
+            parameters, self.CONFIG_PHOTO_FIELD, context
+        )
         export_style = self.parameterAsBool(parameters, self.EXPORT_STYLE, context)
         output_file = self.parameterAsOutputLayer(parameters, self.OUTPUT_FILE, context)
 
@@ -139,7 +139,9 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
         save_as_vector(input_layer, output_file, feedback)
 
         # Reloads the layer from the exported file.
-        exported_layer = QgsVectorLayer(output_file, os.path.basename(output_file), 'ogr')
+        exported_layer = QgsVectorLayer(
+            output_file, os.path.basename(output_file), "ogr"
+        )
         if not exported_layer.isValid():
             raise QgsProcessingException(tr("Error loading the exported layer."))
 
@@ -162,15 +164,25 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
         return {self.OUTPUT_FILE: exported_layer}
 
     def apply_symbology(self, exported_layer, rotation_field):
-        svg_path_arrow = os.path.join(QgsApplication.svgPaths()[0], 'arrows', 'Arrow_01.svg')
-        svg_path_point = os.path.join(QgsApplication.svgPaths()[0], 'gpsicons', 'city_medium.svg')
+        svg_path_arrow = os.path.join(
+            QgsApplication.svgPaths()[0], "arrows", "Arrow_01.svg"
+        )
+        svg_path_point = os.path.join(
+            QgsApplication.svgPaths()[0], "gpsicons", "city_medium.svg"
+        )
 
-        symbol_arrow = QgsMarkerSymbol.defaultSymbol(QgsWkbTypes.GeometryType.PointGeometry)
+        symbol_arrow = QgsMarkerSymbol.defaultSymbol(
+            QgsWkbTypes.GeometryType.PointGeometry
+        )
         svg_marker_arrow = QgsSvgMarkerSymbolLayer(svg_path_arrow)
-        svg_marker_arrow.setDataDefinedProperty(QgsSymbolLayer.PropertyAngle, QgsProperty.fromField(rotation_field))
+        svg_marker_arrow.setDataDefinedProperty(
+            QgsSymbolLayer.PropertyAngle, QgsProperty.fromField(rotation_field)
+        )
         symbol_arrow.changeSymbolLayer(0, svg_marker_arrow)
 
-        symbol_point = QgsMarkerSymbol.defaultSymbol(QgsWkbTypes.GeometryType.PointGeometry)
+        symbol_point = QgsMarkerSymbol.defaultSymbol(
+            QgsWkbTypes.GeometryType.PointGeometry
+        )
         svg_marker_point = QgsSvgMarkerSymbolLayer(svg_path_point)
         symbol_point.changeSymbolLayer(0, svg_marker_point)
 
@@ -196,7 +208,7 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
             <table>
                 <tr>
                     <th>[%"filename"%]</th>
-                </tr> 
+                </tr>
                 <tr>
                 <th><img src="file:///[%"{photo_field}"%]" width="230" height="130"></th>
                 </tr>
@@ -207,18 +219,20 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
     def configure_photo_field(self, exported_layer, photo_field):
         fields = exported_layer.fields()
         if photo_field not in [f.name() for f in fields]:
-            raise QgsProcessingException(tr(f"Photo field '{photo_field}' not found in layer."))
+            raise QgsProcessingException(
+                tr(f"Photo field '{photo_field}' not found in layer.")
+            )
 
         field_idx = fields.indexOf(photo_field)
         config = {
-            'DocumentViewer': 1,
-            'DocumentViewerWidth': 230,
-            'DocumentViewerHeight': 130,
-            'FileWidget': True,
-            'FullUrl': True,
-            'UseLink': True
+            "DocumentViewer": 1,
+            "DocumentViewerWidth": 230,
+            "DocumentViewerHeight": 130,
+            "FileWidget": True,
+            "FullUrl": True,
+            "UseLink": True,
         }
-        widget_type = 'ExternalResource'
+        widget_type = "ExternalResource"
         widget_setup = QgsEditorWidgetSetup(widget_type, config)
         exported_layer.setEditorWidgetSetup(field_idx, widget_setup)
 
@@ -241,10 +255,10 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
         return qlr_file_path
 
     def name(self):
-        return 'emiToolsApplyStyleGeotaggedPhotos'
+        return "emiToolsApplyStyleGeotaggedPhotos"
 
     def displayName(self):
-        return tr('Apply style to geotagged photo layer')
+        return tr("Apply style to geotagged photo layer")
 
     def group(self):
         return tr("Emi Tools")
