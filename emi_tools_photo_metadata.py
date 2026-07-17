@@ -22,57 +22,103 @@
  ***************************************************************************/
 """
 
-__author__ = 'Alexandre Parente Lima'
-__date__ = '2025-10-05'
-__copyright__ = '(C) 2025 by Alexandre Parente Lima'
+__author__ = "Alexandre Parente Lima"
+__date__ = "2025-10-05"
+__copyright__ = "(C) 2025 by Alexandre Parente Lima"
 
-__revision__ = '$Format:%H$'
+__revision__ = "$Format:%H$"
 
 import os
+
+from qgis.core import QgsCoordinateFormatter, QgsExifTools, QgsPoint
 from qgis.PyQt.QtCore import QDateTime
-from qgis.core import (QgsExifTools, QgsPoint, QgsCoordinateFormatter)
 
 from .emi_tools_util import tr
 
 METADATA_CONF = {
     # Special Fields (exif_tag: None)
-    'photo': {'exif_tag': None, 'friendly_name': 'Photo Path', 'type': str},
-    'filename': {'exif_tag': None, 'friendly_name': 'Filename', 'type': str},
-    'directory': {'exif_tag': None, 'friendly_name': 'Directory', 'type': str},
-    'dirname': {'exif_tag': None, 'friendly_name': 'DirName', 'type': str},
-    'latitude': {'exif_tag': None, 'friendly_name': 'Latitude', 'type': float},
-    'longitude': {'exif_tag': None, 'friendly_name': 'Longitude', 'type': float},
-    'coordinates': {'exif_tag': None, 'friendly_name': 'Coordinates', 'type': str},
-    'rotation': {'exif_tag': None, 'friendly_name': 'Rotation', 'type': float},
-
+    "photo": {"exif_tag": None, "friendly_name": "Photo Path", "type": str},
+    "filename": {"exif_tag": None, "friendly_name": "Filename", "type": str},
+    "directory": {"exif_tag": None, "friendly_name": "Directory", "type": str},
+    "dirname": {"exif_tag": None, "friendly_name": "DirName", "type": str},
+    "latitude": {"exif_tag": None, "friendly_name": "Latitude", "type": float},
+    "longitude": {"exif_tag": None, "friendly_name": "Longitude", "type": float},
+    "coordinates": {"exif_tag": None, "friendly_name": "Coordinates", "type": str},
+    "rotation": {"exif_tag": None, "friendly_name": "Rotation", "type": float},
     # Common fields (with a defined exif_tag)
-    'altitude': {'exif_tag': 'Exif.GPSInfo.GPSAltitude', 'friendly_name': 'Altitude', 'type': float},
-    'direction': {'exif_tag': 'Exif.GPSInfo.GPSImgDirection', 'friendly_name': 'Direction', 'type': float},
-    'timestamp': {'exif_tag': 'Exif.Photo.DateTimeOriginal', 'friendly_name': 'DateTime', 'type': QDateTime},
-    'model': {'exif_tag': 'Exif.Image.Model', 'friendly_name': 'Model', 'type': str},
-
+    "altitude": {
+        "exif_tag": "Exif.GPSInfo.GPSAltitude",
+        "friendly_name": "Altitude",
+        "type": float,
+    },
+    "direction": {
+        "exif_tag": "Exif.GPSInfo.GPSImgDirection",
+        "friendly_name": "Direction",
+        "type": float,
+    },
+    "timestamp": {
+        "exif_tag": "Exif.Photo.DateTimeOriginal",
+        "friendly_name": "DateTime",
+        "type": QDateTime,
+    },
+    "model": {"exif_tag": "Exif.Image.Model", "friendly_name": "Model", "type": str},
     # Specific DJI Fields
-    'CamReverse': {'exif_tag': 'Xmp.drone-dji.CamReverse', 'friendly_name': 'CamReverse', 'type': float},
-    'FlightPitchDegree': {'exif_tag': 'Xmp.drone-dji.FlightPitchDegree', 'friendly_name': 'Flight Pitch Degree',
-                          'type': float},
-    'FlightRollDegree': {'exif_tag': 'Xmp.drone-dji.FlightRollDegree', 'friendly_name': 'Flight Roll Degree',
-                         'type': float},
-    'FlightYawDegree': {'exif_tag': 'Xmp.drone-dji.FlightYawDegree', 'friendly_name': 'Flight Yaw Degree',
-                        'type': float},
-    'GimbalPitchDegree': {'exif_tag': 'Xmp.drone-dji.GimbalPitchDegree', 'friendly_name': 'Gimbal Pitch Degree',
-                          'type': float},
-    'GimbalReverse': {'exif_tag': 'Xmp.drone-dji.GimbalReverse', 'friendly_name': 'GimbalReverse', 'type': float},
-    'GimbalRollDegree': {'exif_tag': 'Xmp.drone-dji.GimbalRollDegree', 'friendly_name': 'Gimbal Roll Degree',
-                         'type': float},
-    'GimbalYawDegree': {'exif_tag': 'Xmp.drone-dji.GimbalYawDegree', 'friendly_name': 'Gimbal Yaw Degree',
-                        'type': float},
-    'RelativeAltitude': {'exif_tag': 'Xmp.drone-dji.RelativeAltitude', 'friendly_name': 'Relative Altitude',
-                         'type': float},
-
+    "CamReverse": {
+        "exif_tag": "Xmp.drone-dji.CamReverse",
+        "friendly_name": "CamReverse",
+        "type": float,
+    },
+    "FlightPitchDegree": {
+        "exif_tag": "Xmp.drone-dji.FlightPitchDegree",
+        "friendly_name": "Flight Pitch Degree",
+        "type": float,
+    },
+    "FlightRollDegree": {
+        "exif_tag": "Xmp.drone-dji.FlightRollDegree",
+        "friendly_name": "Flight Roll Degree",
+        "type": float,
+    },
+    "FlightYawDegree": {
+        "exif_tag": "Xmp.drone-dji.FlightYawDegree",
+        "friendly_name": "Flight Yaw Degree",
+        "type": float,
+    },
+    "GimbalPitchDegree": {
+        "exif_tag": "Xmp.drone-dji.GimbalPitchDegree",
+        "friendly_name": "Gimbal Pitch Degree",
+        "type": float,
+    },
+    "GimbalReverse": {
+        "exif_tag": "Xmp.drone-dji.GimbalReverse",
+        "friendly_name": "GimbalReverse",
+        "type": float,
+    },
+    "GimbalRollDegree": {
+        "exif_tag": "Xmp.drone-dji.GimbalRollDegree",
+        "friendly_name": "Gimbal Roll Degree",
+        "type": float,
+    },
+    "GimbalYawDegree": {
+        "exif_tag": "Xmp.drone-dji.GimbalYawDegree",
+        "friendly_name": "Gimbal Yaw Degree",
+        "type": float,
+    },
+    "RelativeAltitude": {
+        "exif_tag": "Xmp.drone-dji.RelativeAltitude",
+        "friendly_name": "Relative Altitude",
+        "type": float,
+    },
     # Photo Fields
-    'FocalLength': {'exif_tag': 'Exif.Photo.FocalLength', 'friendly_name': 'Focal Length', 'type': float},
-    'FocalLengthIn35mmFilm': {'exif_tag': 'Exif.Photo.FocalLengthIn35mmFilm', 'friendly_name': 'Focal Length in 35mm',
-                              'type': float}
+    "FocalLength": {
+        "exif_tag": "Exif.Photo.FocalLength",
+        "friendly_name": "Focal Length",
+        "type": float,
+    },
+    "FocalLengthIn35mmFilm": {
+        "exif_tag": "Exif.Photo.FocalLengthIn35mmFilm",
+        "friendly_name": "Focal Length in 35mm",
+        "type": float,
+    },
 }
 
 
@@ -83,10 +129,12 @@ def get_metadata_keys():
 
 def get_translated_metadata_map():
     """Returns a dictionary mapping field keys to translated friendly names"""
-    return {key: tr(conf['friendly_name']) for key, conf in METADATA_CONF.items()}
+    return {key: tr(conf["friendly_name"]) for key, conf in METADATA_CONF.items()}
 
 
-def get_exif_data(file_path, keys_to_extract=None, extract_all_tags=False, include_full_map=False):
+def get_exif_data(
+    file_path, keys_to_extract=None, extract_all_tags=False, include_full_map=False
+):
     """
     Extracts and processes EXIF and XMP metadata from an image file.
 
@@ -104,7 +152,7 @@ def get_exif_data(file_path, keys_to_extract=None, extract_all_tags=False, inclu
     data = {}
 
     if include_full_map:
-        data['full_map'] = tags
+        data["full_map"] = tags
 
     process_keys = get_metadata_keys() if extract_all_tags else (keys_to_extract or [])
 
@@ -116,32 +164,39 @@ def get_exif_data(file_path, keys_to_extract=None, extract_all_tags=False, inclu
 
     for key in process_keys:
         conf = METADATA_CONF.get(key)
-        if not conf: continue
+        if not conf:
+            continue
 
         value = None
-        tag_to_read = conf.get('exif_tag')
+        tag_to_read = conf.get("exif_tag")
 
         # Special Fields
         if tag_to_read is None:
-            if key == 'photo':
+            if key == "photo":
                 value = file_path
-            elif key == 'filename':
+            elif key == "filename":
                 value = os.path.basename(file_path)
-            elif key == 'directory':
+            elif key == "directory":
                 value = os.path.dirname(file_path)
-            elif key == 'latitude' and exif_point:
+            elif key == "latitude" and exif_point:
                 value = exif_point.y()
-            elif key == 'longitude' and exif_point:
+            elif key == "longitude" and exif_point:
                 value = exif_point.x()
-            elif key == 'coordinates' and exif_point:
-                lat_dms = QgsCoordinateFormatter.formatY(exif_point.y(),
-                                                         QgsCoordinateFormatter.FormatDegreesMinutesSeconds, 2)
-                lon_dms = QgsCoordinateFormatter.formatX(exif_point.x(),
-                                                         QgsCoordinateFormatter.FormatDegreesMinutesSeconds, 2)
+            elif key == "coordinates" and exif_point:
+                lat_dms = QgsCoordinateFormatter.formatY(
+                    exif_point.y(),
+                    QgsCoordinateFormatter.FormatDegreesMinutesSeconds,
+                    2,
+                )
+                lon_dms = QgsCoordinateFormatter.formatX(
+                    exif_point.x(),
+                    QgsCoordinateFormatter.FormatDegreesMinutesSeconds,
+                    2,
+                )
                 value = f"{lat_dms}, {lon_dms}"
-            elif key == 'rotation':
-                direction = tags.get('Exif.GPSInfo.GPSImgDirection')
-                yaw = tags.get('Xmp.drone-dji.FlightYawDegree')
+            elif key == "rotation":
+                direction = tags.get("Exif.GPSInfo.GPSImgDirection")
+                yaw = tags.get("Xmp.drone-dji.FlightYawDegree")
                 value = direction or yaw
 
         # Common fields
@@ -150,16 +205,21 @@ def get_exif_data(file_path, keys_to_extract=None, extract_all_tags=False, inclu
 
         # Type Conversion and Assignment
         if value is not None:
-            target_type = conf['type']
+            target_type = conf["type"]
             try:
-                if target_type == float and not isinstance(value, float):
+                if target_type is float and not isinstance(value, float):
                     value = float(value)
-                elif target_type == QDateTime and isinstance(value, QDateTime) and value.isValid():
+                elif (
+                    target_type is QDateTime
+                    and isinstance(value, QDateTime)
+                    and value.isValid()
+                ):
                     pass
-                elif target_type == str and not isinstance(value, str):
+                elif target_type is str and not isinstance(value, str):
                     value = str(value)
                 else:
-                    if not isinstance(value, target_type): continue  # Pula se o tipo já for inválido
+                    if not isinstance(value, target_type):
+                        continue  # Pula se o tipo já for inválido
 
                 data[key] = value
             except (ValueError, TypeError):
@@ -167,10 +227,9 @@ def get_exif_data(file_path, keys_to_extract=None, extract_all_tags=False, inclu
 
     # Extract all unknown tags
     if extract_all_tags:
-
         known_raw_tags = set()
         for conf in METADATA_CONF.values():
-            tag_name = conf.get('exif_tag')
+            tag_name = conf.get("exif_tag")
             if tag_name:
                 if isinstance(tag_name, list):
                     known_raw_tags.update(tag_name)
@@ -183,7 +242,7 @@ def get_exif_data(file_path, keys_to_extract=None, extract_all_tags=False, inclu
                 continue
 
             # Creates a safe field name for QGIS.
-            renamed_key = original_key.replace('.', '_')
+            renamed_key = original_key.replace(".", "_")
 
             if value is None or renamed_key in data:
                 continue
