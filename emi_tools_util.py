@@ -22,33 +22,35 @@
  ***************************************************************************/
 """
 
-__author__ = 'Alexandre Parente Lima'
-__date__ = '2024-10-10'
-__copyright__ = '(C) 2024 by Alexandre Parente Lima'
+__author__ = "Alexandre Parente Lima"
+__date__ = "2024-10-10"
+__copyright__ = "(C) 2024 by Alexandre Parente Lima"
 
 # This will get replaced with a git SHA1 when you do a git archive
 
-__revision__ = '$Format:%H$'
+__revision__ = "$Format:%H$"
 
 import os
 import tempfile
 import zipfile
+
+from qgis.core import (
+    Qgis,
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
+    QgsMessageLog,
+    QgsProject,
+    QgsVectorFileWriter,
+    QgsVectorLayer,
+)
 from qgis.PyQt.QtCore import QCoreApplication
-from qgis.core import (QgsProject,
-                       QgsCoordinateReferenceSystem,
-                       QgsCoordinateTransform,
-                       QgsVectorLayer,
-                       QgsVectorFileWriter,
-                       QgsMessageLog,
-                       Qgis,
-                       NULL)
 
 
 def tr(string):
     """
     Returns a translatable string for the QGIS interface.
     """
-    return QCoreApplication.translate('@default', string)
+    return QCoreApplication.translate("@default", string)
 
 
 def get_validated_folder(path=None):
@@ -60,7 +62,7 @@ def get_validated_folder(path=None):
     :return: Absolute path to a valid, existing directory.
     """
     if not path:
-        path = tempfile.mkdtemp(prefix='emi_tools_')
+        path = tempfile.mkdtemp(prefix="emi_tools_")
 
     if not os.path.exists(path):
         try:
@@ -68,15 +70,15 @@ def get_validated_folder(path=None):
         except OSError as e:
             QgsMessageLog.logMessage(
                 tr(f"Could not create directory {path}: {str(e)}"),
-                'emiTools',
-                Qgis.MessageLevel.Critical
+                "emiTools",
+                Qgis.MessageLevel.Critical,
             )
-            path = tempfile.mkdtemp(prefix='emi_tools_fallback_')
+            path = tempfile.mkdtemp(prefix="emi_tools_fallback_")
 
     return path
 
 
-def get_transformation(source_crs, target_authid='EPSG:4326'):
+def get_transformation(source_crs, target_authid="EPSG:4326"):
     """
     Returns a coordinate transformation to a target CRS.
 
@@ -117,15 +119,17 @@ def save_as_vector(layer, file_path, feedback=None):
     :return: True if the save operation was successful.
     :raises Exception: If the QgsVectorFileWriter encounters an error.
     """
-    extension = os.path.splitext(file_path)[1].lstrip('.')
+    extension = os.path.splitext(file_path)[1].lstrip(".")
     driver_name = QgsVectorFileWriter.driverForExtension(extension)
 
     options = QgsVectorFileWriter.SaveVectorOptions()
     options.driverName = driver_name
-    options.fileEncoding = 'UTF-8'
+    options.fileEncoding = "UTF-8"
     transform_context = QgsProject.instance().transformContext()
 
-    error = QgsVectorFileWriter.writeAsVectorFormatV3(layer, file_path, transform_context, options)
+    error = QgsVectorFileWriter.writeAsVectorFormatV3(
+        layer, file_path, transform_context, options
+    )
 
     if error[0] != QgsVectorFileWriter.NoError:
         error_msg = tr(f"Error saving file {os.path.basename(file_path)}: {error[1]}")
@@ -150,7 +154,7 @@ def compress_to_zip(files, zip_path, feedback=None):
     :return: The path to the created ZIP file.
     """
     try:
-        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             for file in files:
                 if os.path.exists(file):
                     zipf.write(file, os.path.basename(file))
@@ -175,12 +179,12 @@ def get_associated_files(file_path):
     :param file_path: Path to the main file (e.g., .shp).
     :return: List of existing associated file paths found on disk.
     """
-    extensions = ['shp', 'shx', 'dbf', 'prj', 'cpg', 'qpj']
+    extensions = ["shp", "shx", "dbf", "prj", "cpg", "qpj"]
     base_name = os.path.splitext(file_path)[0]
-    ext_original = os.path.splitext(file_path)[1].lower().replace('.', '')
+    ext_original = os.path.splitext(file_path)[1].lower().replace(".", "")
 
     # If it's not a Shapefile, return only the original file if it exists
-    if ext_original != 'shp':
+    if ext_original != "shp":
         return [file_path] if os.path.exists(file_path) else []
 
     # If it is a Shapefile, look for all associated sidecar files
