@@ -21,23 +21,23 @@
  ***************************************************************************/
 """
 
-from qgis.PyQt.QtCore import QVariant
 from qgis.core import (
+    NULL,
+    QgsFeature,
+    QgsFeatureSink,
+    QgsField,
+    QgsFields,
+    QgsGeometry,
     QgsProcessing,
     QgsProcessingAlgorithm,
+    QgsProcessingException,
+    QgsProcessingParameterFeatureSink,
     QgsProcessingParameterFeatureSource,
     QgsProcessingParameterField,
-    QgsProcessingParameterFeatureSink,
     QgsProcessingParameterNumber,
-    QgsProcessingException,
-    QgsFeature,
-    QgsGeometry,
-    QgsFields,
-    QgsField,
     QgsWkbTypes,
-    QgsFeatureSink,
-    NULL
 )
+from qgis.PyQt.QtCore import QVariant
 
 from .emi_tools_util import tr
 
@@ -49,46 +49,41 @@ class emiToolsAggregateArray(QgsProcessingAlgorithm):
     in fields suffixed with '_list'.
     """
 
-    INPUT = 'INPUT'
-    GROUP_FIELD = 'GROUP_FIELD'
-    MAX_GROUP_SIZE = 'MAX_GROUP_SIZE'
-    OUTPUT = 'OUTPUT'
+    INPUT = "INPUT"
+    GROUP_FIELD = "GROUP_FIELD"
+    MAX_GROUP_SIZE = "MAX_GROUP_SIZE"
+    OUTPUT = "OUTPUT"
 
     def initAlgorithm(self, config=None):
 
         self.addParameter(
             QgsProcessingParameterFeatureSource(
-                self.INPUT,
-                tr('Input layer'),
-                [QgsProcessing.TypeVectorAnyGeometry]
+                self.INPUT, tr("Input layer"), [QgsProcessing.TypeVectorAnyGeometry]
             )
         )
 
         self.addParameter(
             QgsProcessingParameterField(
                 self.GROUP_FIELD,
-                tr('Group by field'),
+                tr("Group by field"),
                 parentLayerParameterName=self.INPUT,
-                type=QgsProcessingParameterField.Any
+                type=QgsProcessingParameterField.Any,
             )
         )
 
         self.addParameter(
             QgsProcessingParameterNumber(
                 self.MAX_GROUP_SIZE,
-                tr('Maximum features per group (0 = unlimited)'),
+                tr("Maximum features per group (0 = unlimited)"),
                 type=QgsProcessingParameterNumber.Integer,
                 defaultValue=0,
                 minValue=0,
-                optional=True
+                optional=True,
             )
         )
 
         self.addParameter(
-            QgsProcessingParameterFeatureSink(
-                self.OUTPUT,
-                tr('Aggregated layer')
-            )
+            QgsProcessingParameterFeatureSink(self.OUTPUT, tr("Aggregated layer"))
         )
 
     def processAlgorithm(self, parameters, context, feedback):
@@ -98,19 +93,19 @@ class emiToolsAggregateArray(QgsProcessingAlgorithm):
         max_group_size = self.parameterAsInt(parameters, self.MAX_GROUP_SIZE, context)
 
         if source is None:
-            raise QgsProcessingException(self.invalidSourceError(parameters, self.INPUT))
+            raise QgsProcessingException(
+                self.invalidSourceError(parameters, self.INPUT)
+            )
 
         field_index = source.fields().indexOf(group_field_name)
         if field_index == -1:
-            raise QgsProcessingException(
-                tr(f"Field '{group_field_name}' not found.")
-            )
+            raise QgsProcessingException(tr(f"Field '{group_field_name}' not found."))
 
         source_fields = source.fields()
         output_fields = QgsFields()
 
         # Primary key (GeoPackage compliant)
-        output_fields.append(QgsField('fid', QVariant.Int))
+        output_fields.append(QgsField("fid", QVariant.Int))
 
         # Grouping field (original name and type preserved)
         output_fields.append(source_fields.at(field_index))
@@ -128,13 +123,13 @@ class emiToolsAggregateArray(QgsProcessingAlgorithm):
 
         output_wkb_type = QgsWkbTypes.multiType(source.wkbType())
 
-        (sink, dest_id) = self.parameterAsSink(
+        sink, dest_id = self.parameterAsSink(
             parameters,
             self.OUTPUT,
             context,
             output_fields,
             output_wkb_type,
-            source.sourceCrs()
+            source.sourceCrs(),
         )
 
         if sink is None:
@@ -158,19 +153,19 @@ class emiToolsAggregateArray(QgsProcessingAlgorithm):
 
             if group_key not in groups:
                 groups[group_key] = {
-                    'geometries': [],
-                    'attributes': {fname: [] for fname in aggregated_fields}
+                    "geometries": [],
+                    "attributes": {fname: [] for fname in aggregated_fields},
                 }
 
             if feature.hasGeometry():
-                groups[group_key]['geometries'].append(feature.geometry())
+                groups[group_key]["geometries"].append(feature.geometry())
 
             for field_name in aggregated_fields:
                 value = feature[field_name]
                 if value in (None, NULL):
-                    groups[group_key]['attributes'][field_name].append("")
+                    groups[group_key]["attributes"][field_name].append("")
                 else:
-                    groups[group_key]['attributes'][field_name].append(str(value))
+                    groups[group_key]["attributes"][field_name].append(str(value))
 
             feedback.setProgress(int(current * total * 0.5))
 
@@ -184,7 +179,7 @@ class emiToolsAggregateArray(QgsProcessingAlgorithm):
             if feedback.isCanceled():
                 break
 
-            num_items = len(group_data['geometries'])
+            num_items = len(group_data["geometries"])
 
             if max_group_size > 0:
                 chunk_size = max_group_size
@@ -195,10 +190,10 @@ class emiToolsAggregateArray(QgsProcessingAlgorithm):
                 end_index = i + chunk_size
                 new_feature = QgsFeature()
                 new_feature.setFields(output_fields)
-                new_feature.setAttribute('fid', fid_counter)
+                new_feature.setAttribute("fid", fid_counter)
                 fid_counter += 1
 
-                subset_geoms = group_data['geometries'][i:end_index]
+                subset_geoms = group_data["geometries"][i:end_index]
                 if subset_geoms:
                     combined_geom = QgsGeometry.unaryUnion(subset_geoms)
                     if not combined_geom.isMultipart():
@@ -206,12 +201,9 @@ class emiToolsAggregateArray(QgsProcessingAlgorithm):
                     new_feature.setGeometry(combined_geom)
 
                 new_feature.setAttribute(group_field_name, group_key)
-                for field_name, values in group_data['attributes'].items():
+                for field_name, values in group_data["attributes"].items():
                     subset_values = values[i:end_index]
-                    new_feature.setAttribute(
-                        f"{field_name}_list",
-                        subset_values
-                    )
+                    new_feature.setAttribute(f"{field_name}_list", subset_values)
 
                 sink.addFeature(new_feature, QgsFeatureSink.FastInsert)
 
