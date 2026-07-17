@@ -22,93 +22,88 @@
  ***************************************************************************/
 """
 
-__author__ = 'Alexandre Parente Lima'
-__date__ = '2024-10-10'
-__copyright__ = '(C) 2024 by Alexandre Parente Lima'
+__author__ = "Alexandre Parente Lima"
+__date__ = "2024-10-10"
+__copyright__ = "(C) 2024 by Alexandre Parente Lima"
 
-__revision__ = '$Format:%H$'
+__revision__ = "$Format:%H$"
 
 import os
-from qgis.PyQt.QtCore import (Qt, QRect, QRectF, QDateTime, QFileInfo)
-from qgis.PyQt.QtGui import (QImage, QPainter, QFont, QColor, QFontDatabase)
+
+from qgis.core import (
+    QgsExifTools,
+    QgsProcessingAlgorithm,
+    QgsProcessingException,
+    QgsProcessingParameterColor,
+    QgsProcessingParameterDefinition,
+    QgsProcessingParameterEnum,
+    QgsProcessingParameterFile,
+    QgsProcessingParameterFolderDestination,
+    QgsProcessingParameterNumber,
+    QgsProcessingParameterString,
+)
+from qgis.PyQt.QtCore import QDateTime, QFileInfo, QRect, QRectF, Qt
+from qgis.PyQt.QtGui import QColor, QFont, QFontDatabase, QImage, QPainter
 from qgis.PyQt.QtSvg import QSvgRenderer
 from qgis.PyQt.QtWidgets import QApplication
-from qgis.core import (QgsProcessing,
-                       QgsProcessingAlgorithm,
-                       QgsProcessingParameterFolderDestination,
-                       QgsProcessingParameterFile,
-                       QgsProcessingParameterString,
-                       QgsProcessingParameterColor,
-                       QgsProcessingParameterEnum,
-                       QgsProcessingParameterNumber,
-                       QgsProcessingException,
-                       QgsProcessingParameterDefinition,
-                       QgsExifTools)
 
-from .emi_tools_photo_metadata import get_exif_data, get_translated_metadata_map, get_metadata_keys
-from .emi_tools_util import tr, get_validated_folder
+from .emi_tools_photo_metadata import (
+    get_exif_data,
+    get_metadata_keys,
+    get_translated_metadata_map,
+)
+from .emi_tools_util import get_validated_folder, tr
 
 
 class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
-    INPUT_PHOTO = 'INPUT_PHOTO'
-    OUTPUT_FOLDER = 'OUTPUT_FOLDER'
-    STAMP_IMAGE = 'STAMP_IMAGE'
-    INPUT_TEXT = 'INPUT_TEXT'
-    METADATA_TO_STAMP = 'METADATA_TO_STAMP'
-    FONT_COLOR = 'FONT_COLOR'
-    FONT_NAME = 'FONT_NAME'
-    POSITION = 'POSITION'
-    STAMP_HEIGHT_VALUE = 'STAMP_HEIGHT_VALUE'
-    STAMP_HEIGHT_UNIT = 'STAMP_HEIGHT_UNIT'
-    MARGIN_VALUE = 'MARGIN_VALUE'
+    INPUT_PHOTO = "INPUT_PHOTO"
+    OUTPUT_FOLDER = "OUTPUT_FOLDER"
+    STAMP_IMAGE = "STAMP_IMAGE"
+    INPUT_TEXT = "INPUT_TEXT"
+    METADATA_TO_STAMP = "METADATA_TO_STAMP"
+    FONT_COLOR = "FONT_COLOR"
+    FONT_NAME = "FONT_NAME"
+    POSITION = "POSITION"
+    STAMP_HEIGHT_VALUE = "STAMP_HEIGHT_VALUE"
+    STAMP_HEIGHT_UNIT = "STAMP_HEIGHT_UNIT"
+    MARGIN_VALUE = "MARGIN_VALUE"
 
-    POSITION_OPTIONS = [
-        'Bottom Left',
-        'Bottom Right',
-        'Top Left',
-        'Top Right'
-    ]
+    POSITION_OPTIONS = ["Bottom Left", "Bottom Right", "Top Left", "Top Right"]
 
     UNIT_OPTIONS = [
-        'Percentage (%)',
-        'Pixels (px)',
-        'Centimeters (cm)',
-        'Millimeters (mm)',
-        'Inches (pol)'
+        "Percentage (%)",
+        "Pixels (px)",
+        "Centimeters (cm)",
+        "Millimeters (mm)",
+        "Inches (pol)",
     ]
 
     def __init__(self):
         super().__init__()
         try:
-            self.fonts = QFontDatabase.families()   # Qt6 / QGIS 4.x
+            self.fonts = QFontDatabase.families()  # Qt6 / QGIS 4.x
         except TypeError:
-            self.fonts = QFontDatabase().families() # Qt5 / QGIS 3.x
+            self.fonts = QFontDatabase().families()  # Qt5 / QGIS 3.x
 
     def initAlgorithm(self, config=None):
         # Initializes the algorithm's parameters
         self.addParameter(
             QgsProcessingParameterFile(
                 self.INPUT_PHOTO,
-                tr('Input folder'),
-                behavior=QgsProcessingParameterFile.Folder
+                tr("Input folder"),
+                behavior=QgsProcessingParameterFile.Folder,
             )
         )
 
         self.addParameter(
             QgsProcessingParameterFile(
-                self.STAMP_IMAGE,
-                tr('SVG Image'),
-                extension='svg',
-                optional=True
+                self.STAMP_IMAGE, tr("SVG Image"), extension="svg", optional=True
             )
         )
 
         self.addParameter(
             QgsProcessingParameterString(
-                self.INPUT_TEXT,
-                tr('Text'),
-                defaultValue="",
-                multiLine=True
+                self.INPUT_TEXT, tr("Text"), defaultValue="", multiLine=True
             )
         )
 
@@ -117,19 +112,20 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
         metadata_options_display = [translated_map[key] for key in all_known_keys]
 
         # Defines which fields are pre-selected by default
-        untranslated_defaults = ['model',
-                                 'timestamp',
-                                 'coordinates',
-                                 'altitude']
-        default_indices = [all_known_keys.index(key) for key in untranslated_defaults if key in all_known_keys]
+        untranslated_defaults = ["model", "timestamp", "coordinates", "altitude"]
+        default_indices = [
+            all_known_keys.index(key)
+            for key in untranslated_defaults
+            if key in all_known_keys
+        ]
 
         self.addParameter(
             QgsProcessingParameterEnum(
                 self.METADATA_TO_STAMP,
-                tr('Metadata to stamp'),
+                tr("Metadata to stamp"),
                 options=metadata_options_display,
                 allowMultiple=True,
-                defaultValue=default_indices
+                defaultValue=default_indices,
             )
         )
 
@@ -137,19 +133,19 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
         def get_translated_position_options():
             """Retorna uma lista de opções de posição traduzidas para a interface."""
             return [
-                tr('Bottom Left'),
-                tr('Bottom Right'),
-                tr('Top Left'),
-                tr('Top Right')
+                tr("Bottom Left"),
+                tr("Bottom Right"),
+                tr("Top Left"),
+                tr("Top Right"),
             ]
 
         # Calling the function to get the translated options
         self.addParameter(
             QgsProcessingParameterEnum(
                 self.POSITION,
-                tr('Position of text and image'),
+                tr("Position of text and image"),
                 options=get_translated_position_options(),
-                defaultValue=0
+                defaultValue=0,
             )
         )
 
@@ -158,23 +154,23 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
         default_font = app.font().family()
 
         # Check if the default font is available on the system
-        default_font_index = self.fonts.index(default_font) if default_font in self.fonts else 0
+        default_font_index = (
+            self.fonts.index(default_font) if default_font in self.fonts else 0
+        )
 
         # Add the Enum parameter to select the font
         self.addParameter(
             QgsProcessingParameterEnum(
                 self.FONT_NAME,
-                tr('Font'),
+                tr("Font"),
                 options=self.fonts,
-                defaultValue=default_font_index
+                defaultValue=default_font_index,
             )
         )
 
         self.addParameter(
             QgsProcessingParameterColor(
-                self.FONT_COLOR,
-                tr('Font color'),
-                defaultValue=QColor(255, 255, 0)
+                self.FONT_COLOR, tr("Font color"), defaultValue=QColor(255, 255, 0)
             )
         )
 
@@ -182,19 +178,19 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
         def get_translated_unit_options():
             """Retorna uma lista de opções de unidades traduzidas para o pylupdate5 capturar."""
             return [
-                tr('Percentage (%)'),
-                tr('Pixels (px)'),
-                tr('Centimeters (cm)'),
-                tr('Millimeters (mm)'),
-                tr('Inches (pol)')
+                tr("Percentage (%)"),
+                tr("Pixels (px)"),
+                tr("Centimeters (cm)"),
+                tr("Millimeters (mm)"),
+                tr("Inches (pol)"),
             ]
 
         # Advanced parameters
         stamp_height_unit_param = QgsProcessingParameterEnum(
             self.STAMP_HEIGHT_UNIT,
-            tr('Stamp height unit'),
+            tr("Stamp height unit"),
             options=get_translated_unit_options(),
-            defaultValue=0
+            defaultValue=0,
         )
         stamp_height_unit_param.setFlags(QgsProcessingParameterDefinition.FlagAdvanced)
         self.addParameter(stamp_height_unit_param)
@@ -202,11 +198,11 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
         # Height value parameters
         stamp_height_value_param = QgsProcessingParameterNumber(
             self.STAMP_HEIGHT_VALUE,
-            tr('Stamp height value'),
+            tr("Stamp height value"),
             defaultValue=10,
             minValue=0.1,
             maxValue=5000,
-            type=QgsProcessingParameterNumber.Double
+            type=QgsProcessingParameterNumber.Double,
         )
         stamp_height_value_param.setFlags(QgsProcessingParameterDefinition.FlagAdvanced)
         self.addParameter(stamp_height_value_param)
@@ -214,11 +210,11 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
         # Margin from edge value parameters
         margin_value_param = QgsProcessingParameterNumber(
             self.MARGIN_VALUE,
-            tr('Margin from edge'),
+            tr("Margin from edge"),
             defaultValue=2,
             minValue=0,
             maxValue=1000,
-            type=QgsProcessingParameterNumber.Double
+            type=QgsProcessingParameterNumber.Double,
         )
         margin_value_param.setFlags(QgsProcessingParameterDefinition.FlagAdvanced)
         self.addParameter(margin_value_param)
@@ -226,8 +222,7 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
         # Output folder
         self.addParameter(
             QgsProcessingParameterFolderDestination(
-                self.OUTPUT_FOLDER,
-                tr('Output folder')
+                self.OUTPUT_FOLDER, tr("Output folder")
             )
         )
 
@@ -236,12 +231,17 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
         input_folder = self.parameterAsString(parameters, self.INPUT_PHOTO, context)
 
         # List the image files in the folder
-        image_extensions = ('.jpg', '.jpeg', '.tif', '.tiff', '.png')
-        input_photos = [os.path.join(input_folder, f) for f in os.listdir(input_folder) if
-                        f.lower().endswith(image_extensions)]
+        image_extensions = (".jpg", ".jpeg", ".tif", ".tiff", ".png")
+        input_photos = [
+            os.path.join(input_folder, f)
+            for f in os.listdir(input_folder)
+            if f.lower().endswith(image_extensions)
+        ]
 
         # Get and validate output folder utilizando a função centralizada
-        output_folder_param = self.parameterAsString(parameters, self.OUTPUT_FOLDER, context)
+        output_folder_param = self.parameterAsString(
+            parameters, self.OUTPUT_FOLDER, context
+        )
         output_folder = get_validated_folder(output_folder_param)
 
         svg_file_path = self.parameterAsFile(parameters, self.STAMP_IMAGE, context)
@@ -261,7 +261,9 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
         # Get the user-selected keys
         translated_map = get_translated_metadata_map()
         all_known_keys = get_metadata_keys()
-        selected_indices = self.parameterAsEnums(parameters, self.METADATA_TO_STAMP, context)
+        selected_indices = self.parameterAsEnums(
+            parameters, self.METADATA_TO_STAMP, context
+        )
         internal_keys_to_stamp = [all_known_keys[i] for i in selected_indices]
 
         # Processes each selected image
@@ -269,12 +271,18 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
             input_qimage = QImage(raster_file_path)
 
             if input_qimage.isNull():
-                feedback.pushWarning(tr("Failed to load input image: {}").format(raster_file_path))
+                feedback.pushWarning(
+                    tr("Failed to load input image: {}").format(raster_file_path)
+                )
                 continue
 
             # Fetches the full EXIF tag backup ('full_map') to preserve it in the output file.
-            exif_data = get_exif_data(raster_file_path, internal_keys_to_stamp, extract_all_tags=False,
-                                      include_full_map=True)
+            exif_data = get_exif_data(
+                raster_file_path,
+                internal_keys_to_stamp,
+                extract_all_tags=False,
+                include_full_map=True,
+            )
 
             # Transform the input_text into a list of lines while preserving empty paragraphs
             if input_text:
@@ -295,18 +303,41 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
                         formatted_value = str(value)
                     lines_to_stamp.append(f"{friendly_name}: {formatted_value}")
 
-            self.insert_stamp(input_qimage, svg_file_path, font_color, position, font_name, lines_to_stamp,
-                              parameters, context, feedback)
-            output_image_path = self.save_image(input_qimage, raster_file_path, output_folder, feedback)
+            self.insert_stamp(
+                input_qimage,
+                svg_file_path,
+                font_color,
+                position,
+                font_name,
+                lines_to_stamp,
+                parameters,
+                context,
+                feedback,
+            )
+            output_image_path = self.save_image(
+                input_qimage, raster_file_path, output_folder, feedback
+            )
 
-            self.insert_exif_data(output_image_path, exif_data.get('full_map', {}), feedback)
+            self.insert_exif_data(
+                output_image_path, exif_data.get("full_map", {}), feedback
+            )
             # A mensagem de "Image saved" foi mantida pois contém o caminho específico gerado internamente
             feedback.pushInfo(tr(f"Image saved at {output_image_path}"))
 
         return {self.OUTPUT_FOLDER: output_folder}
 
-    def insert_stamp(self, input_qimage, svg_file_path, font_color, position, font_name, lines_to_stamp,
-                     parameters, context, feedback):
+    def insert_stamp(
+        self,
+        input_qimage,
+        svg_file_path,
+        font_color,
+        position,
+        font_name,
+        lines_to_stamp,
+        parameters,
+        context,
+        feedback,
+    ):
         painter = QPainter(input_qimage)
 
         # Input image dimensions
@@ -314,7 +345,9 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
         image_height = input_qimage.height()
 
         # Get unit and values
-        height_val = self.parameterAsDouble(parameters, self.STAMP_HEIGHT_VALUE, context)
+        height_val = self.parameterAsDouble(
+            parameters, self.STAMP_HEIGHT_VALUE, context
+        )
         unit_idx = self.parameterAsEnum(parameters, self.STAMP_HEIGHT_UNIT, context)
         margin_val = self.parameterAsDouble(parameters, self.MARGIN_VALUE, context)
 
@@ -341,7 +374,7 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
         margin_px = calculate_pixels(margin_val)
 
         # Ensure that no None entries remain
-        full_text_lines = [line if line is not None else '' for line in lines_to_stamp]
+        full_text_lines = [line if line is not None else "" for line in lines_to_stamp]
         full_text = "\n".join(full_text_lines)
 
         if (not full_text.strip()) and not svg_file_path:
@@ -359,17 +392,16 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
             font.setPointSize(current_font_size)
             painter.setFont(font)
             # Check bounding rect height
-            temp_rect = painter.boundingRect(QRect(0, 0, int(image_width - (2 * margin_px)), int(image_height)),
-                                             Qt.AlignmentFlag.AlignLeft, full_text)
+            temp_rect = painter.boundingRect(
+                QRect(0, 0, int(image_width - (2 * margin_px)), int(image_height)),
+                Qt.AlignmentFlag.AlignLeft,
+                full_text,
+            )
             if temp_rect.height() <= target_stamp_height:
                 break
             current_font_size -= 1
 
         painter.setFont(font)
-        actual_text_rect_calc = painter.boundingRect(QRect(0, 0, int(image_width - (2 * margin_px)), int(image_height)),
-                                                     Qt.AlignmentFlag.AlignLeft, full_text)
-        total_text_height = actual_text_rect_calc.height()
-
         # SVG logic
         svg_width, svg_height = 0, 0
         svg_renderer = None
@@ -390,35 +422,37 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
 
         svg_x, svg_y = 0, 0
 
-        if position == 'Bottom Left':
+        if position == "Bottom Left":
             alignment = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom
             base_y = image_height - margin_px - target_stamp_height
-            text_x, text_y = margin_px + h_offset, base_y
+            text_x, _ = margin_px + h_offset, base_y
             if svg_renderer:
                 svg_x, svg_y = margin_px, base_y
 
-        elif position == 'Bottom Right':
+        elif position == "Bottom Right":
             alignment = Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom
             base_y = image_height - margin_px - target_stamp_height
-            text_x, text_y = margin_px, base_y
+            text_x, _ = margin_px, base_y
             if svg_renderer:
                 svg_x, svg_y = image_width - margin_px - svg_width, base_y
 
-        elif position == 'Top Left':
+        elif position == "Top Left":
             alignment = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop
             base_y = margin_px
-            text_x, text_y = margin_px + h_offset, base_y
+            text_x, _ = margin_px + h_offset, base_y
             if svg_renderer:
                 svg_x, svg_y = margin_px, base_y
 
         else:  # Top Right
             alignment = Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop
             base_y = margin_px
-            text_x, text_y = margin_px, base_y
+            text_x, _ = margin_px, base_y
             if svg_renderer:
                 svg_x, svg_y = image_width - margin_px - svg_width, base_y
 
-        final_text_rect = QRect(int(text_x), int(base_y), int(text_width), int(target_stamp_height))
+        final_text_rect = QRect(
+            int(text_x), int(base_y), int(text_width), int(target_stamp_height)
+        )
         painter.setPen(QColor(font_color))
         painter.drawText(final_text_rect, alignment, full_text)
 
@@ -429,7 +463,8 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
         painter.end()
 
     def insert_exif_data(self, temp_file_path, full_map_exif, feedback):
-        if not full_map_exif: return
+        if not full_map_exif:
+            return
         exif_tools = QgsExifTools()
 
         # Iterate over full_map_exif and tag each EXIF tag into the image
@@ -441,8 +476,10 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
 
     def save_image(self, input_qimage, raster_file_path, output_folder, feedback):
         raster_file_info = QFileInfo(raster_file_path)
-        output_image_path = os.path.join(output_folder,
-                                         raster_file_info.baseName() + '_stamped.' + raster_file_info.suffix())
+        output_image_path = os.path.join(
+            output_folder,
+            raster_file_info.baseName() + "_stamped." + raster_file_info.suffix(),
+        )
 
         # Check if the image was loaded correctly
         if input_qimage.isNull():
@@ -469,7 +506,8 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
     def shortHelpString(self):
         return tr(
             "This algorithm inscribes text and an optional SVG logo onto JPEG or PNG images using EXIF metadata such as coordinates, altitude, date, and camera model. "
-            "The stamp height is defined by the user in %, px or cm, and the font size adjusts automatically. The processed images are saved in the output folder, preserving EXIF data.")
+            "The stamp height is defined by the user in %, px or cm, and the font size adjusts automatically. The processed images are saved in the output folder, preserving EXIF data."
+        )
 
     def createInstance(self):
         return emiToolsStampPhotoRpa()
