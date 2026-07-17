@@ -22,95 +22,86 @@
  ***************************************************************************/
 """
 
-__author__ = 'Alexandre Parente Lima'
-__date__ = '2024-10-10'
-__copyright__ = '(C) 2024 by Alexandre Parente Lima'
+__author__ = "Alexandre Parente Lima"
+__date__ = "2024-10-10"
+__copyright__ = "(C) 2024 by Alexandre Parente Lima"
 
 import os
-from qgis.PyQt.QtCore import (QCoreApplication,
-                              QDateTime,
-                              QVariant)
-from qgis.core import (QgsApplication,
-                       QgsProcessing,
-                       QgsProcessingAlgorithm,
-                       QgsProcessingParameterVectorDestination,
-                       QgsProcessingParameterBoolean,
-                       QgsProcessingException,
-                       QgsExifTools,
-                       QgsCoordinateFormatter,
-                       QgsFields,
-                       QgsField,
-                       QgsFeature,
-                       QgsVectorLayer,
-                       QgsPointXY,
-                       QgsVectorFileWriter,
-                       QgsPoint,
-                       QgsGeometry,
-                       QgsProject,
-                       QgsProcessingParameterFile,
-                       QgsProcessingParameterDefinition,
-                       QgsProcessingParameterEnum)
 
-from .emi_tools_photo_metadata import (get_exif_data, get_translated_metadata_map,
-                                       METADATA_CONF, get_metadata_keys)
-from .emi_tools_util import tr, create_memory_layer, save_as_vector
+from qgis.core import (
+    QgsFeature,
+    QgsField,
+    QgsFields,
+    QgsGeometry,
+    QgsPointXY,
+    QgsProcessingAlgorithm,
+    QgsProcessingParameterBoolean,
+    QgsProcessingParameterDefinition,
+    QgsProcessingParameterEnum,
+    QgsProcessingParameterFile,
+    QgsProcessingParameterVectorDestination,
+)
+from qgis.PyQt.QtCore import QDateTime, QVariant
+
+from .emi_tools_photo_metadata import (
+    METADATA_CONF,
+    get_exif_data,
+    get_metadata_keys,
+    get_translated_metadata_map,
+)
+from .emi_tools_util import create_memory_layer, save_as_vector, tr
 
 
 class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
-    INPUT_FOLDER = 'INPUT_FOLDER'
-    OUTPUT_FILE = 'OUTPUT_FILE'
-    RECURSIVE_SCAN = 'RECURSIVE_SCAN'
-    METADATA_TO_IMPORT = 'METADATA_TO_IMPORT'
-    EXTRACT_ALL_TAGS = 'EXTRACT_ALL_TAGS'
-    ADD_DESCRIPTION_FIELD = 'ADD_DESCRIPTION_FIELD'
-    ADD_SELECTED_FIELD = 'ADD_SELECTED_FIELD'
+    INPUT_FOLDER = "INPUT_FOLDER"
+    OUTPUT_FILE = "OUTPUT_FILE"
+    RECURSIVE_SCAN = "RECURSIVE_SCAN"
+    METADATA_TO_IMPORT = "METADATA_TO_IMPORT"
+    EXTRACT_ALL_TAGS = "EXTRACT_ALL_TAGS"
+    ADD_DESCRIPTION_FIELD = "ADD_DESCRIPTION_FIELD"
+    ADD_SELECTED_FIELD = "ADD_SELECTED_FIELD"
 
     # Set the default selected fields and the field order for the generated layer
     PRIORITY_KEYS = [
-        'photo',
-        'filename',
-        'directory',
-        'dirname',
-        'altitude',
-        'direction',
-        'rotation',
-        'longitude',
-        'latitude',
-        'timestamp',
-        'coordinates',
-        'model',
-        'CamReverse',
-        'FlightPitchDegree',
-        'FlightRollDegree',
-        'FlightYawDegree',
-        'GimbalPitchDegree',
-        'GimbalReverse',
-        'GimbalRollDegree',
-        'GimbalYawDegree',
-        'RelativeAltitude'
+        "photo",
+        "filename",
+        "directory",
+        "dirname",
+        "altitude",
+        "direction",
+        "rotation",
+        "longitude",
+        "latitude",
+        "timestamp",
+        "coordinates",
+        "model",
+        "CamReverse",
+        "FlightPitchDegree",
+        "FlightRollDegree",
+        "FlightYawDegree",
+        "GimbalPitchDegree",
+        "GimbalReverse",
+        "GimbalRollDegree",
+        "GimbalYawDegree",
+        "RelativeAltitude",
     ]
 
     def initAlgorithm(self, config=None):
         self.addParameter(
             QgsProcessingParameterFile(
                 self.INPUT_FOLDER,
-                tr('Input folder'),
-                behavior=QgsProcessingParameterFile.Folder
+                tr("Input folder"),
+                behavior=QgsProcessingParameterFile.Folder,
             )
         )
 
         self.addParameter(
-            QgsProcessingParameterVectorDestination(
-                self.OUTPUT_FILE,
-                tr('Output file')
-            )
+            QgsProcessingParameterVectorDestination(self.OUTPUT_FILE, tr("Output file"))
         )
 
         self.addParameter(
             QgsProcessingParameterBoolean(
-                self.RECURSIVE_SCAN,
-                tr('Scan recursively'),
-                defaultValue=False
+                self.RECURSIVE_SCAN, tr("Scan recursively"), defaultValue=False
             )
         )
 
@@ -126,48 +117,45 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
 
         param_select_meta = QgsProcessingParameterEnum(
             self.METADATA_TO_IMPORT,
-            tr('Metadata to import'),
+            tr("Metadata to import"),
             options=metadata_options_display,
             allowMultiple=True,
-            defaultValue=default_indices
+            defaultValue=default_indices,
         )
         param_select_meta.setFlags(
-            param_select_meta.flags() |
-            QgsProcessingParameterDefinition.FlagAdvanced
+            param_select_meta.flags() | QgsProcessingParameterDefinition.FlagAdvanced
         )
         self.addParameter(param_select_meta)
 
         param_extract_all = QgsProcessingParameterBoolean(
             self.EXTRACT_ALL_TAGS,
-            tr('Extract all available EXIF/XMP tags'),
-            defaultValue=False
+            tr("Extract all available EXIF/XMP tags"),
+            defaultValue=False,
         )
         param_extract_all.setFlags(
-            param_extract_all.flags() |
-            QgsProcessingParameterDefinition.FlagAdvanced
+            param_extract_all.flags() | QgsProcessingParameterDefinition.FlagAdvanced
         )
         self.addParameter(param_extract_all)
 
         param_add_description = QgsProcessingParameterBoolean(
             self.ADD_DESCRIPTION_FIELD,
             tr('Add "description" field to the output file'),
-            defaultValue=False
+            defaultValue=False,
         )
 
         param_add_description.setFlags(
-            param_add_description.flags() |
-            QgsProcessingParameterDefinition.FlagAdvanced
+            param_add_description.flags()
+            | QgsProcessingParameterDefinition.FlagAdvanced
         )
         self.addParameter(param_add_description)
 
         param_add_selected = QgsProcessingParameterBoolean(
             self.ADD_SELECTED_FIELD,
             tr('Add "selected" field to the output file'),
-            defaultValue=False
+            defaultValue=False,
         )
         param_add_selected.setFlags(
-            param_add_selected.flags() |
-            QgsProcessingParameterDefinition.FlagAdvanced
+            param_add_selected.flags() | QgsProcessingParameterDefinition.FlagAdvanced
         )
         self.addParameter(param_add_selected)
 
@@ -175,25 +163,33 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         input_folder = self.parameterAsString(parameters, self.INPUT_FOLDER, context)
         output_file = self.parameterAsOutputLayer(parameters, self.OUTPUT_FILE, context)
         recursive = self.parameterAsBool(parameters, self.RECURSIVE_SCAN, context)
-        extract_all_tags = self.parameterAsBool(parameters, self.EXTRACT_ALL_TAGS, context)
-        add_description = self.parameterAsBool(parameters, self.ADD_DESCRIPTION_FIELD, context)
-        add_selected = self.parameterAsBool(parameters, self.ADD_SELECTED_FIELD, context)
+        extract_all_tags = self.parameterAsBool(
+            parameters, self.EXTRACT_ALL_TAGS, context
+        )
+        add_description = self.parameterAsBool(
+            parameters, self.ADD_DESCRIPTION_FIELD, context
+        )
+        add_selected = self.parameterAsBool(
+            parameters, self.ADD_SELECTED_FIELD, context
+        )
 
         keys_to_import = None
         if not extract_all_tags:
             all_known_keys = get_metadata_keys()
-            selected_indices = self.parameterAsEnums(parameters, self.METADATA_TO_IMPORT, context)
+            selected_indices = self.parameterAsEnums(
+                parameters, self.METADATA_TO_IMPORT, context
+            )
             keys_to_import = [all_known_keys[i] for i in selected_indices]
-            if 'latitude' not in keys_to_import:
-                keys_to_import.append('latitude')
-            if 'longitude' not in keys_to_import:
-                keys_to_import.append('longitude')
+            if "latitude" not in keys_to_import:
+                keys_to_import.append("latitude")
+            if "longitude" not in keys_to_import:
+                keys_to_import.append("longitude")
 
         feature_exif_dict = {}
         erro_feature_exif_dict = {}
 
         # Get all image files in the folder
-        image_extensions = ('.jpg', '.jpeg', '.tif', '.tiff')
+        image_extensions = (".jpg", ".jpeg", ".tif", ".tiff")
 
         # Recursive folder scan
         if recursive:
@@ -208,11 +204,11 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
                 os.path.join(input_folder, f)
                 for f in os.listdir(input_folder)
                 if os.path.isfile(os.path.join(input_folder, f))
-                   and f.lower().endswith(image_extensions)
+                and f.lower().endswith(image_extensions)
             ]
 
         total = len(files_to_process)
-        feedback.pushInfo(tr(f'Found {total} images to process.'))
+        feedback.pushInfo(tr(f"Found {total} images to process."))
 
         for i, image_path in enumerate(files_to_process):
             if feedback.isCanceled():
@@ -220,23 +216,20 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             feedback.setProgress(int((i + 1) / total * 100))
             try:
                 exif_dict = get_exif_data(
-                    image_path,
-                    keys_to_import,
-                    extract_all_tags,
-                    include_full_map=False
+                    image_path, keys_to_import, extract_all_tags, include_full_map=False
                 )
 
-                exif_dict['dirname'] = os.path.basename(
-                    os.path.dirname(image_path)
-                )
+                exif_dict["dirname"] = os.path.basename(os.path.dirname(image_path))
 
-                if exif_dict.get('latitude') and exif_dict.get('longitude'):
+                if exif_dict.get("latitude") and exif_dict.get("longitude"):
                     feature_exif_dict[image_path] = exif_dict
                 else:
-                    erro_feature_exif_dict[image_path] = {'error': tr('No geotag found')}
+                    erro_feature_exif_dict[image_path] = {
+                        "error": tr("No geotag found")
+                    }
             except Exception as e:
                 feedback.reportError(tr(f"Error processing {image_path}: {str(e)}"))
-                erro_feature_exif_dict[image_path] = {'error': str(e)}
+                erro_feature_exif_dict[image_path] = {"error": str(e)}
 
         # Determines the final set and order of fields for the output layer.
         if extract_all_tags:
@@ -244,19 +237,23 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             for exif_data in feature_exif_dict.values():
                 all_keys_found.update(exif_data.keys())
 
-            priority_keys_found = [key for key in self.PRIORITY_KEYS if key in all_keys_found]
+            priority_keys_found = [
+                key for key in self.PRIORITY_KEYS if key in all_keys_found
+            ]
             other_keys = sorted(list(all_keys_found - set(self.PRIORITY_KEYS)))
             output_keys = priority_keys_found + other_keys
         else:
             all_known_keys = get_metadata_keys()
-            selected_indices = self.parameterAsEnums(parameters, self.METADATA_TO_IMPORT, context)
+            selected_indices = self.parameterAsEnums(
+                parameters, self.METADATA_TO_IMPORT, context
+            )
             output_keys = [all_known_keys[i] for i in selected_indices]
 
         # Add manual fields if requested and not already present to avoid conflicts
-        if add_description and 'description' not in output_keys:
-            output_keys.append('description')
-        if add_selected and 'selected' not in output_keys:
-            output_keys.append('selected')
+        if add_description and "description" not in output_keys:
+            output_keys.append("description")
+        if add_selected and "selected" not in output_keys:
+            output_keys.append("selected")
 
         point_layer = self.create_points_layer(feature_exif_dict, output_keys)
 
@@ -264,7 +261,10 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         save_as_vector(point_layer, output_file, feedback)
 
         feedback.pushInfo(
-            tr(f"A total of {len(feature_exif_dict)} images with geotags and {len(erro_feature_exif_dict)} images without geotags were identified."))
+            tr(
+                f"A total of {len(feature_exif_dict)} images with geotags and {len(erro_feature_exif_dict)} images without geotags were identified."
+            )
+        )
         return {self.OUTPUT_FILE: output_file}
 
     def create_points_layer(self, feature_exif_dict, keys_for_layer):
@@ -274,8 +274,8 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             conf = METADATA_CONF.get(key)
 
             if conf:
-                target_type = conf['type']
-                if target_type == float:
+                target_type = conf["type"]
+                if target_type is float:
                     field_type = QVariant.Double
                 elif target_type == QDateTime:
                     field_type = QVariant.DateTime
@@ -283,13 +283,16 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
                     field_type = QVariant.String
             else:
                 # Handle special manual fields or unknown exif tags
-                if key == 'selected':
+                if key == "selected":
                     field_type = QVariant.Bool
-                elif key == 'description':
+                elif key == "description":
                     field_type = QVariant.String
                 else:
-                    values = [exif_data.get(key) for exif_data in feature_exif_dict.values() if
-                              exif_data.get(key) is not None]
+                    values = [
+                        exif_data.get(key)
+                        for exif_data in feature_exif_dict.values()
+                        if exif_data.get(key) is not None
+                    ]
 
                     if not values:
                         field_type = QVariant.String
@@ -303,13 +306,15 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             fields.append(QgsField(key, field_type))
 
         # Use centralized utility to create memory layer
-        point_layer = create_memory_layer("Pontos Imagens", "Point", "EPSG:4326", fields)
+        point_layer = create_memory_layer(
+            "Pontos Imagens", "Point", "EPSG:4326", fields
+        )
         provider = point_layer.dataProvider()
 
         # Adds features based on the values in the same order as the fields
         for exif_data in feature_exif_dict.values():
-            exif_latitude = exif_data.get('latitude')
-            exif_longitude = exif_data.get('longitude')
+            exif_latitude = exif_data.get("latitude")
+            exif_longitude = exif_data.get("longitude")
 
             if exif_latitude is not None and exif_longitude is not None:
                 point = QgsPointXY(exif_longitude, exif_latitude)
@@ -319,10 +324,10 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
                     val = exif_data.get(key)
                     # Initialize manual fields with default values if not in exif
                     if val is None:
-                        if key == 'selected':
+                        if key == "selected":
                             val = False
-                        elif key == 'description':
-                            val = ''
+                        elif key == "description":
+                            val = ""
                     feature.setAttribute(key, val)
                 provider.addFeature(feature)
 
@@ -330,10 +335,10 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
         return point_layer
 
     def name(self):
-        return 'emiToolsImportGeotaggedPhotos'
+        return "emiToolsImportGeotaggedPhotos"
 
     def displayName(self):
-        return tr('Import geotagged photos from DJI drones')
+        return tr("Import geotagged photos from DJI drones")
 
     def group(self):
         return tr("Emi Tools")
