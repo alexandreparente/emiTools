@@ -40,6 +40,7 @@ from qgis.core import (
     QgsProcessingParameterFeatureSource,
     QgsProcessingParameterField,
     QgsVectorLayer,
+    QgsWkbTypes,
 )
 
 from .emi_tools_util import tr
@@ -150,6 +151,20 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
         if source_field_idx == -1:
             raise QgsProcessingException(
                 tr(f"Field '{source_field_name}' not found in the source layer.")
+            )
+
+        target_flat_type = QgsWkbTypes.flatType(target_source.wkbType())
+        source_flat_type = QgsWkbTypes.flatType(source_source.wkbType())
+        if target_flat_type != source_flat_type:
+            raise QgsProcessingException(
+                tr(
+                    "Geometry type mismatch: the target layer is "
+                    f"'{QgsWkbTypes.displayString(target_source.wkbType())}' but the "
+                    f"source layer is '{QgsWkbTypes.displayString(source_source.wkbType())}'. "
+                    "Both layers must have the same geometry category "
+                    "(point/line/polygon) and the same part type "
+                    "(single-part or multi-part)."
+                )
             )
 
         feedback.setCurrentStep(0)
