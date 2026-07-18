@@ -68,7 +68,7 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterFeatureSource(
                 self.TARGET_LAYER,
-                tr("Target layer (features to be replaced)"),
+                tr("Target layer"),
                 [QgsProcessing.TypeVectorAnyGeometry],
             )
         )
@@ -76,7 +76,7 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterField(
                 self.TARGET_FIELD,
-                tr("Common field (target layer)"),
+                tr("Target field"),
                 parentLayerParameterName=self.TARGET_LAYER,
                 type=QgsProcessingParameterField.Any,
             )
@@ -85,7 +85,7 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterFeatureSource(
                 self.SOURCE_LAYER,
-                tr("Source layer (replacement geometries)"),
+                tr("Source layer"),
                 [QgsProcessing.TypeVectorAnyGeometry],
             )
         )
@@ -93,7 +93,7 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterField(
                 self.SOURCE_FIELD,
-                tr("Common field (source layer)"),
+                tr("Source field"),
                 parentLayerParameterName=self.SOURCE_LAYER,
                 type=QgsProcessingParameterField.Any,
             )
