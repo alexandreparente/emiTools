@@ -29,6 +29,7 @@ __copyright__ = "(C) 2024 by Alexandre Parente Lima"
 __revision__ = "$Format:%H$"
 
 from qgis.core import (
+    NULL,
     QgsFeatureSink,
     QgsProcessing,
     QgsProcessingAlgorithm,
@@ -153,17 +154,23 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
                 tr(f"Field '{source_field_name}' not found in the source layer.")
             )
 
-        target_flat_type = QgsWkbTypes.flatType(target_source.wkbType())
-        source_flat_type = QgsWkbTypes.flatType(source_source.wkbType())
-        if target_flat_type != source_flat_type:
+        target_wkb = target_source.wkbType()
+        source_wkb = source_source.wkbType()
+
+        if QgsWkbTypes.geometryType(target_wkb) != QgsWkbTypes.geometryType(
+            source_wkb
+        ) or (
+            QgsWkbTypes.isMultiType(source_wkb)
+            and not QgsWkbTypes.isMultiType(target_wkb)
+        ):
             raise QgsProcessingException(
                 tr(
                     "Geometry type mismatch: the target layer is "
-                    f"'{QgsWkbTypes.displayString(target_source.wkbType())}' but the "
-                    f"source layer is '{QgsWkbTypes.displayString(source_source.wkbType())}'. "
+                    f"'{QgsWkbTypes.displayString(target_wkb)}' but the "
+                    f"source layer is '{QgsWkbTypes.displayString(source_wkb)}'. "
                     "Both layers must have the same geometry category "
-                    "(point/line/polygon) and the same part type "
-                    "(single-part or multi-part)."
+                    "(point/line/polygon), and a multi-part source cannot be used "
+                    "with a single-part target."
                 )
             )
 
@@ -177,8 +184,6 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
             if feedback.isCanceled():
                 break
             key = self._normalize_key(feature.attribute(source_field_idx))
-            if key in ("", None):
-                continue
             if key in source_index:
                 duplicated_keys.add(key)
                 continue
@@ -192,6 +197,13 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
                     "common field before running this algorithm."
                 )
             )
+
+        feedback.pushInfo(
+            tr(
+                f"{len(source_index)} unique keys indexed from the source layer "
+                f"(feature count reported by the source: {source_source.featureCount()})."
+            )
+        )
 
         feedback.setCurrentStep(1)
         common_attr_names = []
@@ -269,8 +281,12 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
     @staticmethod
     def _normalize_key(value):
         """Normalizes a field value for reliable comparison between the two layers
-        (e.g. avoids mismatches between '123' and 123.0)."""
-        if value is None:
+        (e.g. avoids mismatches between '123' and 123.0). Both Python's None and
+        QGIS's NULL sentinel (returned by some providers, e.g. PostgreSQL, for
+        empty fields) are normalized to the same None value, so an empty/NULL
+        common field is treated as a valid (if potentially ambiguous) match key
+        rather than being silently ignored."""
+        if value is None or value == NULL:
             return None
         return str(value).strip()
 
