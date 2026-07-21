@@ -41,6 +41,7 @@ from .emi_tools_export_terms import emiToolsExportTerms
 from .emi_tools_import_geotagged_photos import emiToolsImportGeotaggedPhotos
 from .emi_tools_photo_stamp_rpa import emiToolsStampPhotoRpa
 from .emi_tools_replace_geometry import emiToolsReplaceGeometry
+from .emi_tools_ret_to_vector import emiToolsRetToVector
 
 
 class emiToolsProvider(QgsProcessingProvider):
@@ -69,6 +70,7 @@ class emiToolsProvider(QgsProcessingProvider):
         self.addAlgorithm(emiToolsBatchPhotoExport())
         self.addAlgorithm(emiToolsAggregateArray())
         self.addAlgorithm(emiToolsReplaceGeometry())
+        self.addAlgorithm(emiToolsRetToVector())
 
     # add additional algorithms here
     # self.addAlgorithm(emiToolsPhotographicReport())
