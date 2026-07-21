@@ -29,13 +29,17 @@ __copyright__ = "(C) 2024 by Alexandre Parente Lima"
 __revision__ = "$Format:%H$"
 
 import os
+from collections import Counter
 from datetime import datetime
 
 from qgis.core import (
+    QgsFeature,
+    QgsFeatureRequest,
+    QgsField,
+    QgsFields,
     QgsProcessing,
     QgsProcessingAlgorithm,
     QgsProcessingException,
-    QgsProcessingFeatureSource,
     QgsProcessingMultiStepFeedback,
     QgsProcessingParameterBoolean,
     QgsProcessingParameterEnum,
@@ -60,15 +64,6 @@ from .emi_tools_util import (
 
 class emiToolsExportTerms(QgsProcessingAlgorithm):
     OUTPUT_FOLDER = "OUTPUT_FOLDER"
-    FORMAT_INFO = {
-        0: {
-            "driver": "ESRI Shapefile",
-            "ext": "shp",
-            "zip_exts": ["shp", "shx", "dbf", "prj", "cpg"],
-        },
-        1: {"driver": "GPKG", "ext": "gpkg", "zip_exts": ["gpkg"]},
-        2: {"driver": "KML", "ext": "kml", "zip_exts": ["kml"]},
-    }
 
     def initAlgorithm(self, config=None):
 
@@ -111,8 +106,8 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterEnum(
                 "output_format",
-                tr("Output file format:"),
-                options=[info["driver"] for info in self.FORMAT_INFO.values()],
+                tr("Output file extension"),
+                options=QgsVectorFileWriter.supportedFormatExtensions(),
                 defaultValue=0,
             )
         )
@@ -150,7 +145,6 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
         if layer is None:
             raise QgsProcessingException(self.invalidSourceError(parameters, "layer"))
 
-        extracted_features = list(layer.getFeatures())
         num_tei_field = parameters["num_tei_field"]
         serie_tei_field = parameters["serie_tei_field"]
         export_all_to_single = self.parameterAsBoolean(
@@ -168,16 +162,12 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
         output_folder = get_validated_folder(output_folder_param)
 
         # Check for duplicate features
-        self.check_duplicates(extracted_features, num_tei_field)
+        self.check_duplicates(layer, num_tei_field)
 
-        # Create a temporary layer
-        temp_layer = self.temp_layer(layer, extracted_features, context)
-
-        # Remove unnecessary fields and rename others
-        self.remover_fields(temp_layer, num_tei_field, serie_tei_field)
-
-        # Rename the fields
-        self.rename_fields(temp_layer, num_tei_field, serie_tei_field)
+        # Build the temp layer
+        temp_layer = self.create_clean_temp_layer(
+            layer, num_tei_field, serie_tei_field, context
+        )
 
         output_files = []
         today_str = "lote" + datetime.today().strftime("%Y%m%d")
@@ -206,82 +196,68 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
 
         return {self.OUTPUT_FOLDER: output_folder}
 
-    def temp_layer(self, layer, extracted_features, context):
-        # Checks if the layer is a QgsProcessingFeatureSource
-        if isinstance(layer, QgsProcessingFeatureSource):
-            # Gets the source name and the associated layer
-            source_name = layer.sourceName()
-            source_layer = QgsProject.instance().mapLayersByName(source_name)
-
-            if not source_layer:
-                raise QgsProcessingException(
-                    self.invalidSourceError({"layer": layer}, "layer")
-                )
-
-            source_layer = source_layer[0]
-
-        # Use the utility function to create the memory layer
-        temp_layer = create_memory_layer(
-            "Temporary Layer",
-            QgsWkbTypes.displayString(source_layer.wkbType()),
-            source_layer.crs().authid(),
-            source_layer.fields(),
+    def check_duplicates(self, layer, num_tei_field):
+        """Checks for duplicate embargo term numbers."""
+        request = (
+            QgsFeatureRequest()
+            .setFlags(QgsFeatureRequest.NoGeometry)
+            .setSubsetOfAttributes([num_tei_field], layer.fields())
         )
+        tad_numbers = [
+            f[num_tei_field] for f in layer.getFeatures(request) if f[num_tei_field]
+        ]
 
-        # Adds the extracted features to the temporary layer
-        temp_layer.dataProvider().addFeatures(extracted_features)
-
-        return temp_layer
-
-    def check_duplicates(self, extracted_features, num_tei_field):
-        tad_numbers = [f[num_tei_field] for f in extracted_features]
-        duplicated_tads = {
-            tad_number: tad_numbers.count(tad_number)
-            for tad_number in set(tad_numbers)
-            if tad_numbers.count(tad_number) > 1
-        }
+        counts = Counter(tad_numbers)
+        duplicated_tads = [tad for tad, count in counts.items() if count > 1]
         if duplicated_tads:
             raise QgsProcessingException(
-                tr(
-                    f"Duplicate embargo term numbers found: {list(duplicated_tads.keys())}"
-                )
+                tr(f"Duplicate embargo term numbers found: {duplicated_tads}")
             )
 
-    def remover_fields(self, temp_layer, num_tei_field, serie_tei_field):
-        # Fields that should be kept
-        fields_to_keep = [num_tei_field, serie_tei_field]
+    def create_clean_temp_layer(self, layer, num_tei_field, serie_tei_field, context):
+        """Builds the temporary layer"""
+        orig_num_idx = layer.fields().indexOf(num_tei_field)
+        orig_serie_idx = layer.fields().indexOf(serie_tei_field)
+
+        if orig_num_idx == -1:
+            raise QgsProcessingException(
+                tr(f"Field '{num_tei_field}' not found in the input layer.")
+            )
+        if orig_serie_idx == -1:
+            raise QgsProcessingException(
+                tr(f"Field '{serie_tei_field}' not found in the input layer.")
+            )
+
+        fields = QgsFields()
+        fields.append(QgsField("NUM_TEI", layer.fields().field(orig_num_idx).type()))
+        fields.append(
+            QgsField("SERIE_TEI", layer.fields().field(orig_serie_idx).type())
+        )
+
+        temp_layer = create_memory_layer(
+            "Temp_Sicafi",
+            QgsWkbTypes.displayString(layer.wkbType()),
+            layer.sourceCrs().authid(),
+            fields,
+        )
         provider = temp_layer.dataProvider()
-        fields_to_remove = [
-            temp_layer.fields().indexOf(field.name())
-            for field in temp_layer.fields()
-            if field.name() not in fields_to_keep
-        ]
-        if fields_to_remove:
-            provider.deleteAttributes(fields_to_remove)
 
-        # Update the layer's fields
-        temp_layer.updateFields()
+        new_features = []
+        for feat in layer.getFeatures():
+            new_feat = QgsFeature(fields)
+            new_feat.setGeometry(feat.geometry())
+            new_feat.setAttributes([feat[num_tei_field], feat[serie_tei_field]])
+            new_features.append(new_feat)
 
-    def rename_fields(self, temp_layer, num_tei_field, serie_tei_field):
+        provider.addFeatures(new_features)
+        temp_layer.updateExtents()
 
-        # Renaming dictionary
-        field_renames = {num_tei_field: "NUM_TEI", serie_tei_field: "SERIE_TEI"}
-        provider = temp_layer.dataProvider()
-
-        # Rename the fields
-        for old_name, new_name in field_renames.items():
-            if temp_layer.fields().indexOf(old_name) != -1:
-                provider.renameAttributes(
-                    {temp_layer.fields().indexOf(old_name): new_name}
-                )
-
-        # Update the layer's fields
-        temp_layer.updateFields()
+        return temp_layer
 
     def export_single_file(
         self, layer, output_folder, today_str, output_format, feedback
     ):
-        extension = self.get_extension(output_format)
+        extension = QgsVectorFileWriter.supportedFormatExtensions()[output_format]
         output_file = os.path.join(output_folder, f"TEI_{today_str}_sicafi.{extension}")
 
         try:
@@ -293,8 +269,8 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
 
     def export_individual_files(self, layer, output_folder, output_format, feedback):
         output_files = []
-        driver_name = self.get_output_format_string(output_format)
-        extension = self.get_extension(output_format)
+        extension = QgsVectorFileWriter.supportedFormatExtensions()[output_format]
+        driver_name = QgsVectorFileWriter.driverForExtension(extension)
         num_tei_index = layer.fields().indexOf("NUM_TEI")
         if num_tei_index == -1:
             raise QgsProcessingException(
@@ -348,11 +324,7 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
         QgsProject.instance().addMapLayers(layers_to_add)
 
     def compress_files(self, output_files, output_format, output_folder, feedback):
-        format_info = self.FORMAT_INFO.get(output_format)
-        if not format_info:
-            return
-
-        file_extension = format_info["ext"]
+        file_extension = QgsVectorFileWriter.supportedFormatExtensions()[output_format]
 
         for output_file in output_files:
             base_name = os.path.splitext(os.path.basename(output_file))[0]
@@ -365,12 +337,6 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
 
             if associated_files:
                 compress_to_zip(associated_files, zip_output_file, feedback)
-
-    def get_extension(self, output_format):
-        return self.FORMAT_INFO.get(output_format, {}).get("ext", "tmp")
-
-    def get_output_format_string(self, output_format):
-        return self.FORMAT_INFO.get(output_format, {}).get("driver", "unknown")
 
     def name(self):
         return "emiToolsExportTerms"
