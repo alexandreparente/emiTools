@@ -42,6 +42,7 @@ from .emi_tools_expressions import (
     format_title_abnt,
     get_image_date,
     get_image_source,
+    get_layer_custom_property,
     get_satellite_name,
     mask_cpf,
     mask_name,
@@ -63,6 +64,7 @@ listFunctions = (
     get_image_date,
     get_satellite_name,
     get_image_source,
+    get_layer_custom_property,
 )
 
 cmd_folder = os.path.dirname(os.path.abspath(__file__))
