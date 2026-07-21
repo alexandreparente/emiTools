@@ -4,7 +4,7 @@
 <context>
     <name>@default</name>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="75"/>
+        <location filename="../emi_tools_export_terms.py" line="70"/>
         <source>Input layer</source>
         <translation>Camada de entrada</translation>
     </message>
@@ -79,12 +79,12 @@
         <translation>Aplicar estilo à camada de fotos com geotags</translation>
     </message>
     <message>
-        <location filename="../emi_tools_replace_geometry.py" line="300"/>
+        <location filename="../emi_tools_ret_to_vector.py" line="521"/>
         <source>Emi Tools</source>
         <translation>Emi Tools</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="223"/>
+        <location filename="../emi_tools_ret_to_vector.py" line="339"/>
         <source>Output folder</source>
         <translation>Pasta de saída</translation>
     </message>
@@ -99,42 +99,32 @@
         <translation>Campo para nome do arquivo exportado</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="130"/>
+        <location filename="../emi_tools_export_terms.py" line="125"/>
         <source>Compress output file copy (.zip)</source>
         <translation>Compactar cópia do arquivo de saída (.zip)</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="139"/>
+        <location filename="../emi_tools_export_terms.py" line="134"/>
         <source>Open output files after executing the algorithm</source>
         <translation>Abrir arquivos de saída após executar o algoritmo</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="82"/>
+        <location filename="../emi_tools_export_terms.py" line="77"/>
         <source>Embargo term field</source>
         <translation>Campo do termo de embargo</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="93"/>
+        <location filename="../emi_tools_export_terms.py" line="88"/>
         <source>Embargo term series field</source>
         <translation>Campo da série do termo de embargo</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="111"/>
-        <source>Output file format:</source>
-        <translation>Formato do arquivo de saída:</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_export_terms.py" line="121"/>
+        <location filename="../emi_tools_export_terms.py" line="116"/>
         <source>Export all features to a single file</source>
         <translation>Exportar todas as feições para um único arquivo</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="244"/>
-        <source>Duplicate embargo term numbers found: {list(duplicated_tads.keys())}</source>
-        <translation>Números de termos de embargo duplicados encontrados: {list(duplicated_tads.keys())}</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_export_terms.py" line="379"/>
+        <location filename="../emi_tools_export_terms.py" line="342"/>
         <source>Export polygons to SICAFI</source>
         <translation>Exportar polígonos para o SICAFI</translation>
     </message>
@@ -229,32 +219,32 @@
         <translation>Este algoritmo aplica simbologia personalizada a uma camada de pontos com fotos georreferenciadas, distinguindo imagens com ou sem direção registrada. Também permite configurar dicas de mapa com visualização das imagens, ajustar o campo da foto para exibição como recurso externo e exportar um arquivo de definição de camada (QLR).</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="388"/>
+        <location filename="../emi_tools_export_terms.py" line="351"/>
         <source>This algorithm exports features from a polygon layer to individual or single vector files, compatible with the upload of embargoed areas to the Cadastro, Arrecadação e Fiscalização System (Sicafi). The algorithm removes unnecessary fields, renames mandatory fields to 'NUM_TEI' and 'SERIE_TEI', and offers the option to compress the output files into a ZIP archive.</source>
         <translation>Este algoritmo exporta feições de uma camada de polígonos para arquivos vetoriais individuais ou um único arquivo, compatíveis com o envio de áreas embargadas ao Sistema de Cadastro, Arrecadação e Fiscalização (Sicafi). O algoritmo remove campos desnecessários, renomeia os campos obrigatórios para 'NUM_TEI' e 'SERIE_TEI', e oferece a opção de compactar os arquivos de saída em um arquivo ZIP.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="300"/>
+        <location filename="../emi_tools_export_terms.py" line="275"/>
         <source>Field &apos;NUM_TEI&apos; not found in the layer after renaming.</source>
         <translation>Campo 'NUM_TEI' não encontrado na camada após a renomeação.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="309"/>
+        <location filename="../emi_tools_export_terms.py" line="284"/>
         <source>Skipping feature {feature.id()} due to empty &apos;NUM_TEI&apos; value.</source>
         <translation>Ignorando a feição {feature.id()} devido ao valor vazio em 'NUM_TEI'.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="330"/>
+        <location filename="../emi_tools_export_terms.py" line="304"/>
         <source>Saved file: {output_file}</source>
         <translation>Arquivo salvo: {output_file}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="332"/>
+        <location filename="../emi_tools_export_terms.py" line="306"/>
         <source>Error saving file for TEI {tad_number}: {error[1]}</source>
         <translation>Erro ao salvar o arquivo para TEI {tad_number}: {error[1]}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="336"/>
+        <location filename="../emi_tools_export_terms.py" line="310"/>
         <source>Total number of saved files: {len(output_files)}</source>
         <translation>Número total de arquivos salvos: {len(output_files)}</translation>
     </message>
@@ -559,6 +549,96 @@ Opção avançada: 'Atualizar outros atributos em comum' também copia os valore
         <location filename="../emi_tools_replace_geometry.py" line="201"/>
         <source>{len(source_index)} unique keys indexed from the source layer (feature count reported by the source: {source_source.featureCount()}).</source>
         <translation>{len(source_index)} chaves únicas foram indexadas da camada de origem (número de feições informado pela camada de origem: {source_source.featureCount()}).</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_ret_to_vector.py" line="345"/>
+        <source>Output file extension</source>
+        <translation>Extensão do arquivo de saída</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_export_terms.py" line="213"/>
+        <source>Duplicate embargo term numbers found: {duplicated_tads}</source>
+        <translation>Números de termo de embargo duplicados encontrados: {duplicated_tads}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_export_terms.py" line="223"/>
+        <source>Field &apos;{num_tei_field}&apos; not found in the input layer.</source>
+        <translation>Campo '{num_tei_field}' não encontrado na camada de entrada.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_export_terms.py" line="227"/>
+        <source>Field &apos;{serie_tei_field}&apos; not found in the input layer.</source>
+        <translation>Campo '{serie_tei_field}' não encontrado na camada de entrada.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_ret_to_vector.py" line="97"/>
+        <source>Field &apos;{field_label}&apos; exceeded {_TEXT_FIELD_LEN} characters and was truncated to maintain Shapefile compatibility.</source>
+        <translation>O campo '{field_label}' excedeu {_TEXT_FIELD_LEN} caracteres e foi truncado para manter a compatibilidade com Shapefile.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_ret_to_vector.py" line="329"/>
+        <source>SICAR .RET file</source>
+        <translation>Arquivo .RET do SICAR</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_ret_to_vector.py" line="354"/>
+        <source>Load generated layers into the project</source>
+        <translation>Carregar as camadas geradas no projeto</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_ret_to_vector.py" line="367"/>
+        <source>Invalid or missing .RET file.</source>
+        <translation>Arquivo .RET inválido ou ausente.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_ret_to_vector.py" line="378"/>
+        <source>Reading .RET file...</source>
+        <translation>Lendo o arquivo .RET...</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_ret_to_vector.py" line="390"/>
+        <source>SICAR file not found inside the .RET. Expected a file starting with a state acronym (e.g. &apos;PB-&apos;) or the &apos;CAR&apos; prefix.</source>
+        <translation>Arquivo do SICAR não encontrado dentro do .RET. Esperado um arquivo iniciado com a sigla do estado (ex: 'PB-') ou com o prefixo 'CAR'.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_ret_to_vector.py" line="399"/>
+        <source>The .RET file is not a valid SICAR export (expected a zip archive).</source>
+        <translation>O arquivo .RET não é uma exportação válida do SICAR (esperado um arquivo zip).</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_ret_to_vector.py" line="426"/>
+        <source>Skipping layer &apos;{tipo}&apos;: geometry is invalid or empty.</source>
+        <translation>Ignorando a camada '{tipo}': geometria inválida ou vazia.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_ret_to_vector.py" line="459"/>
+        <source>Error saving &apos;{tipo}&apos;: {error[1]}</source>
+        <translation>Erro ao salvar '{tipo}': {error[1]}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_ret_to_vector.py" line="462"/>
+        <source>Saved: {output_path}</source>
+        <translation>Salvo: {output_path}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_ret_to_vector.py" line="465"/>
+        <source>{len(written_layers)} of {len(geo_items)} layer(s) written successfully.</source>
+        <translation>{len(written_layers)} de {len(geo_items)} camada(s) gravada(s) com sucesso.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_ret_to_vector.py" line="478"/>
+        <source>Could not reload layer: {tipo}</source>
+        <translation>Não foi possível recarregar a camada: {tipo}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_ret_to_vector.py" line="518"/>
+        <source>Convert SICAR .RET to vector layers</source>
+        <translation>Converter .RET do SICAR em camadas vetoriais</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_ret_to_vector.py" line="527"/>
+        <source>Converts a SICAR .RET export into individual vector layers. Each geometry type is saved as a separate vector file, and all generated layers receive the property&apos;s cadastral information as attribute fields. </source>
+        <translation>Converte uma exportação .RET do SICAR em camadas vetoriais individuais. Cada tipo de geometria é salvo como um arquivo vetorial separado, e todas as camadas geradas recebem as informações cadastrais do imóvel como campos de atributo. </translation>
     </message>
 </context>
 </TS>
