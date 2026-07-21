@@ -261,7 +261,6 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
         output_file = os.path.join(output_folder, f"TEI_{today_str}_sicafi.{extension}")
 
         try:
-            # O utilitário agora gerencia feedback.pushInfo e feedback.reportError internamente
             save_as_vector(layer, output_file, feedback)
             return [output_file]
         except Exception:
@@ -296,7 +295,6 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
             options.fileEncoding = "UTF-8"
             options.filterFids = [feature.id()]
 
-            # Aqui mantemos a lógica manual pois save_as_vector não suporta filterFids nativamente sem modificação
             error = QgsVectorFileWriter.writeAsVectorFormatV3(
                 layer, output_file, QgsProject.instance().transformContext(), options
             )
@@ -332,7 +330,6 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
                 output_folder, f"{base_name}_{file_extension}.zip"
             )
 
-            # O utilitário agora gerencia feedback.pushInfo e feedback.reportError internamente
             associated_files = get_associated_files(output_file)
 
             if associated_files:
