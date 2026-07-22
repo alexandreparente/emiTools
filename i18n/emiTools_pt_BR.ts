@@ -44,47 +44,32 @@
         <translation>A camada de entrada não é válida.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="162"/>
-        <source>Layer definition file exported to: {qlr_path}</source>
-        <translation>Arquivo de definição da camada exportado para: {qlr_path}</translation>
-    </message>
-    <message>
         <location filename="../emi_tools_apply_style_geotagged_photos.py" line="146"/>
         <source>Error loading the exported layer.</source>
         <translation>Erro ao carregar a camada exportada.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="192"/>
+        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="194"/>
         <source>Photos without direction</source>
         <translation>Fotos sem direção</translation>
     </message>
     <message>
-        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="197"/>
+        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="201"/>
         <source>Photos with direction</source>
         <translation>Fotos com direção</translation>
     </message>
     <message>
-        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="222"/>
-        <source>Photo field &apos;{photo_field}&apos; not found in layer.</source>
-        <translation>Campo de foto '{photo_field}' não encontrado na camada.</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="253"/>
-        <source>Error exporting the QLR file: {str(e)}</source>
-        <translation>Erro ao exportar o arquivo QLR: {str(e)}</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="261"/>
+        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="267"/>
         <source>Apply style to geotagged photo layer</source>
         <translation>Aplicar estilo à camada de fotos com geotags</translation>
     </message>
     <message>
-        <location filename="../emi_tools_ret_to_vector.py" line="521"/>
+        <location filename="../emi_tools_ret_to_vector.py" line="524"/>
         <source>Emi Tools</source>
         <translation>Emi Tools</translation>
     </message>
     <message>
-        <location filename="../emi_tools_ret_to_vector.py" line="339"/>
+        <location filename="../emi_tools_ret_to_vector.py" line="340"/>
         <source>Output folder</source>
         <translation>Pasta de saída</translation>
     </message>
@@ -124,7 +109,7 @@
         <translation>Exportar todas as feições para um único arquivo</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="342"/>
+        <location filename="../emi_tools_export_terms.py" line="346"/>
         <source>Export polygons to SICAFI</source>
         <translation>Exportar polígonos para o SICAFI</translation>
     </message>
@@ -144,12 +129,7 @@
         <translation>Pasta de entrada</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="263"/>
-        <source>A total of {len(feature_exif_dict)} images with geotags and {len(erro_feature_exif_dict)} images without geotags were identified.</source>
-        <translation>Um total de {len(feature_exif_dict)} imagens com geotags e {len(erro_feature_exif_dict)} imagens sem geotags foram identificadas.</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="341"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="344"/>
         <source>Import geotagged photos from DJI drones</source>
         <translation>Importar fotos com geotags de drones DJI</translation>
     </message>
@@ -199,27 +179,17 @@
         <translation>Posição do texto e da imagem</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="325"/>
-        <source>Image saved at {output_image_path}</source>
-        <translation>Imagem salva em {output_image_path}</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="417"/>
-        <source>Failed to load SVG file: {svg_file_path}</source>
-        <translation>Falha ao carregar o arquivo SVG: {svg_file_path}</translation>
-    </message>
-    <message>
         <location filename="../emi_tools_export_kml_rpa.py" line="200"/>
         <source>Export KML files to DJI Pilot</source>
         <translation>Exportar arquivos KML para o DJI Pilot</translation>
     </message>
     <message>
-        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="270"/>
+        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="276"/>
         <source>This algorithm applies custom symbology to a point layer with geotagged photos, distinguishing photos with or without recorded direction. Also allows configuring map tips with image previews, adjusting the photo field to display as an external resource, and exporting a Layer Definition file (QLR).</source>
         <translation>Este algoritmo aplica simbologia personalizada a uma camada de pontos com fotos georreferenciadas, distinguindo imagens com ou sem direção registrada. Também permite configurar dicas de mapa com visualização das imagens, ajustar o campo da foto para exibição como recurso externo e exportar um arquivo de definição de camada (QLR).</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="351"/>
+        <location filename="../emi_tools_export_terms.py" line="355"/>
         <source>This algorithm exports features from a polygon layer to individual or single vector files, compatible with the upload of embargoed areas to the Cadastro, Arrecadação e Fiscalização System (Sicafi). The algorithm removes unnecessary fields, renames mandatory fields to 'NUM_TEI' and 'SERIE_TEI', and offers the option to compress the output files into a ZIP archive.</source>
         <translation>Este algoritmo exporta feições de uma camada de polígonos para arquivos vetoriais individuais ou um único arquivo, compatíveis com o envio de áreas embargadas ao Sistema de Cadastro, Arrecadação e Fiscalização (Sicafi). O algoritmo remove campos desnecessários, renomeia os campos obrigatórios para 'NUM_TEI' e 'SERIE_TEI', e oferece a opção de compactar os arquivos de saída em um arquivo ZIP.</translation>
     </message>
@@ -227,26 +197,6 @@
         <location filename="../emi_tools_export_terms.py" line="275"/>
         <source>Field &apos;NUM_TEI&apos; not found in the layer after renaming.</source>
         <translation>Campo 'NUM_TEI' não encontrado na camada após a renomeação.</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_export_terms.py" line="284"/>
-        <source>Skipping feature {feature.id()} due to empty &apos;NUM_TEI&apos; value.</source>
-        <translation>Ignorando a feição {feature.id()} devido ao valor vazio em 'NUM_TEI'.</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_export_terms.py" line="304"/>
-        <source>Saved file: {output_file}</source>
-        <translation>Arquivo salvo: {output_file}</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_export_terms.py" line="306"/>
-        <source>Error saving file for TEI {tad_number}: {error[1]}</source>
-        <translation>Erro ao salvar o arquivo para TEI {tad_number}: {error[1]}</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_export_terms.py" line="310"/>
-        <source>Total number of saved files: {len(output_files)}</source>
-        <translation>Número total de arquivos salvos: {len(output_files)}</translation>
     </message>
     <message>
         <location filename="../emi_tools_util_expressions.py" line="102"/>
@@ -259,11 +209,6 @@
         <translation>Extrair todas as tags EXIF/XMP disponíveis</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="211"/>
-        <source>Found {total} images to process.</source>
-        <translation>Encontradas {total} imagens para processar.</translation>
-    </message>
-    <message>
         <location filename="../emi_tools_photo_stamp_rpa.py" line="122"/>
         <source>Metadata to stamp</source>
         <translation>Metadados a serem gravados</translation>
@@ -274,12 +219,7 @@
         <translation>Falha ao carregar a imagem de entrada: {}</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="475"/>
-        <source>Could not write tag {tag}: {str(e)}</source>
-        <translation>Não foi possível gravar a tag {tag}: {str(e)}</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="498"/>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="500"/>
         <source>Stamp text and image on the photo</source>
         <translation>Gravar texto e imagem na foto</translation>
     </message>
@@ -292,11 +232,6 @@
         <location filename="../emi_tools_import_geotagged_photos.py" line="228"/>
         <source>No geotag found</source>
         <translation>Nenhum geotag encontrada</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="231"/>
-        <source>Error processing {image_path}: {str(e)}</source>
-        <translation>Erro ao processar {image_path}: {str(e)}</translation>
     </message>
     <message>
         <location filename="../emi_tools_import_geotagged_photos.py" line="118"/>
@@ -325,48 +260,18 @@ Para garantir a compatibilidade com o aplicativo DJI Pilot, a tag &lt;Folder&gt;
         <translation>Camada agregada</translation>
     </message>
     <message>
-        <location filename="../emi_tools_aggregate_by_field.py" line="102"/>
-        <source>Field &apos;{group_field_name}&apos; not found.</source>
-        <translation>Campo '{group_field_name}' não encontrado.</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_aggregate_by_field.py" line="173"/>
+        <location filename="../emi_tools_aggregate_by_field.py" line="175"/>
         <source>Constructing aggregated features...</source>
         <translation>Construindo feições agregadas...</translation>
     </message>
     <message>
-        <location filename="../emi_tools_aggregate_by_field.py" line="227"/>
+        <location filename="../emi_tools_aggregate_by_field.py" line="229"/>
         <source>Aggregates features by a selected field.
 Aggregated attributes are stored as arrays in fields suffixed with &apos;_list&apos;.
 </source>
         <translation>Agrega feições por um campo selecionado.
 Atributos agregados são armazenados como lista em campos com o sufixo '_list'.
 </translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_util.py" line="71"/>
-        <source>Could not create directory {path}: {str(e)}</source>
-        <translation>Não foi possível criar o diretório {path}: {str(e)}</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_util.py" line="135"/>
-        <source>Error saving file {os.path.basename(file_path)}: {error[1]}</source>
-        <translation>Erro ao salvar o arquivo {os.path.basename(file_path)}: {error[1]}</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_util.py" line="141"/>
-        <source>File saved: {file_path}</source>
-        <translation>Arquivo salvo: {file_path}</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_util.py" line="163"/>
-        <source>Compressed file created: {zip_path}</source>
-        <translation>Arquivo compactado criado: {zip_path}</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_util.py" line="166"/>
-        <source>Failed to create ZIP {os.path.basename(zip_path)}: {str(e)}</source>
-        <translation>Falha ao criar o ZIP {os.path.basename(zip_path)}: {str(e)}</translation>
     </message>
     <message>
         <location filename="../emi_tools_batch_photo_export.py" line="78"/>
@@ -384,7 +289,7 @@ Atributos agregados são armazenados como lista em campos com o sufixo '_list'.
         <translation>This algorithm copies or moves image files listed in a field of a vector layer to a destination folder.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_aggregate_by_field.py" line="218"/>
+        <location filename="../emi_tools_aggregate_by_field.py" line="220"/>
         <source>Aggregate Features by Field</source>
         <translation>Agregar feições por campo</translation>
     </message>
@@ -399,7 +304,7 @@ Atributos agregados são armazenados como lista em campos com o sufixo '_list'.
         <translation>Adicionar o campo &quot;selected&quot; ao arquivo de saida</translation>
     </message>
     <message>
-        <location filename="../emi_tools_import_geotagged_photos.py" line="350"/>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="353"/>
         <source>This algorithm generates a point layer based on georeferenced locations (geotags) extracted from JPEG images in a source folder.It supports both standard EXIF metadata and specific tags used by DJI drones. In the advanced options, you can choose to extract all available tags and add auxiliary fields.</source>
         <translation>Este algoritmo gera uma camada de pontos baseada em localizações georreferenciadas (geotags) extraídas de imagens JPEG em uma pasta de origem. Ele suporta tanto metadados EXIF padrão quanto tags específicas utilizadas por drones da DJI. Nas opções avançadas, você pode optar por extrair todas as tags disponíveis e adicionar campos auxiliares.</translation>
     </message>
@@ -419,7 +324,7 @@ Atributos agregados são armazenados como lista em campos com o sufixo '_list'.
         <translation>Margem a partir da borda da imagem</translation>
     </message>
     <message>
-        <location filename="../emi_tools_photo_stamp_rpa.py" line="507"/>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="509"/>
         <source>This algorithm inscribes text and an optional SVG logo onto JPEG or PNG images using EXIF metadata such as coordinates, altitude, date, and camera model. The stamp height is defined by the user in %, px or cm, and the font size adjusts automatically. The processed images are saved in the output folder, preserving EXIF data.</source>
         <translation>Este algoritmo insere texto e um logotipo SVG opcional em imagens JPEG ou PNG utilizando metadados EXIF, como coordenadas, altitude, data e modelo da câmera. A altura do carimbo é definida pelo usuário em %, px ou cm, e o tamanho da fonte é ajustado automaticamente. As imagens processadas são salvas na pasta de saída, preservando os dados EXIF.</translation>
     </message>
@@ -459,52 +364,22 @@ Atributos agregados são armazenados como lista em campos com o sufixo '_list'.
         <translation>Camada de saída</translation>
     </message>
     <message>
-        <location filename="../emi_tools_replace_geometry.py" line="149"/>
-        <source>Field &apos;{target_field_name}&apos; not found in the target layer.</source>
-        <translation>Campo '{target_field_name}' não encontrado na camada de destino.</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_replace_geometry.py" line="153"/>
-        <source>Field &apos;{source_field_name}&apos; not found in the source layer.</source>
-        <translation>Campo '{source_field_name}' não encontrado na camada de origem.</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_replace_geometry.py" line="178"/>
+        <location filename="../emi_tools_replace_geometry.py" line="183"/>
         <source>Indexing source layer features...</source>
         <translation>Indexando as feições da camada de origem...</translation>
     </message>
     <message>
-        <location filename="../emi_tools_replace_geometry.py" line="193"/>
-        <source>Duplicate keys found in source layer: {sorted(duplicated_keys)}. Please ensure the source layer has unique values in the common field before running this algorithm.</source>
-        <translation>Chaves duplicadas encontradas na camada de origem: {sorted(duplicated_keys)}. Certifique-se de que a camada de origem possua valores únicos no campo comum antes de executar este algoritmo.</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_replace_geometry.py" line="217"/>
-        <source>Common attributes to be updated: {common_attr_names}</source>
-        <translation>Atributos em comum a serem atualizados: {common_attr_names}</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_replace_geometry.py" line="217"/>
+        <location filename="../emi_tools_replace_geometry.py" line="222"/>
         <source>No common attributes found besides the join fields.</source>
         <translation>Nenhum atributo em comum encontrado além dos campos de junção.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_replace_geometry.py" line="262"/>
-        <source>No matching feature found in source layer for key &apos;{key}&apos; (feature id {feature.id()}). Original geometry kept.</source>
-        <translation>Nenhuma feição correspondente encontrada na camada de origem para a chave '{key}' (id da feição {feature.id()}). Geometria original mantida.</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_replace_geometry.py" line="272"/>
-        <source>Finished. {matched_count} geometries replaced, {unmatched_count} features kept unchanged (no match).</source>
-        <translation>Concluído. {matched_count} geometrias substituídas, {unmatched_count} feições mantidas sem alteração (sem correspondência).</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_replace_geometry.py" line="297"/>
+        <location filename="../emi_tools_replace_geometry.py" line="302"/>
         <source>Replace feature geometry</source>
         <translation>Substituir geometria da feição</translation>
     </message>
     <message>
-        <location filename="../emi_tools_replace_geometry.py" line="306"/>
+        <location filename="../emi_tools_replace_geometry.py" line="311"/>
         <source>This algorithm replaces the geometry of features in a target layer with the geometry of matching features from a source layer, based on a common field between the two layers.
 
 Features in the target layer that have no matching key in the source layer keep their original geometry, and a warning is reported.
@@ -541,104 +416,224 @@ Opção avançada: 'Atualizar outros atributos em comum' também copia os valore
         <translation>Campo de origem</translation>
     </message>
     <message>
-        <location filename="../emi_tools_replace_geometry.py" line="166"/>
-        <source>Geometry type mismatch: the target layer is &apos;{QgsWkbTypes.displayString(target_wkb)}&apos; but the source layer is &apos;{QgsWkbTypes.displayString(source_wkb)}&apos;. Both layers must have the same geometry category (point/line/polygon), and a multi-part source cannot be used with a single-part target.</source>
-        <translation>Incompatibilidade de tipo de geometria: a camada de destino é do tipo '{QgsWkbTypes.displayString(target_wkb)}', enquanto a camada de origem é do tipo '{QgsWkbTypes.displayString(source_wkb)}'. Ambas as camadas devem possuir a mesma categoria de geometria (ponto, linha ou polígono), e uma camada de origem com geometria multipartes (multi-part) não pode ser utilizada com uma camada de destino de geometria simples (single-part).</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_replace_geometry.py" line="201"/>
-        <source>{len(source_index)} unique keys indexed from the source layer (feature count reported by the source: {source_source.featureCount()}).</source>
-        <translation>{len(source_index)} chaves únicas foram indexadas da camada de origem (número de feições informado pela camada de origem: {source_source.featureCount()}).</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_ret_to_vector.py" line="345"/>
+        <location filename="../emi_tools_ret_to_vector.py" line="346"/>
         <source>Output file extension</source>
         <translation>Extensão do arquivo de saída</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_terms.py" line="213"/>
-        <source>Duplicate embargo term numbers found: {duplicated_tads}</source>
-        <translation>Números de termo de embargo duplicados encontrados: {duplicated_tads}</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_export_terms.py" line="223"/>
-        <source>Field &apos;{num_tei_field}&apos; not found in the input layer.</source>
-        <translation>Campo '{num_tei_field}' não encontrado na camada de entrada.</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_export_terms.py" line="227"/>
-        <source>Field &apos;{serie_tei_field}&apos; not found in the input layer.</source>
-        <translation>Campo '{serie_tei_field}' não encontrado na camada de entrada.</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_ret_to_vector.py" line="97"/>
-        <source>Field &apos;{field_label}&apos; exceeded {_TEXT_FIELD_LEN} characters and was truncated to maintain Shapefile compatibility.</source>
-        <translation>O campo '{field_label}' excedeu {_TEXT_FIELD_LEN} caracteres e foi truncado para manter a compatibilidade com Shapefile.</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_ret_to_vector.py" line="329"/>
+        <location filename="../emi_tools_ret_to_vector.py" line="330"/>
         <source>SICAR .RET file</source>
         <translation>Arquivo .RET do SICAR</translation>
     </message>
     <message>
-        <location filename="../emi_tools_ret_to_vector.py" line="354"/>
+        <location filename="../emi_tools_ret_to_vector.py" line="355"/>
         <source>Load generated layers into the project</source>
         <translation>Carregar as camadas geradas no projeto</translation>
     </message>
     <message>
-        <location filename="../emi_tools_ret_to_vector.py" line="367"/>
+        <location filename="../emi_tools_ret_to_vector.py" line="368"/>
         <source>Invalid or missing .RET file.</source>
         <translation>Arquivo .RET inválido ou ausente.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_ret_to_vector.py" line="378"/>
+        <location filename="../emi_tools_ret_to_vector.py" line="379"/>
         <source>Reading .RET file...</source>
         <translation>Lendo o arquivo .RET...</translation>
     </message>
     <message>
-        <location filename="../emi_tools_ret_to_vector.py" line="390"/>
+        <location filename="../emi_tools_ret_to_vector.py" line="391"/>
         <source>SICAR file not found inside the .RET. Expected a file starting with a state acronym (e.g. &apos;PB-&apos;) or the &apos;CAR&apos; prefix.</source>
         <translation>Arquivo do SICAR não encontrado dentro do .RET. Esperado um arquivo iniciado com a sigla do estado (ex: 'PB-') ou com o prefixo 'CAR'.</translation>
     </message>
     <message>
-        <location filename="../emi_tools_ret_to_vector.py" line="399"/>
+        <location filename="../emi_tools_ret_to_vector.py" line="400"/>
         <source>The .RET file is not a valid SICAR export (expected a zip archive).</source>
         <translation>O arquivo .RET não é uma exportação válida do SICAR (esperado um arquivo zip).</translation>
     </message>
     <message>
-        <location filename="../emi_tools_ret_to_vector.py" line="426"/>
-        <source>Skipping layer &apos;{tipo}&apos;: geometry is invalid or empty.</source>
-        <translation>Ignorando a camada '{tipo}': geometria inválida ou vazia.</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_ret_to_vector.py" line="459"/>
-        <source>Error saving &apos;{tipo}&apos;: {error[1]}</source>
-        <translation>Erro ao salvar '{tipo}': {error[1]}</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_ret_to_vector.py" line="462"/>
-        <source>Saved: {output_path}</source>
-        <translation>Salvo: {output_path}</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_ret_to_vector.py" line="465"/>
-        <source>{len(written_layers)} of {len(geo_items)} layer(s) written successfully.</source>
-        <translation>{len(written_layers)} de {len(geo_items)} camada(s) gravada(s) com sucesso.</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_ret_to_vector.py" line="478"/>
-        <source>Could not reload layer: {tipo}</source>
-        <translation>Não foi possível recarregar a camada: {tipo}</translation>
-    </message>
-    <message>
-        <location filename="../emi_tools_ret_to_vector.py" line="518"/>
+        <location filename="../emi_tools_ret_to_vector.py" line="521"/>
         <source>Convert SICAR .RET to vector layers</source>
         <translation>Converter .RET do SICAR em camadas vetoriais</translation>
     </message>
     <message>
-        <location filename="../emi_tools_ret_to_vector.py" line="527"/>
+        <location filename="../emi_tools_ret_to_vector.py" line="530"/>
         <source>Converts a SICAR .RET export into individual vector layers. Each geometry type is saved as a separate vector file, and all generated layers receive the property&apos;s cadastral information as attribute fields. </source>
         <translation>Converte uma exportação .RET do SICAR em camadas vetoriais individuais. Cada tipo de geometria é salvo como um arquivo vetorial separado, e todas as camadas geradas recebem as informações cadastrais do imóvel como campos de atributo. </translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_aggregate_by_field.py" line="102"/>
+        <source>Field &apos;{}&apos; not found.</source>
+        <translation>Campo '{}' não encontrado.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="162"/>
+        <source>Layer definition file exported to: {}</source>
+        <translation>Arquivo de definição da camada exportado para: {}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="226"/>
+        <source>Photo field &apos;{}&apos; not found in layer.</source>
+        <translation>Campo de foto '{}' não encontrado na camada.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_apply_style_geotagged_photos.py" line="257"/>
+        <source>Error exporting the QLR file: {}</source>
+        <translation>Erro ao exportar o arquivo QLR: {}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_export_terms.py" line="213"/>
+        <source>Duplicate embargo term numbers found: {}</source>
+        <translation>Números de termo de embargo duplicados encontrados: {}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_export_terms.py" line="227"/>
+        <source>Field &apos;{}&apos; not found in the input layer.</source>
+        <translation>Campo '{}' não encontrado na camada de entrada.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_export_terms.py" line="284"/>
+        <source>Skipping feature {} due to empty &apos;NUM_TEI&apos; value.</source>
+        <translation>Ignorando a feição {} devido ao valor vazio de 'NUM_TEI'.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_export_terms.py" line="306"/>
+        <source>Saved file: {}</source>
+        <translation>Arquivo salvo: {}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_export_terms.py" line="308"/>
+        <source>Error saving file for TEI {}: {}</source>
+        <translation>Erro ao salvar arquivo para o TEI {}: {}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_export_terms.py" line="312"/>
+        <source>Total number of saved files: {}</source>
+        <translation>Número total de arquivos salvos: {}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="211"/>
+        <source>Found {} images to process.</source>
+        <translation>Encontradas {} imagens para processar.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="231"/>
+        <source>Error processing {}: {}</source>
+        <translation>Erro ao processar {}: {}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_import_geotagged_photos.py" line="265"/>
+        <source>A total of {} images with geotags and {} images without geotags were identified.</source>
+        <translation>Foram identificadas {} imagens com geolocalização e {} imagens sem geolocalização.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="325"/>
+        <source>Image saved at {}</source>
+        <translation>Imagem salva em {}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="417"/>
+        <source>Failed to load SVG file: {}</source>
+        <translation>Falha ao carregar o arquivo SVG: {}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_photo_stamp_rpa.py" line="477"/>
+        <source>Could not write tag {}: {}</source>
+        <translation>Não foi possível gravar a tag {}: {}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_replace_geometry.py" line="149"/>
+        <source>Field &apos;{}&apos; not found in the target layer.</source>
+        <translation>Campo '{}' não encontrado na camada de destino.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_replace_geometry.py" line="155"/>
+        <source>Field &apos;{}&apos; not found in the source layer.</source>
+        <translation>Campo '{}' não encontrado na camada de origem.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_replace_geometry.py" line="170"/>
+        <source>Geometry type mismatch: the target layer is &apos;{}&apos; but the source layer is &apos;{}&apos;. Both layers must have the same geometry category (point/line/polygon), and a multi-part source cannot be used with a single-part target.</source>
+        <translation>Incompatibilidade de tipo de geometria: a camada de destino é '{}', mas a camada de origem é '{}'. Ambas as camadas devem ter a mesma categoria de geometria (ponto/linha/polígono), e uma origem multiparte não pode ser usada com um destino de parte única.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_replace_geometry.py" line="198"/>
+        <source>Duplicate keys found in source layer: {}. Please ensure the source layer has unique values in the common field before running this algorithm.</source>
+        <translation>Chaves duplicadas encontradas na camada de origem: {}. Certifique-se de que a camada de origem possua valores únicos no campo em comum antes de executar este algoritmo.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_replace_geometry.py" line="206"/>
+        <source>{} unique keys indexed from the source layer (feature count reported by the source: {}).</source>
+        <translation>{} chaves únicas indexadas a partir da camada de origem (número de feições informado pela camada de origem: {}).</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_replace_geometry.py" line="222"/>
+        <source>Common attributes to be updated: {}</source>
+        <translation>Atributos em comum a serem atualizados: {}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_replace_geometry.py" line="267"/>
+        <source>No matching feature found in source layer for key &apos;{}&apos; (feature id {}). Original geometry kept.</source>
+        <translation>Nenhuma feição correspondente encontrada na camada de origem para a chave '{}' (id da feição {}). Geometria original mantida.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_replace_geometry.py" line="277"/>
+        <source>Finished. {} geometries replaced, {} features kept unchanged (no match).</source>
+        <translation>Concluído. {} geometrias substituídas, {} feições mantidas sem alteração (sem correspondência).</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_ret_to_vector.py" line="97"/>
+        <source>Field &apos;{}&apos; exceeded {} characters and was truncated to maintain Shapefile compatibility.</source>
+        <translation>O campo '{}' excedeu {} caracteres e foi truncado para manter a compatibilidade com Shapefile.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_ret_to_vector.py" line="427"/>
+        <source>Skipping layer &apos;{}&apos;: geometry is invalid or empty.</source>
+        <translation>Ignorando a camada '{}': geometria inválida ou vazia.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_ret_to_vector.py" line="462"/>
+        <source>Error saving &apos;{}&apos;: {}</source>
+        <translation>Erro ao salvar '{}': {}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_ret_to_vector.py" line="465"/>
+        <source>Saved: {}</source>
+        <translation>Salvo: {}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_ret_to_vector.py" line="468"/>
+        <source>{} of {} layer(s) written successfully.</source>
+        <translation>{} de {} camada(s) gravada(s) com sucesso.</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_ret_to_vector.py" line="481"/>
+        <source>Could not reload layer: {}</source>
+        <translation>Não foi possível recarregar a camada: {}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_util.py" line="71"/>
+        <source>Could not create directory {}: {}</source>
+        <translation>Não foi possível criar o diretório {}: {}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_util.py" line="135"/>
+        <source>Error saving file {}: {}</source>
+        <translation>Erro ao salvar o arquivo {}: {}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_util.py" line="143"/>
+        <source>File saved: {}</source>
+        <translation>Arquivo salvo: {}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_util.py" line="165"/>
+        <source>Compressed file created: {}</source>
+        <translation>Arquivo compactado criado: {}</translation>
+    </message>
+    <message>
+        <location filename="../emi_tools_util.py" line="168"/>
+        <source>Failed to create ZIP {}: {}</source>
+        <translation>Falha ao criar o ZIP {}: {}</translation>
     </message>
 </context>
 </TS>
