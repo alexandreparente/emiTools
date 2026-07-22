@@ -91,7 +91,7 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
 
         # Get the field selected by the user
         export_field = self.parameterAsString(parameters, "export_field", context)
-        load_output = self.parameterAsBool(parameters, "load_output", context)
+        load_output = self.parameterAsBoolean(parameters, "load_output", context)
 
         # Get and validate output folder
         output_folder_param = self.parameterAsString(
@@ -194,7 +194,7 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
         )
 
     def name(self):
-        return "ExportKMLstoDrone"
+        return "emiToolsExportKmlRpa"
 
     def displayName(self):
         return tr("Export KML files to DJI Pilot")
