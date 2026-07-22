@@ -211,7 +211,7 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
         duplicated_tads = [tad for tad, count in counts.items() if count > 1]
         if duplicated_tads:
             raise QgsProcessingException(
-                tr(f"Duplicate embargo term numbers found: {duplicated_tads}")
+                tr("Duplicate embargo term numbers found: {}").format(duplicated_tads)
             )
 
     def create_clean_temp_layer(self, layer, num_tei_field, serie_tei_field, context):
@@ -221,11 +221,11 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
 
         if orig_num_idx == -1:
             raise QgsProcessingException(
-                tr(f"Field '{num_tei_field}' not found in the input layer.")
+                tr("Field '{}' not found in the input layer.").format(num_tei_field)
             )
         if orig_serie_idx == -1:
             raise QgsProcessingException(
-                tr(f"Field '{serie_tei_field}' not found in the input layer.")
+                tr("Field '{}' not found in the input layer.").format(serie_tei_field)
             )
 
         fields = QgsFields()
@@ -282,7 +282,9 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
             tad_number = feature.attribute(num_tei_index)
             if not tad_number:
                 feedback.pushWarning(
-                    tr(f"Skipping feature {feature.id()} due to empty 'NUM_TEI' value.")
+                    tr("Skipping feature {} due to empty 'NUM_TEI' value.").format(
+                        feature.id()
+                    )
                 )
                 continue
 
@@ -301,13 +303,15 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
 
             if error[0] == QgsVectorFileWriter.NoError:
                 output_files.append(output_file)
-                feedback.pushInfo(tr(f"Saved file: {output_file}"))
+                feedback.pushInfo(tr("Saved file: {}").format(output_file))
             else:
                 feedback.reportError(
-                    tr(f"Error saving file for TEI {tad_number}: {error[1]}")
+                    tr("Error saving file for TEI {}: {}").format(tad_number, error[1])
                 )
 
-        feedback.pushInfo(tr(f"Total number of saved files: {len(output_files)}"))
+        feedback.pushInfo(
+            tr("Total number of saved files: {}").format(len(output_files))
+        )
         return output_files
 
     def load_output_files(self, list_output_files):
