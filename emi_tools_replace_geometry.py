@@ -147,11 +147,15 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
 
         if target_field_idx == -1:
             raise QgsProcessingException(
-                tr(f"Field '{target_field_name}' not found in the target layer.")
+                tr("Field '{}' not found in the target layer.").format(
+                    target_field_name
+                )
             )
         if source_field_idx == -1:
             raise QgsProcessingException(
-                tr(f"Field '{source_field_name}' not found in the source layer.")
+                tr("Field '{}' not found in the source layer.").format(
+                    source_field_name
+                )
             )
 
         target_wkb = target_source.wkbType()
@@ -166,11 +170,12 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
             raise QgsProcessingException(
                 tr(
                     "Geometry type mismatch: the target layer is "
-                    f"'{QgsWkbTypes.displayString(target_wkb)}' but the "
-                    f"source layer is '{QgsWkbTypes.displayString(source_wkb)}'. "
-                    "Both layers must have the same geometry category "
-                    "(point/line/polygon), and a multi-part source cannot be used "
-                    "with a single-part target."
+                    "'{}' but the source layer is '{}'. Both layers must have "
+                    "the same geometry category (point/line/polygon), and a "
+                    "multi-part source cannot be used with a single-part target."
+                ).format(
+                    QgsWkbTypes.displayString(target_wkb),
+                    QgsWkbTypes.displayString(source_wkb),
                 )
             )
 
@@ -192,17 +197,17 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
         if duplicated_keys:
             raise QgsProcessingException(
                 tr(
-                    f"Duplicate keys found in source layer: {sorted(duplicated_keys)}. "
-                    "Please ensure the source layer has unique values in the "
-                    "common field before running this algorithm."
-                )
+                    "Duplicate keys found in source layer: {}. Please ensure the "
+                    "source layer has unique values in the common field before "
+                    "running this algorithm."
+                ).format(sorted(duplicated_keys))
             )
 
         feedback.pushInfo(
             tr(
-                f"{len(source_index)} unique keys indexed from the source layer "
-                f"(feature count reported by the source: {source_source.featureCount()})."
-            )
+                "{} unique keys indexed from the source layer (feature count "
+                "reported by the source: {})."
+            ).format(len(source_index), source_source.featureCount())
         )
 
         feedback.setCurrentStep(1)
@@ -215,7 +220,7 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
                 if f.name() in source_field_names and f.name() != target_field_name
             ]
             feedback.pushInfo(
-                tr(f"Common attributes to be updated: {common_attr_names}")
+                tr("Common attributes to be updated: {}").format(common_attr_names)
                 if common_attr_names
                 else tr("No common attributes found besides the join fields.")
             )
@@ -261,9 +266,9 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
                 unmatched_count += 1
                 feedback.pushWarning(
                     tr(
-                        f"No matching feature found in source layer for key '{key}' "
-                        f"(feature id {feature.id()}). Original geometry kept."
-                    )
+                        "No matching feature found in source layer for key '{}' "
+                        "(feature id {}). Original geometry kept."
+                    ).format(key, feature.id())
                 )
 
             sink.addFeature(feature, QgsFeatureSink.FastInsert)
@@ -271,9 +276,9 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
 
         feedback.pushInfo(
             tr(
-                f"Finished. {matched_count} geometries replaced, "
-                f"{unmatched_count} features kept unchanged (no match)."
-            )
+                "Finished. {} geometries replaced, {} features kept unchanged "
+                "(no match)."
+            ).format(matched_count, unmatched_count)
         )
 
         return {self.OUTPUT: dest_id}
