@@ -79,7 +79,7 @@
         <translation>Exportar fotos em lote</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_kml_rpa.py" line="65"/>
+        <location filename="../emi_tools_export_kml_rpa.py" line="66"/>
         <source>Export file name field</source>
         <translation>Campo para nome do arquivo exportado</translation>
     </message>
@@ -179,7 +179,7 @@
         <translation>Posição do texto e da imagem</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_kml_rpa.py" line="200"/>
+        <location filename="../emi_tools_export_kml_rpa.py" line="206"/>
         <source>Export KML files to DJI Pilot</source>
         <translation>Exportar arquivos KML para o DJI Pilot</translation>
     </message>
@@ -239,7 +239,7 @@
         <translation>Importar metadados</translation>
     </message>
     <message>
-        <location filename="../emi_tools_export_kml_rpa.py" line="209"/>
+        <location filename="../emi_tools_export_kml_rpa.py" line="215"/>
         <source>This algorithm exports each feature from a polygon or line layer to a separate KML file, compatible with software DJI Pilot.&lt;br&gt; To ensure compatibility with the DJI Pilot app, the &amp;lt;Folder&amp;gt; tag ( automatically added by QGIS to structure KML content) is removed, as it is not supported by the application.</source>
         <translation>Este algoritmo exporta cada feição de uma camada de polígonos ou linhas para um arquivo KML separado, compatível com o software DJI Pilot.&lt;br&gt;
 Para garantir a compatibilidade com o aplicativo DJI Pilot, a tag &lt;Folder&gt; (adicionada automaticamente pelo QGIS para estruturar o conteúdo do KML) é removida, pois não é suportada pelo aplicativo.</translation>
