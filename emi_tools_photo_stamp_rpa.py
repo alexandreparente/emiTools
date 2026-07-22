@@ -322,7 +322,7 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
                 output_image_path, exif_data.get("full_map", {}), feedback
             )
             # A mensagem de "Image saved" foi mantida pois contém o caminho específico gerado internamente
-            feedback.pushInfo(tr(f"Image saved at {output_image_path}"))
+            feedback.pushInfo(tr("Image saved at {}").format(output_image_path))
 
         return {self.OUTPUT_FOLDER: output_folder}
 
@@ -414,7 +414,9 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
                     svg_height = target_stamp_height
                     svg_width = svg_height * svg_aspect_ratio
             else:
-                feedback.pushWarning(tr(f"Failed to load SVG file: {svg_file_path}"))
+                feedback.pushWarning(
+                    tr("Failed to load SVG file: {}").format(svg_file_path)
+                )
                 svg_renderer = None
 
         h_offset = svg_width + margin_px if svg_renderer else 0
@@ -472,7 +474,7 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
             try:
                 exif_tools.tagImage(temp_file_path, tag, value)
             except Exception as e:
-                feedback.pushInfo(tr(f"Could not write tag {tag}: {str(e)}"))
+                feedback.pushInfo(tr("Could not write tag {}: {}").format(tag, str(e)))
 
     def save_image(self, input_qimage, raster_file_path, output_folder, feedback):
         raster_file_info = QFileInfo(raster_file_path)
