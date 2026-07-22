@@ -147,7 +147,7 @@ class emiToolsBatchPhotoExport(QgsProcessingAlgorithm):
         return {self.OUTPUT_FOLDER: output_folder}
 
     def name(self):
-        return "batchphotoxport"
+        return "emiToolsBatchPhotoExport"
 
     def displayName(self):
         return tr("Batch photo export")
