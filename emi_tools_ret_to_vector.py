@@ -96,8 +96,9 @@ def _truncate(value, feedback, field_label):
     if value and len(value) > _TEXT_FIELD_LEN:
         feedback.pushWarning(
             tr(
-                f"Field '{field_label}' exceeded {_TEXT_FIELD_LEN} characters and was truncated to maintain Shapefile compatibility."
-            )
+                "Field '{}' exceeded {} characters and was truncated to maintain "
+                "Shapefile compatibility."
+            ).format(field_label, _TEXT_FIELD_LEN)
         )
         return value[:_TEXT_FIELD_LEN]
     return value or ""
@@ -424,7 +425,9 @@ class emiToolsRetToVector(QgsProcessingAlgorithm):
             geometry = QgsJsonUtils.geometryFromGeoJson(json.dumps(geo_json))
             if geometry is None or geometry.isEmpty():
                 feedback.pushWarning(
-                    tr(f"Skipping layer '{tipo}': geometry is invalid or empty.")
+                    tr("Skipping layer '{}': geometry is invalid or empty.").format(
+                        tipo
+                    )
                 )
                 continue
 
@@ -456,15 +459,15 @@ class emiToolsRetToVector(QgsProcessingAlgorithm):
             )
 
             if error[0] != QgsVectorFileWriter.NoError:
-                feedback.reportError(tr(f"Error saving '{tipo}': {error[1]}"))
+                feedback.reportError(tr("Error saving '{}': {}").format(tipo, error[1]))
                 continue
 
-            feedback.pushInfo(tr(f"Saved: {output_path}"))
+            feedback.pushInfo(tr("Saved: {}").format(output_path))
             written_layers.append((tipo, output_path))
 
         feedback.pushInfo(
-            tr(
-                f"{len(written_layers)} of {len(geo_items)} layer(s) written successfully."
+            tr("{} of {} layer(s) written successfully.").format(
+                len(written_layers), len(geo_items)
             )
         )
 
@@ -475,7 +478,7 @@ class emiToolsRetToVector(QgsProcessingAlgorithm):
                 if vlayer.isValid():
                     layers_to_add.append(vlayer)
                 else:
-                    feedback.pushWarning(tr(f"Could not reload layer: {tipo}"))
+                    feedback.pushWarning(tr("Could not reload layer: {}").format(tipo))
             if layers_to_add:
                 QgsProject.instance().addMapLayers(layers_to_add)
 
