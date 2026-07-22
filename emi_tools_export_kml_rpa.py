@@ -29,7 +29,6 @@ __copyright__ = "(C) 2024 by Alexandre Parente Lima"
 __revision__ = "$Format:%H$"
 
 import os
-import xml.etree.ElementTree as ET
 
 from qgis.core import (
     QgsProcessing,
@@ -43,6 +42,7 @@ from qgis.core import (
     QgsVectorLayer,
     QgsWkbTypes,
 )
+from qgis.PyQt.QtCore import QFile, QIODevice, QXmlStreamWriter
 
 from .emi_tools_util import get_transformation, get_validated_folder, tr
 
@@ -149,43 +149,48 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
         return {self.OUTPUT_FOLDER: output_folder}
 
     def save_kml(self, geom, name, path):
-        """Creates a DJI Pilot compatible KML using standard ElementTree."""
-        kml = ET.Element("kml", xmlns="http://www.opengis.net/kml/2.2")
-        doc = ET.SubElement(kml, "Document")
-        placemark = ET.SubElement(doc, "Placemark")
-        ET.SubElement(placemark, "name").text = name
+        file = QFile(path)
+        file.open(QIODevice.WriteOnly)
+        writer = QXmlStreamWriter(file)
+        writer.setAutoFormatting(True)
+        writer.writeStartDocument()
+        writer.writeStartElement("kml")
+        writer.writeAttribute("xmlns", "http://www.opengis.net/kml/2.2")
+        writer.writeStartElement("Document")
+        writer.writeStartElement("Placemark")
+        writer.writeTextElement("name", name)
 
         g_type = QgsWkbTypes.geometryType(geom.wkbType())
-
         if g_type == QgsWkbTypes.GeometryType.PolygonGeometry:
-            poly_elem = ET.SubElement(placemark, "Polygon")
             poly_obj = geom.get()
-
-            # Exterior
-            ext = ET.SubElement(
-                ET.SubElement(poly_elem, "outerBoundaryIs"), "LinearRing"
+            writer.writeStartElement("Polygon")
+            writer.writeStartElement("outerBoundaryIs")
+            writer.writeStartElement("LinearRing")
+            coords = " ".join(
+                f"{v.x()},{v.y()},0" for v in poly_obj.exteriorRing().vertices()
             )
-            ET.SubElement(ext, "coordinates").text = " ".join(
-                [f"{v.x()},{v.y()},0" for v in poly_obj.exteriorRing().vertices()]
-            )
-
-            # Interior
+            writer.writeTextElement("coordinates", coords)
+            writer.writeEndElement()  # LinearRing
+            writer.writeEndElement()  # outerBoundaryIs
             for i in range(poly_obj.numInteriorRings()):
-                inner = ET.SubElement(
-                    ET.SubElement(poly_elem, "innerBoundaryIs"), "LinearRing"
+                writer.writeStartElement("innerBoundaryIs")
+                writer.writeStartElement("LinearRing")
+                inner_coords = " ".join(
+                    f"{v.x()},{v.y()},0" for v in poly_obj.interiorRing(i).vertices()
                 )
-                ET.SubElement(inner, "coordinates").text = " ".join(
-                    [f"{v.x()},{v.y()},0" for v in poly_obj.interiorRing(i).vertices()]
-                )
+                writer.writeTextElement("coordinates", inner_coords)
+                writer.writeEndElement()
+                writer.writeEndElement()
+            writer.writeEndElement()  # Polygon
 
         elif g_type == QgsWkbTypes.GeometryType.LineGeometry:
-            line_elem = ET.SubElement(placemark, "LineString")
-            ET.SubElement(line_elem, "coordinates").text = " ".join(
-                [f"{v.x()},{v.y()},0" for v in geom.get().vertices()]
-            )
+            writer.writeStartElement("LineString")
+            coords = " ".join(f"{v.x()},{v.y()},0" for v in geom.get().vertices())
+            writer.writeTextElement("coordinates", coords)
+            writer.writeEndElement()
 
-        tree = ET.ElementTree(kml)
-        tree.write(path, encoding="utf-8", xml_declaration=True)
+        writer.writeEndDocument()
+        file.close()
 
     def load_layers(self, files):
         layers = [QgsVectorLayer(f, os.path.basename(f), "ogr") for f in files]
