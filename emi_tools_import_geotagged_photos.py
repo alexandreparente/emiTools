@@ -162,14 +162,14 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
     def processAlgorithm(self, parameters, context, feedback):
         input_folder = self.parameterAsString(parameters, self.INPUT_FOLDER, context)
         output_file = self.parameterAsOutputLayer(parameters, self.OUTPUT_FILE, context)
-        recursive = self.parameterAsBool(parameters, self.RECURSIVE_SCAN, context)
-        extract_all_tags = self.parameterAsBool(
+        recursive = self.parameterAsBoolean(parameters, self.RECURSIVE_SCAN, context)
+        extract_all_tags = self.parameterAsBoolean(
             parameters, self.EXTRACT_ALL_TAGS, context
         )
-        add_description = self.parameterAsBool(
+        add_description = self.parameterAsBoolean(
             parameters, self.ADD_DESCRIPTION_FIELD, context
         )
-        add_selected = self.parameterAsBool(
+        add_selected = self.parameterAsBoolean(
             parameters, self.ADD_SELECTED_FIELD, context
         )
 
@@ -208,7 +208,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             ]
 
         total = len(files_to_process)
-        feedback.pushInfo(tr(f"Found {total} images to process."))
+        feedback.pushInfo(tr("Found {} images to process.").format(total))
 
         for i, image_path in enumerate(files_to_process):
             if feedback.isCanceled():
@@ -228,7 +228,9 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
                         "error": tr("No geotag found")
                     }
             except Exception as e:
-                feedback.reportError(tr(f"Error processing {image_path}: {str(e)}"))
+                feedback.reportError(
+                    tr("Error processing {}: {}").format(image_path, str(e))
+                )
                 erro_feature_exif_dict[image_path] = {"error": str(e)}
 
         # Determines the final set and order of fields for the output layer.
@@ -262,8 +264,9 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
 
         feedback.pushInfo(
             tr(
-                f"A total of {len(feature_exif_dict)} images with geotags and {len(erro_feature_exif_dict)} images without geotags were identified."
-            )
+                "A total of {} images with geotags and {} images without geotags "
+                "were identified."
+            ).format(len(feature_exif_dict), len(erro_feature_exif_dict))
         )
         return {self.OUTPUT_FILE: output_file}
 
