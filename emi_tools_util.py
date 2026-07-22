@@ -69,7 +69,7 @@ def get_validated_folder(path=None):
             os.makedirs(path)
         except OSError as e:
             QgsMessageLog.logMessage(
-                tr(f"Could not create directory {path}: {str(e)}"),
+                tr("Could not create directory {}: {}").format(path, str(e)),
                 "emiTools",
                 Qgis.MessageLevel.Critical,
             )
@@ -132,13 +132,15 @@ def save_as_vector(layer, file_path, feedback=None):
     )
 
     if error[0] != QgsVectorFileWriter.NoError:
-        error_msg = tr(f"Error saving file {os.path.basename(file_path)}: {error[1]}")
+        error_msg = tr("Error saving file {}: {}").format(
+            os.path.basename(file_path), error[1]
+        )
         if feedback:
             feedback.reportError(error_msg)
         raise Exception(error_msg)
 
     if feedback:
-        feedback.pushInfo(tr(f"File saved: {file_path}"))
+        feedback.pushInfo(tr("File saved: {}").format(file_path))
 
     return True
 
@@ -160,10 +162,12 @@ def compress_to_zip(files, zip_path, feedback=None):
                     zipf.write(file, os.path.basename(file))
 
         if feedback:
-            feedback.pushInfo(tr(f"Compressed file created: {zip_path}"))
+            feedback.pushInfo(tr("Compressed file created: {}").format(zip_path))
 
     except Exception as e:
-        error_msg = tr(f"Failed to create ZIP {os.path.basename(zip_path)}: {str(e)}")
+        error_msg = tr("Failed to create ZIP {}: {}").format(
+            os.path.basename(zip_path), str(e)
+        )
         if feedback:
             feedback.reportError(error_msg)
         raise Exception(error_msg)
