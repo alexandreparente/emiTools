@@ -123,13 +123,13 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
         rotation_field = self.parameterAsString(
             parameters, self.ROTATION_FIELD, context
         )
-        config_map_tips = self.parameterAsBool(
+        config_map_tips = self.parameterAsBoolean(
             parameters, self.CONFIG_MAP_TIPS, context
         )
-        config_photo_field = self.parameterAsBool(
+        config_photo_field = self.parameterAsBoolean(
             parameters, self.CONFIG_PHOTO_FIELD, context
         )
-        export_style = self.parameterAsBool(parameters, self.EXPORT_STYLE, context)
+        export_style = self.parameterAsBoolean(parameters, self.EXPORT_STYLE, context)
         output_file = self.parameterAsOutputLayer(parameters, self.OUTPUT_FILE, context)
 
         if not input_layer:
@@ -159,7 +159,9 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
 
         if export_style:
             qlr_path = self.export_definition_file(output_file, exported_layer)
-            feedback.pushInfo(tr(f"Layer definition file exported to: {qlr_path}"))
+            feedback.pushInfo(
+                tr("Layer definition file exported to: {}").format(qlr_path)
+            )
 
         return {self.OUTPUT_FILE: exported_layer}
 
@@ -190,7 +192,9 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
 
         rule1 = QgsRuleBasedRenderer.Rule(symbol_point)
         rule1.setLabel(tr("Photos without direction"))
-        rule1.setFilterExpression('"rotation" IS NULL OR "rotation" = 0')
+        rule1.setFilterExpression(
+            f'"{rotation_field}" IS NULL OR "{rotation_field}" = 0'
+        )
         root_rule.appendChild(rule1)
 
         rule2 = QgsRuleBasedRenderer.Rule(symbol_arrow)
@@ -220,7 +224,7 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
         fields = exported_layer.fields()
         if photo_field not in [f.name() for f in fields]:
             raise QgsProcessingException(
-                tr(f"Photo field '{photo_field}' not found in layer.")
+                tr("Photo field '{}' not found in layer.").format(photo_field)
             )
 
         field_idx = fields.indexOf(photo_field)
@@ -250,7 +254,9 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
         try:
             QgsLayerDefinition.exportLayerDefinition(qlr_file_path, [layer_tree_node])
         except Exception as e:
-            raise QgsProcessingException(tr(f"Error exporting the QLR file: {str(e)}"))
+            raise QgsProcessingException(
+                tr("Error exporting the QLR file: {}").format(str(e))
+            )
 
         return qlr_file_path
 
