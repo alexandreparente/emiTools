@@ -99,7 +99,9 @@ class emiToolsAggregateArray(QgsProcessingAlgorithm):
 
         field_index = source.fields().indexOf(group_field_name)
         if field_index == -1:
-            raise QgsProcessingException(tr(f"Field '{group_field_name}' not found."))
+            raise QgsProcessingException(
+                tr("Field '{}' not found.").format(group_field_name)
+            )
 
         source_fields = source.fields()
         output_fields = QgsFields()
