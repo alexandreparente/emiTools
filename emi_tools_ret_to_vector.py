@@ -331,7 +331,7 @@ class emiToolsRetToVector(QgsProcessingAlgorithm):
             QgsProcessingParameterFile(
                 self.INPUT_RET,
                 tr("SICAR .RET file"),
-                behavior=QgsProcessingParameterFile.File,
+                behavior=QgsProcessingParameterFile.Behavior.File,
                 fileFilter="Arquivos RET (*.RET *.ret)",
             )
         )
@@ -458,7 +458,7 @@ class emiToolsRetToVector(QgsProcessingAlgorithm):
                 self._save_options(driver_name),
             )
 
-            if error[0] != QgsVectorFileWriter.NoError:
+            if error[0] != QgsVectorFileWriter.WriterError.NoError:
                 feedback.reportError(tr("Error saving '{}': {}").format(tipo, error[1]))
                 continue
 
