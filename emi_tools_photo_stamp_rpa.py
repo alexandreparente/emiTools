@@ -91,7 +91,7 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
             QgsProcessingParameterFile(
                 self.INPUT_PHOTO,
                 tr("Input folder"),
-                behavior=QgsProcessingParameterFile.Folder,
+                behavior=QgsProcessingParameterFile.Behavior.Folder,
             )
         )
 
@@ -192,7 +192,9 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
             options=get_translated_unit_options(),
             defaultValue=0,
         )
-        stamp_height_unit_param.setFlags(QgsProcessingParameterDefinition.FlagAdvanced)
+        stamp_height_unit_param.setFlags(
+            QgsProcessingParameterDefinition.Flag.FlagAdvanced
+        )
         self.addParameter(stamp_height_unit_param)
 
         # Height value parameters
@@ -202,9 +204,11 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
             defaultValue=10,
             minValue=0.1,
             maxValue=5000,
-            type=QgsProcessingParameterNumber.Double,
+            type=QgsProcessingParameterNumber.Type.Double,
         )
-        stamp_height_value_param.setFlags(QgsProcessingParameterDefinition.FlagAdvanced)
+        stamp_height_value_param.setFlags(
+            QgsProcessingParameterDefinition.Flag.FlagAdvanced
+        )
         self.addParameter(stamp_height_value_param)
 
         # Margin from edge value parameters
@@ -214,9 +218,9 @@ class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):
             defaultValue=2,
             minValue=0,
             maxValue=1000,
-            type=QgsProcessingParameterNumber.Double,
+            type=QgsProcessingParameterNumber.Type.Double,
         )
-        margin_value_param.setFlags(QgsProcessingParameterDefinition.FlagAdvanced)
+        margin_value_param.setFlags(QgsProcessingParameterDefinition.Flag.FlagAdvanced)
         self.addParameter(margin_value_param)
 
         # Output folder
