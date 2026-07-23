@@ -56,7 +56,7 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
     OUTPUT = "OUTPUT"
 
     def flags(self):
-        return super().flags() | QgsProcessingAlgorithm.FlagSupportsInPlaceEdits
+        return super().flags() | QgsProcessingAlgorithm.Flag.FlagSupportsInPlaceEdits
 
     def supportInPlaceEdit(self, layer):
 
@@ -70,7 +70,7 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
             QgsProcessingParameterFeatureSource(
                 self.TARGET_LAYER,
                 tr("Target layer"),
-                [QgsProcessing.TypeVectorAnyGeometry],
+                [QgsProcessing.SourceType.TypeVectorAnyGeometry],
             )
         )
 
@@ -79,7 +79,7 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
                 self.TARGET_FIELD,
                 tr("Target field"),
                 parentLayerParameterName=self.TARGET_LAYER,
-                type=QgsProcessingParameterField.Any,
+                type=QgsProcessingParameterField.DataType.Any,
             )
         )
 
@@ -87,7 +87,7 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
             QgsProcessingParameterFeatureSource(
                 self.SOURCE_LAYER,
                 tr("Source layer"),
-                [QgsProcessing.TypeVectorAnyGeometry],
+                [QgsProcessing.SourceType.TypeVectorAnyGeometry],
             )
         )
 
@@ -96,7 +96,7 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
                 self.SOURCE_FIELD,
                 tr("Source field"),
                 parentLayerParameterName=self.SOURCE_LAYER,
-                type=QgsProcessingParameterField.Any,
+                type=QgsProcessingParameterField.DataType.Any,
             )
         )
 
@@ -106,7 +106,8 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
             defaultValue=False,
         )
         update_attrs_param.setFlags(
-            update_attrs_param.flags() | QgsProcessingParameterDefinition.FlagAdvanced
+            update_attrs_param.flags()
+            | QgsProcessingParameterDefinition.Flag.FlagAdvanced
         )
         self.addParameter(update_attrs_param)
 
@@ -271,7 +272,7 @@ class emiToolsReplaceGeometry(QgsProcessingAlgorithm):
                     ).format(key, feature.id())
                 )
 
-            sink.addFeature(feature, QgsFeatureSink.FastInsert)
+            sink.addFeature(feature, QgsFeatureSink.Flag.FastInsert)
             feedback.setProgress(int(current * 100 / total))
 
         feedback.pushInfo(
