@@ -57,7 +57,10 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
             QgsProcessingParameterFeatureSource(
                 "layer",
                 tr("Input layer"),
-                [QgsProcessing.TypeVectorPolygon, QgsProcessing.TypeVectorLine],
+                [
+                    QgsProcessing.SourceType.TypeVectorPolygon,
+                    QgsProcessing.SourceType.TypeVectorLine,
+                ],
             )
         )
 
@@ -150,7 +153,7 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
 
     def save_kml(self, geom, name, path):
         file = QFile(path)
-        file.open(QIODevice.WriteOnly)
+        file.open(QIODevice.OpenModeFlag.WriteOnly)
         writer = QXmlStreamWriter(file)
         writer.setAutoFormatting(True)
         writer.writeStartDocument()
