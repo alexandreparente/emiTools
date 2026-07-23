@@ -58,7 +58,9 @@ class emiToolsAggregateArray(QgsProcessingAlgorithm):
 
         self.addParameter(
             QgsProcessingParameterFeatureSource(
-                self.INPUT, tr("Input layer"), [QgsProcessing.TypeVectorAnyGeometry]
+                self.INPUT,
+                tr("Input layer"),
+                [QgsProcessing.SourceType.TypeVectorAnyGeometry],
             )
         )
 
@@ -67,7 +69,7 @@ class emiToolsAggregateArray(QgsProcessingAlgorithm):
                 self.GROUP_FIELD,
                 tr("Group by field"),
                 parentLayerParameterName=self.INPUT,
-                type=QgsProcessingParameterField.Any,
+                type=QgsProcessingParameterField.DataType.Any,
             )
         )
 
@@ -75,7 +77,7 @@ class emiToolsAggregateArray(QgsProcessingAlgorithm):
             QgsProcessingParameterNumber(
                 self.MAX_GROUP_SIZE,
                 tr("Maximum features per group (0 = unlimited)"),
-                type=QgsProcessingParameterNumber.Integer,
+                type=QgsProcessingParameterNumber.Type.Integer,
                 defaultValue=0,
                 minValue=0,
                 optional=True,
@@ -207,7 +209,7 @@ class emiToolsAggregateArray(QgsProcessingAlgorithm):
                     subset_values = values[i:end_index]
                     new_feature.setAttribute(f"{field_name}_list", subset_values)
 
-                sink.addFeature(new_feature, QgsFeatureSink.FastInsert)
+                sink.addFeature(new_feature, QgsFeatureSink.Flag.FastInsert)
 
             feedback.setProgress(50 + int(count / num_groups * 50))
 
