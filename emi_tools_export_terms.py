@@ -69,7 +69,7 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
 
         self.addParameter(
             QgsProcessingParameterFeatureSource(
-                "layer", tr("Input layer"), [QgsProcessing.TypeVectorPolygon]
+                "layer", tr("Input layer"), [QgsProcessing.SourceType.TypeVectorPolygon]
             )
         )
 
@@ -79,7 +79,7 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
                 "num_tei_field",
                 tr("Embargo term field"),
                 parentLayerParameterName="layer",
-                type=QgsProcessingParameterField.String,
+                type=QgsProcessingParameterField.DataType.String,
                 defaultValue="numero_tad",
             )
         )
@@ -90,7 +90,7 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
                 "serie_tei_field",
                 tr("Embargo term series field"),
                 parentLayerParameterName="layer",
-                type=QgsProcessingParameterField.String,
+                type=QgsProcessingParameterField.DataType.String,
                 defaultValue="serie_tad",
             )
         )
@@ -200,7 +200,7 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
         """Checks for duplicate embargo term numbers."""
         request = (
             QgsFeatureRequest()
-            .setFlags(QgsFeatureRequest.NoGeometry)
+            .setFlags(QgsFeatureRequest.Flag.NoGeometry)
             .setSubsetOfAttributes([num_tei_field], layer.fields())
         )
         tad_numbers = [
@@ -301,7 +301,7 @@ class emiToolsExportTerms(QgsProcessingAlgorithm):
                 layer, output_file, QgsProject.instance().transformContext(), options
             )
 
-            if error[0] == QgsVectorFileWriter.NoError:
+            if error[0] == QgsVectorFileWriter.WriterError.NoError:
                 output_files.append(output_file)
                 feedback.pushInfo(tr("Saved file: {}").format(output_file))
             else:
