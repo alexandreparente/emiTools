@@ -131,7 +131,7 @@ def save_as_vector(layer, file_path, feedback=None):
         layer, file_path, transform_context, options
     )
 
-    if error[0] != QgsVectorFileWriter.NoError:
+    if error[0] != QgsVectorFileWriter.WriterError.NoError:
         error_msg = tr("Error saving file {}: {}").format(
             os.path.basename(file_path), error[1]
         )
