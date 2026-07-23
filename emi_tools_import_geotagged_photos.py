@@ -91,7 +91,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             QgsProcessingParameterFile(
                 self.INPUT_FOLDER,
                 tr("Input folder"),
-                behavior=QgsProcessingParameterFile.Folder,
+                behavior=QgsProcessingParameterFile.Behavior.Folder,
             )
         )
 
@@ -123,7 +123,8 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             defaultValue=default_indices,
         )
         param_select_meta.setFlags(
-            param_select_meta.flags() | QgsProcessingParameterDefinition.FlagAdvanced
+            param_select_meta.flags()
+            | QgsProcessingParameterDefinition.Flag.FlagAdvanced
         )
         self.addParameter(param_select_meta)
 
@@ -133,7 +134,8 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             defaultValue=False,
         )
         param_extract_all.setFlags(
-            param_extract_all.flags() | QgsProcessingParameterDefinition.FlagAdvanced
+            param_extract_all.flags()
+            | QgsProcessingParameterDefinition.Flag.FlagAdvanced
         )
         self.addParameter(param_extract_all)
 
@@ -145,7 +147,7 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
 
         param_add_description.setFlags(
             param_add_description.flags()
-            | QgsProcessingParameterDefinition.FlagAdvanced
+            | QgsProcessingParameterDefinition.Flag.FlagAdvanced
         )
         self.addParameter(param_add_description)
 
@@ -155,7 +157,8 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             defaultValue=False,
         )
         param_add_selected.setFlags(
-            param_add_selected.flags() | QgsProcessingParameterDefinition.FlagAdvanced
+            param_add_selected.flags()
+            | QgsProcessingParameterDefinition.Flag.FlagAdvanced
         )
         self.addParameter(param_add_selected)
 
