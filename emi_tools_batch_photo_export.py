@@ -55,7 +55,9 @@ class emiToolsBatchPhotoExport(QgsProcessingAlgorithm):
     def initAlgorithm(self, config=None):
         self.addParameter(
             QgsProcessingParameterFeatureSource(
-                self.INPUT_LAYER, tr("Input layer"), [QgsProcessing.TypeVector]
+                self.INPUT_LAYER,
+                tr("Input layer"),
+                [QgsProcessing.SourceType.TypeVector],
             )
         )
 
@@ -64,7 +66,7 @@ class emiToolsBatchPhotoExport(QgsProcessingAlgorithm):
                 self.INPUT_FIELD,
                 tr("Field containing photo path"),
                 parentLayerParameterName=self.INPUT_LAYER,
-                type=QgsProcessingParameterField.String,
+                type=QgsProcessingParameterField.DataType.String,
             )
         )
 
@@ -78,14 +80,14 @@ class emiToolsBatchPhotoExport(QgsProcessingAlgorithm):
         move_param = QgsProcessingParameterBoolean(
             self.MOVE_FILES, tr("Move files instead of copying"), defaultValue=False
         )
-        move_param.setFlags(QgsProcessingParameterBoolean.FlagAdvanced)
+        move_param.setFlags(QgsProcessingParameterBoolean.Flag.FlagAdvanced)
         self.addParameter(move_param)
 
         # Advanced options - OVERWRITE
         overwrite_param = QgsProcessingParameterBoolean(
             self.OVERWRITE, tr("Overwrite existing files"), defaultValue=False
         )
-        overwrite_param.setFlags(QgsProcessingParameterBoolean.FlagAdvanced)
+        overwrite_param.setFlags(QgsProcessingParameterBoolean.Flag.FlagAdvanced)
         self.addParameter(overwrite_param)
 
     def processAlgorithm(self, parameters, context, feedback):
