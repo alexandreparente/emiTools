@@ -185,12 +185,12 @@ def get_exif_data(
             elif key == "coordinates" and exif_point:
                 lat_dms = QgsCoordinateFormatter.formatY(
                     exif_point.y(),
-                    QgsCoordinateFormatter.FormatDegreesMinutesSeconds,
+                    QgsCoordinateFormatter.Format.FormatDegreesMinutesSeconds,
                     2,
                 )
                 lon_dms = QgsCoordinateFormatter.formatX(
                     exif_point.x(),
-                    QgsCoordinateFormatter.FormatDegreesMinutesSeconds,
+                    QgsCoordinateFormatter.Format.FormatDegreesMinutesSeconds,
                     2,
                 )
                 value = f"{lat_dms}, {lon_dms}"
