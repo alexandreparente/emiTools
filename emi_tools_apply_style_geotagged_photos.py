@@ -65,7 +65,9 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
     def initAlgorithm(self, config=None):
         self.addParameter(
             QgsProcessingParameterVectorLayer(
-                self.INPUT_FILE, tr("Input layer"), [QgsProcessing.TypeVectorPoint]
+                self.INPUT_FILE,
+                tr("Input layer"),
+                [QgsProcessing.SourceType.TypeVectorPoint],
             )
         )
 
@@ -74,7 +76,7 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
                 self.PHOTO_FIELD,
                 tr("Field containing photo path"),
                 parentLayerParameterName=self.INPUT_FILE,
-                type=QgsProcessingParameterField.String,
+                type=QgsProcessingParameterField.DataType.String,
                 defaultValue="photo",
                 optional=False,
             )
@@ -85,7 +87,7 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
                 self.ROTATION_FIELD,
                 tr("Field containing the camera direction"),
                 parentLayerParameterName=self.INPUT_FILE,
-                type=QgsProcessingParameterField.Numeric,
+                type=QgsProcessingParameterField.DataType.Numeric,
                 defaultValue="rotation",
                 optional=False,
             )
@@ -178,7 +180,7 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
         )
         svg_marker_arrow = QgsSvgMarkerSymbolLayer(svg_path_arrow)
         svg_marker_arrow.setDataDefinedProperty(
-            QgsSymbolLayer.PropertyAngle, QgsProperty.fromField(rotation_field)
+            QgsSymbolLayer.Property.PropertyAngle, QgsProperty.fromField(rotation_field)
         )
         symbol_arrow.changeSymbolLayer(0, svg_marker_arrow)
 
