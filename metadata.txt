@@ -3,7 +3,7 @@ name = Emi Tools
 qgisMinimumVersion = 3.40
 qgisMaximumVersion = 4.99
 description = Collection of auxiliary tools for processing drone survey data and preparing technical and environmental reports.
-version = 0.8.2
+version = 0.9
 author = Alexandre Parente Lima
 email = alexandre.parente@gmail.com
 about = This plugin provides a collection of auxiliary tools for processing drone survey data, managing geospatial information, and preparing technical and environmental reports. It includes tools for extracting photo metadata, annotating images, processing vector data, and exporting geospatial datasets.
@@ -18,7 +18,6 @@ about = This plugin provides a collection of auxiliary tools for processing dron
 	- Convert SICAR .RET files into separate vector layers;
 	- Replace feature geometries using a matching key field;
 	- Add custom Field Calculator functions for validating CPF and CNPJ numbers and formatting titles, proper names, numbers, and more.
-
 tracker = https://github.com/alexandreparente/emiTools/issues
 repository = https://github.com/alexandreparente/emiTools
 hasProcessingProvider = yes
@@ -29,12 +28,14 @@ icon = emi_tools.svg
 experimental = False
 deprecated = False
 server = False
-changelog = 0.8
+changelog = 0.9
+    - restructure plugin architecture
+    0.8
 	- New algorithm: Convert SICAR .RET to Vector Layers — converts a SICAR .RET export into separate vector layers.
 	- New algorithm: Replace Geometry — Replaces feature geometries using a matching key field;
 	- Export polygons to SICAFI: simplified attribute handling and output format selection;
 	- Various internal fixes: corrected translated messages.
-    0.7
+	0.7
 	- New algorithm: Aggregate Features by Field — aggregates features by a selected field, with an optional limit on the number of features per group.
 	- Batch Photo Export: Added options to move files and control overwriting of existing data.
 	- Export DJI KML: Code refactored to improve efficiency and maintainability.

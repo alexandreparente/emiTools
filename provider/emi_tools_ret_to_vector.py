@@ -51,7 +51,7 @@ from qgis.core import (
 )
 from qgis.PyQt.QtCore import QVariant
 
-from .emi_tools_util import tr
+from ..emi_tools_util import tr
 
 # Prefixes used by SICAR to name the data file bundled inside the .RET zip
 # (state acronym, e.g. "PB-", or the "CAR" prefix used for some exports).

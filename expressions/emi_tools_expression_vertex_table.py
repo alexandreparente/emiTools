@@ -35,13 +35,33 @@ from qgis.utils import qgsfunction
 
 
 @qgsfunction(args="auto", group="Custom")
-def vertex_table(geometry, pagina, tamanho_bloco, feature, parent):
+def vertex_table(
+    geometry, linha_inicial, tamanho_bloco, style="", feature=None, parent=None
+):
     """
-    Generates paginated HTML of vertices.
-    Usage: vertex_table($geometry, page_number, items_per_page)
-    Ex: vertex_table($geometry, 1, 30) for 1-30
-        vertex_table($geometry, 2, 30) for 31-60
+    Generates paginated HTML of vertices, with customizable style (CSS).
+
+    Using a starting row (instead of a page number) lets you chain multiple
+    tables with different block sizes, since each call is independent.
+
+    Usage: vertex_table($geometry, start_row, items_per_page, [style])
+    Ex: vertex_table($geometry, 1, 30) rows 1-30 with default style
+        vertex_table($geometry, 31, 15) rows 31-45 with default style
+        vertex_table($geometry, 46, 100) rows 46-145 with default style
+        vertex_table($geometry, 1, 30, 'table {color: red;}') with custom style
+
+    'style' is optional. If omitted, '' or NULL, the built-in default CSS is used.
     """
+
+    # --- Style (CSS) Definition ---
+    # If the user passes NULL or an empty string, use the default
+    css = style
+    if not css:
+        css = """
+        table { border-collapse: collapse; width: 100%; font-size: 9pt; font-family: Arial; }
+        th { background-color: #ddd; border: 1px solid black; padding: 5px; }
+        td { border: 1px solid black; padding: 4px; text-align: center; }
+        """
 
     # List to store all flat vertices
     lista_vertices = []
@@ -96,23 +116,21 @@ def vertex_table(geometry, pagina, tamanho_bloco, feature, parent):
                     }
                 )
 
-    # --- Pagination Logic ---
-    inicio = (pagina - 1) * tamanho_bloco
+    # --- Slicing Logic ---
+    # linha_inicial is 1-based (matches the "Point" numbering), so convert to
+    # a 0-based index for the list slice
+    inicio = linha_inicial - 1
     fim = inicio + tamanho_bloco
 
     # Slice the list
     vertices_pagina = lista_vertices[inicio:fim]
 
     if not vertices_pagina:
-        return ""  # Returns empty if there is no data for this page
+        return ""  # Returns empty if there are no vertices left from this row on
 
     # --- Generate HTML ---
-    html = """
-    <style>
-    table { border-collapse: collapse; width: 100%; font-size: 9pt; font-family: Arial; }
-    th { background-color: #ddd; border: 1px solid black; padding: 5px; }
-    td { border: 1px solid black; padding: 4px; text-align: center; }
-    </style>
+    html = f"<style>{css}</style>"
+    html += """
     <table>
         <thead>
             <tr>

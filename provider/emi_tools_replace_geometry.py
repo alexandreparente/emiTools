@@ -44,7 +44,7 @@ from qgis.core import (
     QgsWkbTypes,
 )
 
-from .emi_tools_util import tr
+from ..emi_tools_util import tr
 
 
 class emiToolsReplaceGeometry(QgsProcessingAlgorithm):

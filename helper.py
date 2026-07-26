@@ -45,7 +45,7 @@ from io import StringIO
 
 # ── Plugin identity ──────────────────────────────────────────────────────────
 PLUGIN_NAME = "emi_tools"
-PLUGIN_DISPLAY = "EmiTools"
+PLUGIN_DISPLAY = "emiTools"
 
 # ── QGIS Docker image tags ───────────────────────────────────────────────────
 QGIS_TEST_VERSION = "latest"
@@ -64,6 +64,8 @@ CONTAINER_PLUGIN_PATH = (
 # Files/patterns to exclude from the zip package
 PACKAGE_EXCLUDES = {
     "test",
+    "help",
+    "zip_build",
     ".git",
     ".venv",
     ".github",
@@ -78,8 +80,8 @@ PACKAGE_EXCLUDES = {
     "README.md",
     "*.pyc",
     "__pycache__",
-    "metadata.txt",
     ".*",
+    "pyqt5_to_pyqt6.py",
 }
 
 
@@ -238,6 +240,8 @@ def package(version=None):
     cfg.write(buf)
 
     def exclude(name):
+        if name == archive:
+            return True
         return any(fnmatch.fnmatch(name, p) for p in PACKAGE_EXCLUDES)
 
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as zf:

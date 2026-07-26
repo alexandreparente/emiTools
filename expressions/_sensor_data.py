@@ -30,297 +30,12 @@ __copyright__ = "(C) 2024 by Alexandre Parente Lima"
 __revision__ = "$Format:%H$"
 
 import re
-import string
 from datetime import date, datetime
-
-from qgis.core import QgsMessageLog, QgsProject
-
-from .emi_tools_util import tr
-
-
-def validate_cpf_logic(cpf_number) -> bool:
-    s = "".join(filter(str.isdigit, str(cpf_number)))
-    if len(s) != 11:
-        return False
-    # rejeita CPFs com todos dígitos iguais
-    if s == s[0] * 11:
-        return False
-    nums = list(map(int, s))
-    total = sum(a * b for a, b in zip(nums[:9], range(10, 1, -1)))
-    dv = (total * 10) % 11
-    if dv == 10:
-        dv = 0
-    if dv != nums[9]:
-        return False
-    total = sum(a * b for a, b in zip(nums[:10], range(11, 1, -1)))
-    dv = (total * 10) % 11
-    if dv == 10:
-        dv = 0
-    return dv == nums[10]
-
-
-def validate_cnpj_logic(cnpj_number) -> bool:
-    s = "".join(filter(str.isdigit, str(cnpj_number)))
-    if len(s) != 14:
-        return False
-    if s == s[0] * 14:
-        return False
-    nums = list(map(int, s))
-    w1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
-    w2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
-    dv1 = 11 - (sum(n * w for n, w in zip(nums[:12], w1)) % 11)
-    dv1 = 0 if dv1 > 9 else dv1
-    dv2 = 11 - (sum(n * w for n, w in zip(nums[:13], w2)) % 11)
-    dv2 = 0 if dv2 > 9 else dv2
-    return nums[12] == dv1 and nums[13] == dv2
-
-
-def format_cpf_logic(cpf_string) -> str:
-    cleaned_string = "".join(filter(str.isdigit, str(cpf_string)))
-    if len(cleaned_string) != 11:
-        raise ValueError(
-            tr("Invalid number. Please provide an 11-digit numeric string.")
-        )
-    return f"{cleaned_string[:3]}.{cleaned_string[3:6]}.{cleaned_string[6:9]}-{cleaned_string[9:]}"
-
-
-def format_cnpj_logic(cnpj_string) -> str:
-    cleaned_string = "".join(filter(str.isdigit, str(cnpj_string)))
-    if len(cleaned_string) != 14:
-        raise ValueError(
-            tr("Invalid number. Pass a numeric string as the input parameter.")
-        )
-    return f"{cleaned_string[:2]}.{cleaned_string[2:5]}.{cleaned_string[5:8]}/{cleaned_string[8:12]}-{cleaned_string[12:]}"
-
-
-def format_cpf_cnpj_logic(cpf_cnpj_string) -> str:
-    cleaned_string = "".join(filter(str.isdigit, str(cpf_cnpj_string)))
-    if len(cleaned_string) == 11:
-        return format_cpf_logic(cleaned_string)
-    if len(cleaned_string) == 14:
-        return format_cnpj_logic(cleaned_string)
-    raise ValueError(
-        tr("Invalid number. Pass a numeric string as the input parameter..")
-    )
-
-
-def mask_cpf_logic(cpf_number) -> str:
-    s = "".join(filter(str.isdigit, str(cpf_number)))
-    if len(s) != 11:
-        return "Invalid CPF"
-    return f"***.{s[3:6]}.{s[6:9]}-**"
-
-
-def mask_name_logic(full_name) -> str:
-    parts = str(full_name).split()
-    if len(parts) < 3:
-        return str(full_name)
-    middle = ["*" * len(p) for p in parts[1:-1]]
-    return parts[0] + " " + " ".join(middle) + " " + parts[-1]
-
-
-# List of words that must remain in lowercase in names/titles
-# according to Portuguese language conventions and ABNT standards.
-
-PT_BR_LOWERCASE_WORDS = {
-    # Artigos definidos e indefinidos
-    "a",
-    "o",
-    "as",
-    "os",
-    "um",
-    "uma",
-    "uns",
-    "umas",
-    # Preposições simples
-    "de",
-    "em",
-    "por",
-    "para",
-    "com",
-    "sem",
-    "sob",
-    "sobre",
-    "até",
-    "após",
-    "ante",
-    "contra",
-    "desde",
-    "entre",
-    "trás",
-    # Conjunções coordenativas
-    "e",
-    "ou",
-    "mas",
-    "nem",
-    # Conjunções subordinativas comuns
-    "se",
-    "que",
-    "porque",
-    "como",
-    "quando",
-    "conforme",
-    "embora",
-    "caso",
-    "enquanto",
-    "logo",
-    "pois",
-    "porquanto",
-    "salvo",
-    # Contrações com artigos
-    "da",
-    "do",
-    "das",
-    "dos",
-    "na",
-    "no",
-    "nas",
-    "nos",
-    "à",
-    "às",
-    "ao",
-    "aos",
-    "pela",
-    "pelo",
-    "pelas",
-    "pelos",
-    # Contrações com pronomes
-    "dela",
-    "dele",
-    "delas",
-    "deles",
-    "nela",
-    "nele",
-    "nelas",
-    "neles",
-    # Contrações demonstrativas
-    "deste",
-    "desta",
-    "destes",
-    "destas",
-    "neste",
-    "nesta",
-    "nestes",
-    "nestas",
-    "daquele",
-    "daquela",
-    "daqueles",
-    "daquelas",
-    "naquele",
-    "naquela",
-    "naqueles",
-    "naquelas",
-    # Outras contrações usuais
-    "doutro",
-    "doutros",
-    "doutra",
-    "doutras",
-    "noutro",
-    "noutros",
-    "noutra",
-    "noutras",
-    # Palavras de locuções
-    "depois",
-    "antes",
-    "além",
-    "aquém",
-}
-
-_PUNCT = set('"' + "'«»“”‘’" + string.punctuation)  # pontuação que pode estar colada
-_STRONG_PUNCT = {
-    ".",
-    ":",
-    "!",
-    "?",
-    ";",
-}  # pontuação que reinicia capitalização em títulos
-
-
-def _split_affixes(token: str):
-    """Separates leading and trailing punctuation from the core of the word."""
-    if not token:
-        return "", "", ""
-    i, j = 0, len(token) - 1
-    while i <= j and token[i] in _PUNCT:
-        i += 1
-    while j >= i and token[j] in _PUNCT:
-        j -= 1
-    return token[:i], token[i : j + 1], token[j + 1 :]
-
-
-def _capitalize_core(core: str) -> str:
-    """Capitalizes a regular word."""
-    if not core:
-        return core
-    return core[0].upper() + core[1:].lower()
-
-
-def _process_hyphenated(core: str, force_capitalize: bool, lowercase_words: set) -> str:
-    """Processes hyphenated words part by part."""
-    parts = core.split("-")
-    out = []
-    for part in parts:
-        if not part:
-            out.append(part)
-            continue
-        lw = part.lower()
-        if force_capitalize or lw not in lowercase_words:
-            out.append(_capitalize_core(part))
-        else:
-            out.append(lw)
-    return "-".join(out)
-
-
-def format_capitalization_logic(
-    text: str, force_after_strong_punct: bool = False
-) -> str:
-    """
-    Capitalizes names/titles according to PT-BR/ABNT rules:
-      - the first word is always capitalized;
-      - articles/prepositions/conjunctions remain lowercase (list);
-      - after strong punctuation (.:;!?) the next word is capitalized;
-      - handles hyphenated words.
-    """
-    if not text:
-        return ""
-
-    lower = PT_BR_LOWERCASE_WORDS
-
-    tokens = str(text).split()
-    result = []
-    next_force = True
-
-    for tok in tokens:
-        lead, core, trail = _split_affixes(tok)
-
-        if core:
-            lw = core.lower()
-            force_cap = next_force
-            if "-" in core:
-                new_core = _process_hyphenated(core, force_cap, lower)
-            else:
-                if force_cap or lw not in lower:
-                    new_core = _capitalize_core(core)
-                else:
-                    new_core = lw
-        else:
-            new_core = core
-
-        result.append(f"{lead}{new_core}{trail}")
-
-        # ABNT: restarts capitalization after strong punctuation (in titles)
-        if force_after_strong_punct and any(ch in _STRONG_PUNCT for ch in tok):
-            next_force = True
-        else:
-            next_force = False
-
-    return " ".join(result)
-
 
 # ---------------------------------------------------------------------------
 #   Satellite sensor properties dictionary
 # ---------------------------------------------------------------------------
-#   Pattern: regex string → { 'name': ..., 'date_format': ..., 'source': ... }
+#   Pattern: regex string -> { 'name': ..., 'date_format': ..., 'source': ... }
 # ---------------------------------------------------------------------------
 
 SATELLITE_PROPERTIES = {
@@ -351,7 +66,7 @@ SATELLITE_PROPERTIES = {
         "source": "United States Geological Survey (USGS).",
     },
     r"^LM0[1-3]": {
-        "name": "LandSat MSS (1–3)",
+        "name": "LandSat MSS (1-3)",
         "date_format": "YYYYMMDD",
         "source": "United States Geological Survey (USGS).",
     },
@@ -441,17 +156,17 @@ SATELLITE_PROPERTIES = {
     r"PSScene": {
         "name": "PlanetScope",
         "date_format": "YYYYMMDD",
-        "source": "Includes material © (2025) Planet Labs Inc. All rights reserved.",
+        "source": "Includes material \u00a9 (2025) Planet Labs Inc. All rights reserved.",
     },
     r"^SkySat": {
         "name": "SkySat",
         "date_format": "YYYYMMDD",
-        "source": "Includes material © (2025) Planet Labs Inc. All rights reserved.",
+        "source": "Includes material \u00a9 (2025) Planet Labs Inc. All rights reserved.",
     },
     r"_psb_|_pss_": {
         "name": "PlanetScope",
         "date_format": "YYYYMMDD",
-        "source": "Includes material © (2025) Planet Labs Inc. All rights reserved.",
+        "source": "Includes material \u00a9 (2025) Planet Labs Inc. All rights reserved.",
     },
 }
 
@@ -475,23 +190,23 @@ SATELLITE_PROPERTIES = {
 #
 #   Sensor codes
 #   ------------
-#   V   Visível / RGB
-#   T   Termal (infravermelho termal)
-#   M   Multiespectral
+#   V   Visible / RGB
+#   T   Thermal (thermal infrared)
+#   M   Multispectral
 #   L   LiDAR
-#   H   Hiperespectral
+#   H   Hyperspectral
 #
 #   Examples
 #   --------
-#   RPA_M2EA_V_20240315   Mavic 2 Enterprise Advanced – câmera visível
-#   RPA_M2EA_T_20240315   Mavic 2 Enterprise Advanced – câmera termal
-#   RPA_M3M_M_20240315    Mavic 3 Multispectral – câmera multiespectral
-#   RPA_M300_L_20240315   Matrice 300 RTK – sensor LiDAR
-#   RPA_M350_H_20240315   Matrice 350 RTK – sensor hiperespectral
+#   RPA_M2EA_V_20240315   Mavic 2 Enterprise Advanced - visible camera
+#   RPA_M2EA_T_20240315   Mavic 2 Enterprise Advanced - thermal camera
+#   RPA_M3M_M_20240315    Mavic 3 Multispectral - multispectral camera
+#   RPA_M300_L_20240315   Matrice 300 RTK - LiDAR sensor
+#   RPA_M350_H_20240315   Matrice 350 RTK - hyperspectral sensor
 # ---------------------------------------------------------------------------
 
 RPA_PROPERTIES = {
-    # ── DJI Mavic 2 Enterprise Advanced ────────────────────────────────────
+    # -- DJI Mavic 2 Enterprise Advanced --------------------------------------
     r"^RPA_M2EA_V": {
         "name": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
         "DJI Mavic 2 Enterprise Advanced,câmera RGB",
@@ -504,7 +219,7 @@ RPA_PROPERTIES = {
         "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
         "DJI Mavic 2 Enterprise Advanced – Câmera Termal.",
     },
-    # ── DJI Mavic 3 Enterprise ──────────────────────────────────────────────
+    # -- DJI Mavic 3 Enterprise ------------------------------------------------
     r"^RPA_M3E_V": {
         "name": "DJI Mavic 3 Enterprise (Visível)",
         "date_format": "YYYYMMDD",
@@ -517,7 +232,7 @@ RPA_PROPERTIES = {
         "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
         "DJI Mavic 3 Enterprise – Câmera Termal.",
     },
-    # ── DJI Mavic 3 Thermal ─────────────────────────────────────────────────
+    # -- DJI Mavic 3 Thermal ----------------------------------------------------
     r"^RPA_M3T_V": {
         "name": "DJI Mavic 3 Thermal (Visível)",
         "date_format": "YYYYMMDD",
@@ -530,7 +245,7 @@ RPA_PROPERTIES = {
         "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
         "DJI Mavic 3 Thermal – Câmera Termal.",
     },
-    # ── DJI Mavic 3 Multispectral ───────────────────────────────────────────
+    # -- DJI Mavic 3 Multispectral ----------------------------------------------
     r"^RPA_M3M_V": {
         "name": "DJI Mavic 3 Multispectral (Visível)",
         "date_format": "YYYYMMDD",
@@ -543,7 +258,7 @@ RPA_PROPERTIES = {
         "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
         "DJI Mavic 3 Multispectral – Câmera Multiespectral.",
     },
-    # ── DJI Phantom 4 Multispectral ─────────────────────────────────────────
+    # -- DJI Phantom 4 Multispectral ----------------------------------------------
     r"^RPA_P4MS_V": {
         "name": "DJI Phantom 4 Multispectral (Visível)",
         "date_format": "YYYYMMDD",
@@ -556,14 +271,14 @@ RPA_PROPERTIES = {
         "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
         "DJI Phantom 4 Multispectral – Câmera Multiespectral.",
     },
-    # ── DJI Phantom 4 RTK ───────────────────────────────────────────────────
+    # -- DJI Phantom 4 RTK -----------------------------------------------------
     r"^RPA_P4R_V": {
         "name": "DJI Phantom 4 RTK (Visível)",
         "date_format": "YYYYMMDD",
         "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
         "DJI Phantom 4 RTK – Câmera RGB.",
     },
-    # ── DJI Matrice 300 RTK ─────────────────────────────────────────────────
+    # -- DJI Matrice 300 RTK -----------------------------------------------------
     r"^RPA_M300_V": {
         "name": "DJI Matrice 300 RTK (Visível)",
         "date_format": "YYYYMMDD",
@@ -588,7 +303,7 @@ RPA_PROPERTIES = {
         "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
         "DJI Matrice 300 RTK – Sensor Hiperespectral.",
     },
-    # ── DJI Matrice 350 RTK ─────────────────────────────────────────────────
+    # -- DJI Matrice 350 RTK -----------------------------------------------------
     r"^RPA_M350_V": {
         "name": "DJI Matrice 350 RTK (Visível)",
         "date_format": "YYYYMMDD",
@@ -613,7 +328,7 @@ RPA_PROPERTIES = {
         "source": "Imagem obtida por Aeronave Remotamente Pilotada (RPA) "
         "DJI Matrice 350 RTK – Sensor Hiperespectral.",
     },
-    # ── Drone agrícola genérico ─────────────────────────────────────────────
+    # -- Generic agricultural drone ------------------------------------------------
     r"^RPA_AGR_V": {
         "name": "Drone Agrícola (Visível)",
         "date_format": "YYYYMMDD",
@@ -701,24 +416,3 @@ def get_image_date_logic(filename) -> date:
     raise ValueError(
         f"Could not parse date from filename with expected format '{date_format}'."
     )
-
-
-def get_layer_custom_property_logic(layer_name: str, property_key: str):
-    """
-    Returns the value of a 'Custom Property' from a layer in the project.
-    """
-
-    layers = QgsProject.instance().mapLayersByName(layer_name)
-
-    if not layers:
-        QgsMessageLog.logMessage(
-            f"Function 'get_layer_custom_property' could not find layer: {layer_name}",
-            "Python Functions",
-        )
-        return None
-
-    # Get the first layer found with this name
-    layer = layers[0]
-
-    property_value = layer.customProperty(property_key)
-    return property_value

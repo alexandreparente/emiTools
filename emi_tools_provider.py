@@ -30,18 +30,7 @@ __copyright__ = "(C) 2024 by Alexandre Parente Lima"
 
 from qgis.core import QgsProcessingProvider
 
-from .emi_tools_aggregate_by_field import emiToolsAggregateArray
-from .emi_tools_apply_style_geotagged_photos import emiToolsApplyStyleGeotaggedPhotos
-
-# from .emi_tools_join_geotagged_photos_features import AssociarFotosPoligonos
-# from .emi_tools_photographic_report import emiToolsPhotographicReport
-from .emi_tools_batch_photo_export import emiToolsBatchPhotoExport
-from .emi_tools_export_kml_rpa import emiToolsExportKmlRpa
-from .emi_tools_export_terms import emiToolsExportTerms
-from .emi_tools_import_geotagged_photos import emiToolsImportGeotaggedPhotos
-from .emi_tools_photo_stamp_rpa import emiToolsStampPhotoRpa
-from .emi_tools_replace_geometry import emiToolsReplaceGeometry
-from .emi_tools_ret_to_vector import emiToolsRetToVector
+from .provider import discover_algorithms
 
 
 class emiToolsProvider(QgsProcessingProvider):
@@ -61,19 +50,13 @@ class emiToolsProvider(QgsProcessingProvider):
     def loadAlgorithms(self):
         """
         Loads all algorithms belonging to this provider.
-        """
-        self.addAlgorithm(emiToolsExportTerms())
-        self.addAlgorithm(emiToolsExportKmlRpa())
-        self.addAlgorithm(emiToolsStampPhotoRpa())
-        self.addAlgorithm(emiToolsImportGeotaggedPhotos())
-        self.addAlgorithm(emiToolsApplyStyleGeotaggedPhotos())
-        self.addAlgorithm(emiToolsBatchPhotoExport())
-        self.addAlgorithm(emiToolsAggregateArray())
-        self.addAlgorithm(emiToolsReplaceGeometry())
-        self.addAlgorithm(emiToolsRetToVector())
 
-    # add additional algorithms here
-    # self.addAlgorithm(emiToolsPhotographicReport())
+        Algorithms are discovered automatically from the `provider` package:
+        every QgsProcessingAlgorithm subclass found there is instantiated
+        and registered, so there is no manual list to maintain here.
+        """
+        for algorithm in discover_algorithms():
+            self.addAlgorithm(algorithm)
 
     def id(self):
         """

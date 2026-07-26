@@ -50,7 +50,7 @@ from qgis.core import (
     QgsWkbTypes,
 )
 
-from .emi_tools_util import save_as_vector, tr
+from ..emi_tools_util import save_as_vector, tr
 
 
 class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):

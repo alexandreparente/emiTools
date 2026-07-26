@@ -44,7 +44,7 @@ from qgis.core import (
 )
 from qgis.PyQt.QtCore import QFile, QIODevice, QXmlStreamWriter
 
-from .emi_tools_util import get_transformation, get_validated_folder, tr
+from ..emi_tools_util import get_transformation, get_validated_folder, tr
 
 
 class emiToolsExportKmlRpa(QgsProcessingAlgorithm):

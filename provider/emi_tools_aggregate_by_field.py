@@ -39,7 +39,7 @@ from qgis.core import (
 )
 from qgis.PyQt.QtCore import QVariant
 
-from .emi_tools_util import tr
+from ..emi_tools_util import tr
 
 
 class emiToolsAggregateArray(QgsProcessingAlgorithm):

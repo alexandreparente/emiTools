@@ -47,12 +47,12 @@ from qgis.PyQt.QtGui import QColor, QFont, QFontDatabase, QImage, QPainter
 from qgis.PyQt.QtSvg import QSvgRenderer
 from qgis.PyQt.QtWidgets import QApplication
 
-from .emi_tools_photo_metadata import (
+from ..emi_tools_photo_metadata import (
     get_exif_data,
     get_metadata_keys,
     get_translated_metadata_map,
 )
-from .emi_tools_util import get_validated_folder, tr
+from ..emi_tools_util import get_validated_folder, tr
 
 
 class emiToolsStampPhotoRpa(QgsProcessingAlgorithm):

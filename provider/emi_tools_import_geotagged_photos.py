@@ -43,13 +43,13 @@ from qgis.core import (
 )
 from qgis.PyQt.QtCore import QDateTime, QVariant
 
-from .emi_tools_photo_metadata import (
+from ..emi_tools_photo_metadata import (
     METADATA_CONF,
     get_exif_data,
     get_metadata_keys,
     get_translated_metadata_map,
 )
-from .emi_tools_util import create_memory_layer, save_as_vector, tr
+from ..emi_tools_util import create_memory_layer, save_as_vector, tr
 
 
 class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):

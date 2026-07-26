@@ -34,38 +34,8 @@ import sys
 from qgis.core import QgsApplication, QgsExpression
 from qgis.PyQt.QtCore import QCoreApplication, QLocale, QSettings, QTranslator
 
-from .emi_tools_expressions import (
-    format_cnpj,
-    format_cpf,
-    format_cpf_cnpj,
-    format_proper_name,
-    format_title_abnt,
-    get_image_date,
-    get_image_source,
-    get_layer_custom_property,
-    get_satellite_name,
-    mask_cpf,
-    mask_name,
-    validate_cnpj,
-    validate_cpf,
-)
 from .emi_tools_provider import emiToolsProvider
-
-listFunctions = (
-    validate_cpf,
-    validate_cnpj,
-    format_cpf,
-    format_cnpj,
-    format_cpf_cnpj,
-    mask_cpf,
-    mask_name,
-    format_proper_name,
-    format_title_abnt,
-    get_image_date,
-    get_satellite_name,
-    get_image_source,
-    get_layer_custom_property,
-)
+from .expressions import discover_functions
 
 cmd_folder = os.path.dirname(os.path.abspath(__file__))
 
@@ -79,6 +49,10 @@ class emiToolsPlugin(object):
 
         # Initialize the plugin path directory
         self.plugin_dir = os.path.dirname(__file__)
+
+        # Automatically discover every expression function defined inside
+        # the `expressions` package, instead of maintaining a manual list
+        self.expression_functions = discover_functions()
 
         # Gets the locale configured in the system.
         settings = QSettings()
@@ -101,12 +75,12 @@ class emiToolsPlugin(object):
 
     def initGui(self):
         self.initProcessing()
-        for expr in listFunctions:
+        for expr in self.expression_functions:
             if not QgsExpression.isFunctionName(expr.name()):
                 QgsExpression.registerFunction(expr)
 
     def unload(self):
         QgsApplication.processingRegistry().removeProvider(self.provider)
-        for expr in listFunctions:
+        for expr in self.expression_functions:
             if QgsExpression.isFunctionName(expr.name()):
                 QgsExpression.unregisterFunction(expr.name())

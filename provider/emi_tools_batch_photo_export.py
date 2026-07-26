@@ -42,7 +42,7 @@ from qgis.core import (
     QgsProcessingParameterFolderDestination,
 )
 
-from .emi_tools_util import get_validated_folder, tr
+from ..emi_tools_util import get_validated_folder, tr
 
 
 class emiToolsBatchPhotoExport(QgsProcessingAlgorithm):

@@ -52,7 +52,7 @@ from qgis.core import (
     QgsWkbTypes,
 )
 
-from .emi_tools_util import (
+from ..emi_tools_util import (
     compress_to_zip,
     create_memory_layer,
     get_associated_files,
