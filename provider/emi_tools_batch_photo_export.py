@@ -36,6 +36,7 @@ import shutil
 from qgis.core import (
     QgsProcessing,
     QgsProcessingAlgorithm,
+    QgsProcessingException,
     QgsProcessingParameterBoolean,
     QgsProcessingParameterFeatureSource,
     QgsProcessingParameterField,
@@ -100,6 +101,30 @@ class emiToolsBatchPhotoExport(QgsProcessingAlgorithm):
         output_folder_param = self.parameterAsString(
             parameters, self.OUTPUT_FOLDER, context
         )
+
+        # Safety lock: prevents processing from starting if the user enables "Move files"
+        # without selecting a destination folder
+
+        raw_output_folder = parameters.get(self.OUTPUT_FOLDER)
+        if move_files and (
+            not raw_output_folder
+            or (
+                isinstance(raw_output_folder, str)
+                and (
+                    not raw_output_folder.strip()
+                    or raw_output_folder == QgsProcessing.TEMPORARY_OUTPUT
+                )
+            )
+        ):
+            raise QgsProcessingException(
+                tr(
+                    "Move files is enabled, but no destination folder was "
+                    "selected. To prevent photos from being moved to a "
+                    "temporary folder and lost, processing was stopped. "
+                    "Please select an output folder and run again."
+                )
+            )
+
         output_folder = get_validated_folder(output_folder_param)
 
         total = layer.featureCount()
