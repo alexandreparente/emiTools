@@ -29,18 +29,12 @@ __copyright__ = "(C) 2024 by Alexandre Parente Lima"
 __revision__ = "$Format:%H$"
 
 import os
-import sys
 
 from qgis.core import QgsApplication, QgsExpression
 from qgis.PyQt.QtCore import QCoreApplication, QLocale, QSettings, QTranslator
 
 from .emi_tools_provider import emiToolsProvider
 from .expressions import discover_functions
-
-cmd_folder = os.path.dirname(os.path.abspath(__file__))
-
-if cmd_folder not in sys.path:
-    sys.path.insert(0, cmd_folder)
 
 
 class emiToolsPlugin(object):
