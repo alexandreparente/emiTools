@@ -183,7 +183,7 @@ def run_tests(qgis_version=QGIS_TEST_VERSION, *pytest_args):
 
     for version in versions:
         image = f"qgis/qgis:{version}"
-        print(f"\n▶  Running tests in Docker ({image}) ...")
+        print(f"\n Running tests in Docker ({image}) ...")
 
         result = subprocess.run(
             [
@@ -293,17 +293,23 @@ def package(version=None):
 # ── install ──────────────────────────────────────────────────────────────────
 
 
-def install(qgis_version="3"):
+def install(qgis_version="3", target=None):
     """
     Install the plugin into your local QGIS profile via symlink (copy on Windows).
 
     The repo root is linked/copied as emi_tools/ inside the QGIS plugins folder.
 
     :param qgis_version: '3' or '4' (default: '3').
+    :param target: 'flatpak' to force the Flatpak profile path, 'native' to
+                   force the standard (non-Flatpak) path. Omit to auto-detect
+                   — auto-detection only picks Flatpak if the QGIS Flatpak app
+                   is actually installed.
 
     Examples:
       python helper.py install
       python helper.py install 4
+      python helper.py install 3 flatpak
+      python helper.py install 3 native
     """
     qgis_folder = f"QGIS{qgis_version}"
 
@@ -315,14 +321,29 @@ def install(qgis_version="3"):
             "/profiles/default/python/plugins"
         )
     else:
-        flatpak = os.path.expanduser(
-            f"~/.var/app/org.qgis.qgis/data/QGIS/{qgis_folder}/profiles/default/python/plugins"
+        flatpak_base = f"~/.var/app/org.qgis.qgis/data/QGIS/{qgis_folder}/profiles/default/python/plugins"
+        native_base = (
+            f"~/.local/share/QGIS/{qgis_folder}/profiles/default/python/plugins"
         )
-        base = (
-            flatpak
-            if os.path.exists(os.path.dirname(flatpak))
-            else (f"~/.local/share/QGIS/{qgis_folder}/profiles/default/python/plugins")
-        )
+
+        if target == "flatpak":
+            base = flatpak_base
+        elif target == "native":
+            base = native_base
+        elif target is not None:
+            print(f"Error: unknown target '{target}' (use 'flatpak' or 'native').")
+            sys.exit(2)
+        else:
+            flatpak_app_installed = (
+                shutil.which("flatpak") is not None
+                and subprocess.run(
+                    ["flatpak", "info", "org.qgis.qgis"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                ).returncode
+                == 0
+            )
+            base = flatpak_base if flatpak_app_installed else native_base
 
     plugins_dir = os.path.expanduser(base)
     os.makedirs(plugins_dir, exist_ok=True)
@@ -376,7 +397,7 @@ def publish(archive):
 def usage():
     print(
         "Usage:\n"
-        f"  {sys.argv[0]} install [3|4]                         Install in local QGIS (default: 3)\n"
+        f"  {sys.argv[0]} install [3|4] [flatpak|native]        Install in local QGIS (default: 3, auto-detect)\n"
         f"  {sys.argv[0]} translate [LOCALE]                    Compile .ts → .qm files\n"
         f"  {sys.argv[0]} pytest [QGIS_VERSION] [PYTEST_ARGS]   Run tests in Docker (default: latest)\n"
         f"  {sys.argv[0]} pre-commit [all]                      Run pre-commit hooks (default: all files)\n"
@@ -392,7 +413,7 @@ args = sys.argv[1:]
 if not args:
     usage()
 elif args[0] == "install":
-    install(*args[1:2])
+    install(*args[1:3])
 elif args[0] == "translate":
     translate(*args[1:2])
 elif args[0] == "pytest":
