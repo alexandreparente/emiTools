@@ -29,8 +29,8 @@ experimental = False
 deprecated = False
 server = False
 changelog = 0.9
-    - restructure plugin architecture
-    0.8
+	- restructure plugin architecture
+	0.8
 	- New algorithm: Convert SICAR .RET to Vector Layers — converts a SICAR .RET export into separate vector layers.
 	- New algorithm: Replace Geometry — Replaces feature geometries using a matching key field;
 	- Export polygons to SICAFI: simplified attribute handling and output format selection;
