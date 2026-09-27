@@ -85,6 +85,31 @@ PACKAGE_EXCLUDES = {
 }
 
 
+# ── shared helpers ───────────────────────────────────────────────────────────
+
+
+def _is_excluded(name):
+    """Check a file/dir basename against PACKAGE_EXCLUDES patterns."""
+    return any(fnmatch.fnmatch(name, p) for p in PACKAGE_EXCLUDES)
+
+
+def find_source_files():
+    """
+    Recursively find all .py files under REPO_ROOT, skipping excluded
+    directories/files (test/, help/, .venv/, __pycache__/, helper.py, etc.).
+
+    Used to build the file list passed to pylupdate5.
+    """
+    source_files = []
+    for root, dirs, files in os.walk(REPO_ROOT):
+        # Prune excluded directories in-place so os.walk doesn't descend into them
+        dirs[:] = [d for d in dirs if not _is_excluded(d)]
+        for fname in files:
+            if fname.endswith(".py") and not _is_excluded(fname):
+                source_files.append(os.path.join(root, fname))
+    return sorted(source_files)
+
+
 # ── translate ────────────────────────────────────────────────────────────────
 
 
@@ -115,8 +140,8 @@ def translate(locale=None):
         print(f"Error: No .ts files found in {i18n_dir}")
         return
 
-    # Plugin Python sources are at the repo root
-    source_files = sorted(glob.glob(os.path.join(REPO_ROOT, "*.py")))
+    # Plugin Python sources — recursive scan, skipping test/, help/, .venv/, etc.
+    source_files = find_source_files()
 
     try:
         if source_files:
@@ -242,7 +267,7 @@ def package(version=None):
     def exclude(name):
         if name == archive:
             return True
-        return any(fnmatch.fnmatch(name, p) for p in PACKAGE_EXCLUDES)
+        return _is_excluded(name)
 
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as zf:
         # metadata.txt always included (possibly with overridden version)
