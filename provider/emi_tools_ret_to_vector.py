@@ -266,7 +266,7 @@ def _qvariant_for_type(py_type):
         return QMetaType.Type.Int
     if py_type is float:
         return QMetaType.Type.Double
-    return QMetaType.Type.String
+    return QMetaType.Type.QString
 
 
 def _resolve_value(dados, conf):
@@ -434,7 +434,7 @@ class emiToolsRetToVector(QgsProcessingAlgorithm):
             qgis_geom_type = QgsWkbTypes.displayString(geometry.wkbType())
 
             fields = QgsFields()
-            fields.append(QgsField("tipo", QMetaType.Type.String, len=100))
+            fields.append(QgsField("tipo", QMetaType.Type.QString, len=100))
             fields.append(QgsField("area", QMetaType.Type.Double))
             for field in common_fields:
                 fields.append(field)

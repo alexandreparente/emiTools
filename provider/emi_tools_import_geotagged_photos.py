@@ -286,13 +286,13 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
                 elif target_type == QDateTime:
                     field_type = QMetaType.Type.QDateTime
                 else:
-                    field_type = QMetaType.Type.String
+                    field_type = QMetaType.Type.QString
             else:
                 # Handle special manual fields or unknown exif tags
                 if key == "selected":
                     field_type = QMetaType.Type.Bool
                 elif key == "description":
-                    field_type = QMetaType.Type.String
+                    field_type = QMetaType.Type.QString
                 else:
                     values = [
                         exif_data.get(key)
@@ -301,13 +301,13 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
                     ]
 
                     if not values:
-                        field_type = QMetaType.Type.String
+                        field_type = QMetaType.Type.QString
                     elif all(isinstance(v, QDateTime) for v in values):
                         field_type = QMetaType.Type.QDateTime
                     elif all(isinstance(v, (int, float)) for v in values):
                         field_type = QMetaType.Type.Double
                     else:
-                        field_type = QMetaType.Type.String
+                        field_type = QMetaType.Type.QString
 
             fields.append(QgsField(key, field_type))
 
