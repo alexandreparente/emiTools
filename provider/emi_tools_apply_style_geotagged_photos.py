@@ -29,6 +29,7 @@ __copyright__ = "(C) 2024 by Alexandre Parente Lima"
 import os
 
 from qgis.core import (
+    Qgis,
     QgsApplication,
     QgsEditorWidgetSetup,
     QgsLayerDefinition,
@@ -47,7 +48,6 @@ from qgis.core import (
     QgsSvgMarkerSymbolLayer,
     QgsSymbolLayer,
     QgsVectorLayer,
-    QgsWkbTypes,
 )
 
 from ..emi_tools_util import save_as_vector, tr
@@ -175,18 +175,14 @@ class emiToolsApplyStyleGeotaggedPhotos(QgsProcessingAlgorithm):
             QgsApplication.svgPaths()[0], "gpsicons", "city_medium.svg"
         )
 
-        symbol_arrow = QgsMarkerSymbol.defaultSymbol(
-            QgsWkbTypes.GeometryType.PointGeometry
-        )
+        symbol_arrow = QgsMarkerSymbol.defaultSymbol(Qgis.GeometryType.Point)
         svg_marker_arrow = QgsSvgMarkerSymbolLayer(svg_path_arrow)
         svg_marker_arrow.setDataDefinedProperty(
             QgsSymbolLayer.Property.PropertyAngle, QgsProperty.fromField(rotation_field)
         )
         symbol_arrow.changeSymbolLayer(0, svg_marker_arrow)
 
-        symbol_point = QgsMarkerSymbol.defaultSymbol(
-            QgsWkbTypes.GeometryType.PointGeometry
-        )
+        symbol_point = QgsMarkerSymbol.defaultSymbol(Qgis.GeometryType.Point)
         svg_marker_point = QgsSvgMarkerSymbolLayer(svg_path_point)
         symbol_point.changeSymbolLayer(0, svg_marker_point)
 
