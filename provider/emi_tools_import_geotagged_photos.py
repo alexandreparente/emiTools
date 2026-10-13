@@ -41,7 +41,7 @@ from qgis.core import (
     QgsProcessingParameterFile,
     QgsProcessingParameterVectorDestination,
 )
-from qgis.PyQt.QtCore import QDateTime, QVariant
+from qgis.PyQt.QtCore import QDateTime, QMetaType
 
 from ..emi_tools_photo_metadata import (
     METADATA_CONF,
@@ -282,17 +282,17 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
             if conf:
                 target_type = conf["type"]
                 if target_type is float:
-                    field_type = QVariant.Double
+                    field_type = QMetaType.Type.Double
                 elif target_type == QDateTime:
-                    field_type = QVariant.DateTime
+                    field_type = QMetaType.Type.QDateTime
                 else:
-                    field_type = QVariant.String
+                    field_type = QMetaType.Type.String
             else:
                 # Handle special manual fields or unknown exif tags
                 if key == "selected":
-                    field_type = QVariant.Bool
+                    field_type = QMetaType.Type.Bool
                 elif key == "description":
-                    field_type = QVariant.String
+                    field_type = QMetaType.Type.String
                 else:
                     values = [
                         exif_data.get(key)
@@ -301,13 +301,13 @@ class emiToolsImportGeotaggedPhotos(QgsProcessingAlgorithm):
                     ]
 
                     if not values:
-                        field_type = QVariant.String
+                        field_type = QMetaType.Type.String
                     elif all(isinstance(v, QDateTime) for v in values):
-                        field_type = QVariant.DateTime
+                        field_type = QMetaType.Type.QDateTime
                     elif all(isinstance(v, (int, float)) for v in values):
-                        field_type = QVariant.Double
+                        field_type = QMetaType.Type.Double
                     else:
-                        field_type = QVariant.String
+                        field_type = QMetaType.Type.String
 
             fields.append(QgsField(key, field_type))
 

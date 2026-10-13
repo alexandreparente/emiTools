@@ -37,7 +37,7 @@ from qgis.core import (
     QgsProcessingParameterNumber,
     QgsWkbTypes,
 )
-from qgis.PyQt.QtCore import QVariant
+from qgis.PyQt.QtCore import QMetaType
 
 from ..emi_tools_util import tr
 
@@ -109,7 +109,7 @@ class emiToolsAggregateArray(QgsProcessingAlgorithm):
         output_fields = QgsFields()
 
         # Primary key (GeoPackage compliant)
-        output_fields.append(QgsField("fid", QVariant.Int))
+        output_fields.append(QgsField("fid", QMetaType.Type.Int))
 
         # Grouping field (original name and type preserved)
         output_fields.append(source_fields.at(field_index))
@@ -121,7 +121,7 @@ class emiToolsAggregateArray(QgsProcessingAlgorithm):
             field_name = field.name()
             if field_name != group_field_name:
                 output_fields.append(
-                    QgsField(f"{field_name}_list", QVariant.StringList)
+                    QgsField(f"{field_name}_list", QMetaType.Type.QStringList)
                 )
                 aggregated_fields.append(field_name)
 

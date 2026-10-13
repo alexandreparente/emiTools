@@ -49,7 +49,7 @@ from qgis.core import (
     QgsVectorLayer,
     QgsWkbTypes,
 )
-from qgis.PyQt.QtCore import QVariant
+from qgis.PyQt.QtCore import QMetaType
 
 from ..emi_tools_util import tr
 
@@ -261,12 +261,12 @@ ATTRIBUTE_CONF = {
 
 
 def _qvariant_for_type(py_type):
-    """Maps a python type used in ATTRIBUTE_CONF to the matching QVariant."""
+    """Maps a python type used in ATTRIBUTE_CONF to the matching QMetaType.Type."""
     if py_type is int:
-        return QVariant.Int
+        return QMetaType.Type.Int
     if py_type is float:
-        return QVariant.Double
-    return QVariant.String
+        return QMetaType.Type.Double
+    return QMetaType.Type.String
 
 
 def _resolve_value(dados, conf):
@@ -434,8 +434,8 @@ class emiToolsRetToVector(QgsProcessingAlgorithm):
             qgis_geom_type = QgsWkbTypes.displayString(geometry.wkbType())
 
             fields = QgsFields()
-            fields.append(QgsField("tipo", QVariant.String, len=100))
-            fields.append(QgsField("area", QVariant.Double))
+            fields.append(QgsField("tipo", QMetaType.Type.String, len=100))
+            fields.append(QgsField("area", QMetaType.Type.Double))
             for field in common_fields:
                 fields.append(field)
 
