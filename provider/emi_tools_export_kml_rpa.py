@@ -31,6 +31,7 @@ __revision__ = "$Format:%H$"
 import os
 
 from qgis.core import (
+    Qgis,
     QgsProcessing,
     QgsProcessingAlgorithm,
     QgsProcessingException,
@@ -164,7 +165,7 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
         writer.writeTextElement("name", name)
 
         g_type = QgsWkbTypes.geometryType(geom.wkbType())
-        if g_type == QgsWkbTypes.GeometryType.PolygonGeometry:
+        if g_type == Qgis.GeometryType.Polygon:
             poly_obj = geom.get()
             writer.writeStartElement("Polygon")
             writer.writeStartElement("outerBoundaryIs")
@@ -186,7 +187,7 @@ class emiToolsExportKmlRpa(QgsProcessingAlgorithm):
                 writer.writeEndElement()
             writer.writeEndElement()  # Polygon
 
-        elif g_type == QgsWkbTypes.GeometryType.LineGeometry:
+        elif g_type == Qgis.GeometryType.Line:
             writer.writeStartElement("LineString")
             coords = " ".join(f"{v.x()},{v.y()},0" for v in geom.get().vertices())
             writer.writeTextElement("coordinates", coords)
